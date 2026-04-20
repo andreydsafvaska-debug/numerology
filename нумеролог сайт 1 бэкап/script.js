@@ -14,7 +14,7 @@ function escapeHTML(str) {
 // ==========================================================
 let premiumAccess = false;
 let currentToken = localStorage.getItem('accessToken') || '';
-const SERVER_URL = 'https://numerology-pdf-server.onrender.com'; // ← ЗАМЕНИТЕ НА ВАШ РЕАЛЬНЫЙ URL СЕРВЕРА
+const SERVER_URL = 'https://numerology-vnjx.onrender.com'; // ← ЗАМЕНИТЕ НА ВАШ РЕАЛЬНЫЙ URL СЕРВЕРА
 
 // Асинхронная проверка токена при загрузке страницы
 async function checkPremiumAccess() {
