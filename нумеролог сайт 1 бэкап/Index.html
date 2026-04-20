@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Нумерология, психология чисел, матрица судьбы, совместимость партнёров">
+    <meta name="keywords" content="нумерология, матрица пифагора, совместимость, число судьбы, расчёт матрицы">
+    <title>ASTRA | Психология Чисел</title>
+	
+	<!-- Библиотека для создания PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- Подключение шрифтов -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <!-- Подключение иконок FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Подключение стилей -->
+    <link rel="stylesheet" href="style.css">	
+    
+</head>
+   
+<body>
+    
+ <!-- ЭНЕРГИЯ ДНЯ -->
+<div id="daily-widget" class="daily-widget" onclick="toggleWidget()">
+     <div class="widget-tab">
+        <i class="fa-solid fa-bolt"></i>
+    </div>
+    <span class="daily-date" id="current-date"></span>
+    <span class="daily-separator">|</span>
+    <span class="daily-text">Энергия дня: <strong id="daily-number">-</strong> <span id="daily-desc"></span></span>
+</div>
+
+    <div id="stars" class="star-layer"></div>
+    <div id="stars2" class="star-layer"></div>
+    <div id="stars3" class="star-layer"></div>
+
+    <div class="global-matrix-wrapper"><div class="matrix-svg"></div></div>
+
+    <nav id="main-nav">   
+        
+        <div class="nav-links">
+            <button onclick="showSection('home')" class="active" id="btn-home">Главная</button>
+            <button onclick="showSection('compat')" id="btn-compat">Совместимость</button>
+			<button onclick="showSection('sponsor')" id="btn-sponsor"> Финансовый Архетип</button>
+             <button onclick="showSection('parent-child')" id="btn-parent-child"> Родитель-ребёнок</button>
+            <button onclick="showChildMatrixSection()" id="btn-child-matrix"> Детская матрица</button>
+			<button onclick="showSection('services')" id="btn-services">Услуги</button>
+			<button onclick="showSection('course')" id="btn-course" style="border-color: var(--purple-light); color: var(--purple-light);">🎓 Стать нумерологом</button>
+        </div>
+		
+    </nav>
+    
+    <main>
+
+        <!-- ГЛАВНАЯ СТРАНИЦА -->
+        
+        <section id="home" class="active">
+            <div style="text-align: center; padding: 40px 0;">
+                <p style="text-transform: uppercase; letter-spacing: 3px; color: var(--gold);">Портал самопознания</p>
+                <h1>Архитектура<span style="color: var(--gold); text-shadow: 0 0 20px rgba(212,175,55,0.4);"> Души</span> </h1>
+                <p style="max-width: 700px; margin: 0 auto; font-size: 1.2rem;">Древняя система Пифагора, которая расскажет о вас больше, чем вы сами.</p>
+            </div>
+    
+            <!-- КАЛЬКУЛЯТОР ПИФАГОРА -->
+            <div class="calc-container calc-compact">
+                <p>Введите ваши данные для расчёта:</p>
+                
+                <input type="text" id="userName" placeholder="Ваше имя" autocomplete="off">
+                <input type="date" id="birthDateMatrix">
+                <br>
+                <button class="btn-gold" onclick="calculateMatrix()">Рассчитать</button>
+                
+                <div id="loader-matrix" class="magic-loader">
+                    <div class="magic-circle"></div>
+                    <div class="magic-circle"></div>
+                    <div class="magic-circle"></div>
+                    <div class="magic-symbols">
+                        <span>✧</span>
+                        <span>☆</span>
+                        <span>✧</span>
+                        <span>☆</span>
+                    </div>
+                    <div class="magic-numbers" id="magic-numbers">9</div>
+                </div>
+
+                <!-- Блок с результатом имени -->
+                <div id="name-block" class="name-result-block" style="display: none; opacity: 0; transition: opacity 1s;">
+                    <h4>Энергия вашего имени</h4>
+                    <div id="name-greeting" style="color: var(--purple-light); font-size: 1.2rem; margin-bottom: 10px;"></div>
+                    <div id="name-number-display" class="name-number"></div>
+                    <div id="name-meaning" class="name-meaning"></div>
+                </div>
+
+                <div id="matrix-stats" class="pythagoras-info" style="display: none; margin-top: 20px; opacity: 0; transition: opacity 1s;">
+                    <div><label>Рабочие Числа</label><span id="work-nums">-</span></div>
+                    <div><label>Число Пути</label><span id="life-path-matrix">-</span></div>
+                    <div><label>Число Имени</label><span id="name-num-display">-</span></div>
+                </div>
+
+                <div class="matrix-grid matrix-compact" id="matrix-result" style="display: none;">
+                    <div class="matrix-cell"><span class="cell-title">Характер (1)</span><span id="cell-1" class="cell-value">-</span></div>
+                    <div class="matrix-cell"><span class="cell-title">Здоровье (4)</span><span id="cell-4" class="cell-value">-</span></div>
+                    <div class="matrix-cell"><span class="cell-title">Удача (7)</span><span id="cell-7" class="cell-value">-</span></div>
+                    <div class="matrix-cell summary"><span class="cell-title">Цель</span><span id="res-goal" class="cell-value">-</span></div>
+                    <div class="matrix-cell"><span class="cell-title">Энергия (2)</span><span id="cell-2" class="cell-value">-</span></div>
+                    <div class="matrix-cell"><span class="cell-title">Логика (5)</span><span id="cell-5" class="cell-value">-</span></div>
+                    <div class="matrix-cell"><span class="cell-title">Долг (8)</span><span id="cell-8" class="cell-value">-</span></div>
+                    <div class="matrix-cell summary"><span class="cell-title">Семья</span><span id="res-family" class="cell-value">-</span></div>
+                    <div class="matrix-cell"><span class="cell-title">Интерес (3)</span><span id="cell-3" class="cell-value">-</span></div>
+                    <div class="matrix-cell"><span class="cell-title">Труд (6)</span><span id="cell-6" class="cell-value">-</span></div>
+                    <div class="matrix-cell"><span class="cell-title">Память (9)</span><span id="cell-9" class="cell-value">-</span></div>
+                    <div class="matrix-cell summary"><span class="cell-title">Привычки</span><span id="res-habits" class="cell-value">-</span></div>
+                    <div class="matrix-cell summary"><span class="cell-title">Самооценка</span><span id="res-self" class="cell-value">-</span></div>
+                    <div class="matrix-cell summary"><span class="cell-title">Быт</span><span id="res-life" class="cell-value">-</span></div>
+                    <div class="matrix-cell summary"><span class="cell-title">Талант</span><span id="res-talent" class="cell-value">-</span></div>
+                    <div class="matrix-cell summary"><span class="cell-title">Дух</span><span id="res-spirit" class="cell-value">-</span></div>
+                    <div class="matrix-cell temp"><span class="cell-title">Темперамент</span><span id="res-temp" class="cell-value">-</span></div>
+                </div>
+                
+                <!-- ЛУННЫЙ ДЕНЬ -->
+                <div id="moon-block" class="moon-block" style="display: none; opacity: 0; transition: opacity 1s;">
+                    <h4>🌙 Лунный день рождения</h4>
+                    <div id="moon-phase-icon" class="moon-phase-icon"></div>
+                    <div id="moon-phase-name" class="moon-phase-name"></div>
+                    <div id="moon-description" class="moon-description"></div>
+                </div>
+
+                <!-- РАДАРНАЯ ДИАГРАММА -->
+                <div id="radar-container" class="radar-container" style="display: none; opacity: 0; transition: opacity 1s;">
+                    <h4>📊 Визуализация вашей матрицы</h4>
+                    <div class="radar-chart">
+                        <svg id="radar-svg" class="radar-svg" viewBox="0 0 280 280"></svg>
+                    </div>
+                    <p style="color: #aaa; font-size: 0.85rem; margin-top: 15px;">Наведите на точки, чтобы увидеть детали</p>
+					<div id="radar-tooltip" style="
+        display: none; 
+        margin-top: 20px; 
+        padding: 15px; 
+        background: rgba(37, 37, 73, 0.22); 
+        border: 1px solid var(--gold); 
+        border-radius: 10px;                           
+        animation: fadeIn 0.5s;">
+                     
+                <h4 id="radar-tooltip-title" style="color: var(--gold); margin: 0 0 5px 0;"></h4>
+        <p id="radar-tooltip-desc" style="color: #fff; margin: 0; font-size: 0.95rem; line-height: 1.5;"></p>
+    </div>
+                </div>
+
+                <!-- СЧАСТЛИВЫЕ ЧИСЛА -->
+                <div id="lucky-block" class="lucky-block" style="display: none; opacity: 0; transition: opacity 1s;">
+                    <h4>🍀 Ваши талисманы</h4>
+                    <div class="lucky-grid">
+                        <div class="lucky-item">
+                            <div class="lucky-icon">🔢</div>
+                            <div class="lucky-label">Счастливое число</div>
+                            <div id="lucky-number" class="lucky-value">-</div>
+							<!-- Подсказка -->
+							 <div class="lucky-tooltip">Используйте это число при выборе дат, номеров телефона, этажа или времени для встреч. Оно приносит удачу.</div>
+                        </div>
+                        <div class="lucky-item">
+                            <div class="lucky-icon">📅</div>
+                            <div class="lucky-label">Лучший день</div>
+                            <div id="lucky-day" class="lucky-value">-</div>
+							 <!-- Подсказка -->
+							<div class="lucky-tooltip">Идеальный день для старта проектов, важных переговоров и крупных покупок.</div>
+                        </div>
+                        <div class="lucky-item">
+                            <div class="lucky-icon">🎨</div>
+                            <div class="lucky-label">Цвет силы</div>
+                            <div id="lucky-color" class="lucky-value">-</div>
+							 <!-- Подсказка -->
+							 <div class="lucky-tooltip">Носите одежду или аксессуары этого цвета на важные мероприятия для усиления энергетики.</div>
+                        </div>
+                        <div class="lucky-item">
+                            <div class="lucky-icon">💎</div>
+                            <div class="lucky-label">Камень-талисман</div>
+                            <div id="lucky-stone" class="lucky-value">-</div>
+							 <!-- Подсказка -->
+							<div class="lucky-tooltip">Ваш природный оберег. Защищает от негатива и усиливает интуицию. Держите его на рабочем столе.</div>
+                        </div>
+                        <div class="lucky-item">
+                            <div class="lucky-icon">🌍</div>
+                            <div class="lucky-label">Стихия</div>
+                            <div id="lucky-element" class="lucky-value">-</div>
+							   <!-- Подсказка -->
+        <div class="lucky-tooltip">Ваш источник подзарядки. Если устали — обратитесь к своей стихии (вода, огонь, лес или ветер).</div>
+                        </div>
+                        <div class="lucky-item">
+                            <div class="lucky-icon">☀️</div>
+                            <div class="lucky-label">Планета</div>
+                            <div id="lucky-planet" class="lucky-value">-</div>
+							<!-- Подсказка -->
+        <div class="lucky-tooltip">Ваш небесный покровитель. Определяет ваш характер и жизненные циклы.</div>
+                        </div>
+                    </div>
+                    <div id="lucky-description" class="lucky-description"></div>
+                </div>
+				
+                <!-- ГРАФИК ЛИЧНОГО ГОДА -->
+<div id="year-chart-block" style="display: none; margin-top: 50px; animation: fadeIn 1s ease;">
+    <h3 style="color: var(--gold); margin-bottom: 10px;">📈 Энергетическая Карта 2026 Года</h3>
+    <p style="font-size: 0.9rem; color: #aaa; margin-bottom: 30px;">
+        Ваши пики и спады энергии. Планируйте важные дела на "высокие" точки.
+    </p>
+    
+    <!-- Контейнер для графика -->
+    <div class="chart-container" style="position: relative; height: 250px; width: 100%; border-bottom: 1px solid rgba(255,255,255,0.1); border-left: 1px solid rgba(255,255,255,0.1);">
+        <!-- Сюда JS нарисует столбики -->
+        <div id="energy-bars" style="display: flex; justify-content: space-around; align-items: flex-end; height: 100%; padding-bottom: 5px;"></div>
+    </div>
+    
+    <!-- Подсказка под графиком -->
+    <div id="month-advice" style="margin-top: 20px; padding: 15px; background: rgba(155,135,245,0.1); border-radius: 10px; border-left: 3px solid var(--purple-light); text-align: left;">
+        <h4 id="month-title" style="margin: 0 0 5px 0; color: #fff;">Выберите месяц на графике</h4>
+        <p id="month-text" style="margin: 0; font-size: 0.9rem; color: #ddd;">Нажмите на столбик, чтобы получить рекомендацию.</p>
+    </div>
+</div>
+				
+                <div id="decoding-block">
+                    <h3 style="margin-top:0; color: #fff;">Детальная расшифровка</h3>
+                    <div id="decoding-content"></div>
+				</div>
+         </div>
+           <!-- ПРЕМИУМ БЛОК (ПЛАТНЫЙ КОНТЕНТ) -->
+<div id="premium-insights" style="display:none; margin-top: 40px; margin-bottom: 40px; padding: 25px; background: rgba(20,20,40,0.8); border-radius: 20px; border: 1px solid var(--gold); position: relative; transition: all 0.5s;">
+</div> 
+			<!-- КНОПКА СКАЧИВАНИЯ PDF -->
+<div style="text-align: center; margin: 30px 0;">
+    <button id="download-pdf-btn" class="btn-gold" onclick="downloadPaidPDF()" style="padding: 16px 40px; font-size: 1.2rem; display: none;">
+        <i class="fa-solid fa-file-pdf"></i> Скачать PDF-отчёт
+    </button>
+</div>
+            <!-- БЫСТРАЯ СОВМЕСТИМОСТЬ -->
+            <div class="quick-compat">
+                <h4>💫 Быстрая проверка совместимости</h4>
+                <p class="quick-compat-description">
+                    Хотите узнать энергетическую связь с любым человеком? Введите два имени — и получите мгновенный результат. 
+                    Подходит для проверки совместимости с друзьями, коллегами, начальником или потенциальным партнёром.
+                </p>
+                <div class="quick-inputs">
+                    <input type="text" id="quick-name1" placeholder="Ваше имя">
+                    <input type="text" id="quick-name2" placeholder="Имя другого человека">
+                </div>
+                <button class="btn-gold" onclick="quickCompatibility()" style="margin-top: 10px;">
+                    <i class="fa-solid fa-heart"></i> Проверить связь
+                </button>
+                <div id="quick-result" class="quick-result">
+                    <div id="quick-result-number" class="quick-result-number"></div>
+                    <div class="compatibility-bar">
+                        <div id="compatibility-fill" class="compatibility-fill" style="width: 0%"></div>
+                    </div>
+                    <div id="quick-result-text" class="quick-result-text"></div>
+                </div>
+            </div>
+
+            <!-- ОБ АВТОРЕ -->           
+            <div class="about-container">
+                <div class="about-photo-wrapper">
+                    <img src="20260120_001150.png" alt="Зоя" class="about-photo">
+                </div>
+                <div class="about-text">
+                    <h3>Приветствую! Меня зовут Зоя</h3>
+                    <p>Эксперт в области современной нумерологии и дипломированный консультант по психоанализу личности. Более 7 лет я исследую глубокую взаимосвязь между числовыми кодами и человеческой судьбой. Мой метод — это сочетание точных расчетов и глубокой психологической работы. Я помогаю своим клиентам находить ясные ответы и закономерности там, где другие видят лишь случайные совпадения.</p>
+                    <div class="about-quote">«Моя миссия — не просто предоставить вам сухие цифры, а передать ключи от дверей, которые вы давно стремились открыть, но не решались. Я помогаю превратить информацию о себе в реальные жизненные изменения».</div>
+                    <p><strong>Как я могу помочь вам?</strong></p>
+                    <ul>
+                        <li>Реализация и предназначение: Выход из состояния неопределенности, поиск своего истинного пути и талантов.</li>
+                        <li>Гармония в отношениях: Глубокий анализ природы партнера, исцеление конфликтов и выстраивание крепкой связи.</li>
+                        <li>Энергия денег: Диагностика финансового канала, выявление и устранение подсознательных блоков, мешающих росту благосостояния.</li>
+                        <li>Детский потенциал: Помощь в воспитании и развитии детей через понимание их врожденных способностей с первых лет жизни.</li>
+                    </ul>
+                    <button class="btn-gold" onclick="showSection('services')">Мои услуги</button>
+                </div>
+            </div>
+        </section>
+        
+        
+<!-- РОДИТЕЛЬ-РЕБЁНОК: АНАЛИЗ ВЗАИМОДЕЙСТВИЯ -->
+<section id="parent-child" style="display: none;">
+    <div class="calc-container">
+        <h2 style="color: var(--gold); text-align: center; margin-bottom: 10px;">
+            <i class="fa-solid fa-heart"></i> Родитель и Ребёнок
+        </h2>
+        <p style="text-align: center; color: #aaa; margin-bottom: 30px;">
+            Узнайте, как лучше понимать друг друга, какие зоны гармонии и напряжения существуют в ваших отношениях.
+        </p>
+
+        <div class="inputs-group" style="margin-bottom: 20px;">
+            <div class="input-block">
+                <label><i class="fa-solid fa-user"></i> Родитель:</label>
+                <input type="text" id="parentName" placeholder="Имя родителя (опционально)">
+                <input type="date" id="parentDate" placeholder="Дата рождения">
+                <select id="parentRole" class="select-styled" style="width: 100%; margin-top: 10px;">
+    <option value="mother">Мама</option>
+    <option value="father">Папа</option>
+    <option value="guardian">Опекун</option>
+</select>
+            </div>
+            <div class="input-block">
+                <label><i class="fa-solid fa-child"></i> Ребёнок:</label>
+                <input type="text" id="childName" placeholder="Имя ребёнка (опционально)">
+                <input type="date" id="childDate" placeholder="Дата рождения">
+            </div>
+        </div>
+
+        <button class="btn-gold" onclick="calculateParentChild()" style="width: 100%;">
+            <i class="fa-solid fa-chart-line"></i> Рассчитать взаимодействие
+        </button>
+
+        <!-- Лоадер -->
+        <div id="loader-parent-child" class="magic-loader" style="display: none; margin-top: 20px;">
+            <div class="magic-circle"></div>
+            <div class="magic-circle"></div>
+            <div class="magic-symbols"><span>❤️</span><span>👶</span></div>
+        </div>
+
+        <!-- Результат -->
+        <div id="result-parent-child" style="display: none; margin-top: 30px;"></div>
+    </div>
+</section>
+        
+        
+            <!-- УСЛУГИ -->
+        <section id="services">
+            <h2>Ваш Путь к Успеху</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <i class="fa-solid fa-fingerprint service-icon"></i>
+                    <h3>Матрица личности</h3>
+                    <p>Уникальная методика психоанализа. Разбор по 17 ключевым позициям. Психологический портрет.</p>
+                    <span class="price">12 500 ₽</span>
+                    <button class="btn-gold" onclick="openModal('modal-matrix')">Подробнее</button>
+                </div>
+                <div class="service-card">
+                    <i class="fa-solid fa-calendar-star service-icon"></i>
+					<i class="fa-solid fa-calendar-days service-icon"></i>
+                    <h3>Прогноз на год</h3>
+                    <p>Моделирование жизни, финансов и карьеры на предстоящий период.</p>
+                    <span class="price">8 500 ₽</span>
+                    <button class="btn-gold" onclick="openModal('modal-forecast')">Подробнее</button>
+                </div>
+                <div class="service-card">
+                    <i class="fa-solid fa-heart service-icon"></i>
+                    <h3>Совместимость</h3>
+                    <p>Для чего вы встретились? Кармические задачи пары, деньги в семье и причины конфликтов.</p>
+                    <span class="price">9 000 ₽</span>
+                    <button class="btn-gold" onclick="openModal('modal-compat')">Подробнее</button>
+                </div>
+                <div class="service-card">
+                    <i class="fa-solid fa-briefcase service-icon"></i>
+                    <h3>Профессия и деньги</h3>
+                    <p>Поиск предназначения. В какой сфере деньги? Какой бизнес открывать? Точка душевного комфорта.</p>
+                    <span class="price">7 000 ₽</span>
+                    <button class="btn-gold" onclick="openModal('modal-prof')">Подробнее</button>
+                </div>
+                <div class="service-card">
+                    <i class="fa-solid fa-coins service-icon"></i>
+                    <h3>Финансовый канал</h3>
+                    <p>Блоки и убеждения. Стратегия увеличения дохода.</p>
+                    <span class="price">5 000 ₽</span>
+                    <button class="btn-gold" onclick="openModal('modal-finance')">Подробнее</button>
+                </div>
+                <div class="service-card">
+                    <i class="fa-solid fa-child-reaching service-icon"></i>
+                    <h3>Детская матрица</h3>
+                    <p>Инструкция к ребенку. Раскрытие талантов, гармоничное развитие и воспитание.</p>
+                    <span class="price">6 000 ₽</span>
+                    <button class="btn-gold" onclick="openModal('modal-child')">Подробнее</button>
+                </div>
+            </div>
+            
+        </section>
+
+        <!-- СОВМЕСТИМОСТЬ -->
+<section id="compat">
+    
+    <h2>Совместимость Партнеров</h2>
+
+    <div class="calc-container premium-wrapper">
+    
+        <p>Введите данные партнёров:</p>
+
+        <div class="inputs-group">
+            <div class="input-block">
+                <label>МУЖЧИНА:</label>
+                <input type="text" id="nameP1" placeholder="Имя мужчины">
+                <input type="date" id="dateP1">
+            </div>
+
+            <div class="input-block">
+                <label>ЖЕНЩИНА:</label>
+                <input type="text" id="nameP2" placeholder="Имя женщины">
+                <input type="date" id="dateP2">
+            </div>
+        </div>
+
+        <button class="btn-gold" onclick="calculateCompat()">Узнать совместимость</button>
+
+        <div id="loader-compat" class="magic-loader" style="display:none;">
+    <div class="magic-circle"></div>
+    <div class="magic-circle"></div>
+    <div class="magic-circle"></div>
+    <div class="magic-symbols">
+        <span>✧</span><span>☆</span><span>✧</span><span>☆</span>
+    </div>
+    <div class="magic-numbers" id="magic-numbers-compat">9</div>
+</div>
+
+        <div id="result-compat" style="margin-top: 30px; opacity: 0; transition: opacity 1s;">
+            <div id="matrices-compare-container"></div>
+
+            <div style="font-size: 1.2rem; color: #aaa; margin-bottom: 10px;">
+                Энергия Союза
+            </div>
+
+            <h3 id="compat-number" 
+                style="font-size: 5rem; color: var(--gold); margin: 0; line-height: 1;">
+            </h3>
+
+            <div id="compat-names" 
+                style="color: var(--purple-light); font-size: 1.3rem; margin: 15px 0;">
+            </div>
+
+            <div id="compat-text-container" 
+                 style="text-align: left; margin-top: 30px; background: rgba(0,0,0,0.3); border-left: 3px solid var(--purple-light); padding: 25px; border-radius: 10px;">
+                <div id="compat-text" 
+                     style="font-size: 1.05rem; color: #eee; line-height: 1.7;">
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+       <!-- СПОНСОР -->
+<!-- СЕКЦИЯ: ФИНАНСОВЫЙ КОД -->
+<section id="sponsor" class="calc-section">
+    
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h2 style="color: var(--gold); font-size: 2.2rem; margin-bottom: 10px;">
+            <i class="fa-solid fa-coins"></i> Денежный Код
+        </h2>
+        <p style="color: #aaa; max-width: 600px; margin: 0 auto 20px;">
+            Раскройте свою финансовую карму и потенциал пары
+        </p>
+        
+        <!-- ПЕРЕКЛЮЧАТЕЛЬ РЕЖИМА -->
+        <div class="mode-switch-container">
+            <button class="mode-btn active" onclick="switchMoneyMode('personal')">Личный код</button>
+            <button class="mode-btn" onclick="switchMoneyMode('pair')">Финансы пары</button>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         БЛОК 1: ЛИЧНЫЙ РАСЧЕТ (Для одного)
+         ========================================== -->
+    <div id="money-personal-block">
+        <div class="calc-container premium-border">
+            
+            <div class="inputs-group single-input">
+                <div class="input-block">
+                    <label>Ваше Имя:</label>
+                    <input type="text" id="moneyName" placeholder="Имя" class="glass-input">
+                </div>
+                <div class="input-block">
+                    <label>Дата рождения:</label>
+                    <input type="date" id="moneyDate" class="glass-input">
+                </div>
+            </div>
+
+            <button class="btn-gold" onclick="calculateMoneyMatrix()">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Рассчитать Личный Код
+            </button>
+
+            <!-- ЛОАДЕР (Личный) -->
+            <div id="loader-money" class="magic-loader" style="display:none;">
+                <div class="magic-circle"></div>
+                <div class="magic-circle"></div>
+                <div class="magic-symbols"><span>$</span><span>€</span></div>
+            </div>
+
+            <!-- РЕЗУЛЬТАТ (Личный) -->
+            <div id="result-money" style="opacity: 1; transition: opacity 0.3s ease;">
+                <h3 id="money-user-title" style="text-align: center; color: #fff; margin-bottom: 30px;"></h3>
+
+                <!-- Схема -->
+                <div class="money-scheme">
+                    <div class="money-point">
+                        <div class="point-circle" style="border-color: #ff6b6b; color: #ff6b6b;">
+                            <span id="val-block">?</span>
+                        </div>
+                        <p>Блок</p>
+                    </div>
+                    <div class="connector-line"></div>
+                    <div class="money-point">
+                        <div class="point-circle" style="border-color: var(--gold); color: var(--gold); transform: scale(1.2);">
+                            <span id="val-prof">?</span>
+                        </div>
+                        <p style="font-weight: bold; color: var(--gold);">Профессия</p>
+                    </div>
+                    <div class="connector-line"></div>
+                    <div class="money-point">
+                        <div class="point-circle" style="border-color: #a8dadc; color: #a8dadc;">
+                            <span id="val-active">?</span>
+                        </div>
+                        <p>Ключ</p>
+                    </div>
+                </div>
+
+                <!-- Тексты -->
+                <div class="money-descriptions">
+                    <div class="matrix-card" style="border-left: 4px solid #ff6b6b;">
+                        <div id="desc-block"></div>
+                    </div>
+                    <div class="matrix-card" style="border-left: 4px solid var(--gold);">
+                        <div id="desc-prof"></div>
+                    </div>
+                    <div class="matrix-card" style="border-left: 4px solid #a8dadc;">
+                        <div id="desc-active"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         БЛОК 2: ДЛЯ ПАРЫ (Для двоих)
+         ========================================== -->
+    <div id="money-pair-block" style="display: none; opacity: 0; transition: opacity 0.3s ease;">
+        <div class="calc-container premium-border">
+            
+            <div class="inputs-group">
+                <div class="input-block">
+                    <label>Партнёр 1 (Имя):</label>
+                    <input type="text" id="moneyName1" class="glass-input" placeholder="Имя">
+                    <input type="date" id="moneyDate1" class="glass-input" style="margin-top: 10px;">
+                </div>
+                <div class="input-block">
+                    <label>Партнёр 2 (Имя):</label>
+                    <input type="text" id="moneyName2" class="glass-input" placeholder="Имя">
+                    <input type="date" id="moneyDate2" class="glass-input" style="margin-top: 10px;">
+                </div>
+            </div>
+
+            <button class="btn-gold" onclick="calculateMoneyCompat()">
+                <i class="fa-solid fa-users-viewfinder"></i> Рассчитать Финансы Пары
+            </button>
+
+            <!-- ЛОАДЕР (Пара) -->
+            <div id="loader-money-compat" class="magic-loader" style="display:none;">
+                <div class="magic-circle"></div>
+                <div class="magic-circle"></div>
+                <div class="magic-symbols"><span>$</span><span>❤️</span></div>
+            </div>
+
+            <!-- РЕЗУЛЬТАТ (Пара) -->
+            <div id="result-money-compat" style="display:none; margin-top: 40px;">
+                <h3 id="money-compat-names" style="text-align: center; color: #fff;"></h3>
+                
+                <div class="money-scheme">
+                    <div class="money-point">
+                        <div class="point-circle" style="border-color: #a8dadc;"><span id="compat-val-1">?</span></div>
+                        <p>П1</p>
+                    </div>
+                    <div class="connector-line"></div>
+                    <div class="money-point">
+                        <div class="point-circle" style="border-color: var(--gold); transform: scale(1.3); background: #2a2a40;"><span id="compat-val-total">?</span></div>
+                        <p style="color:var(--gold); font-weight:bold;">ОБЩИЙ ПОТОК</p>
+                    </div>
+                    <div class="connector-line"></div>
+                    <div class="money-point">
+                        <div class="point-circle" style="border-color: #ff6b6b;"><span id="compat-val-2">?</span></div>
+                        <p>П2</p>
+                    </div>
+                </div>
+
+                <div id="desc-money-total" class="matrix-card" style="border-top: 3px solid var(--gold);"></div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+		
+		<!-- КУРС "МЕЛОДИЯ ЦИФР" -->
+<section id="course">
+    <div style="text-align: center; margin-bottom: 40px;">
+        <p style="text-transform: uppercase; letter-spacing: 3px; color: #aaa; font-size: 0.9rem;">Авторский обучающий курс</p>
+        <h1 style="font-size: 3.5rem; line-height: 1.2;">
+            <span style="color: var(--purple-light); text-shadow: 0 0 20px rgba(155,135,245,0.4);">Мелодия</span> 
+            <span style="color: var(--gold); text-shadow: 0 0 20px rgba(212,175,55,0.4);">Цифр</span>
+        </h1>
+        <div class="typewriter-container">
+            <span class="typewriter-text" id="typewriter-text">Станьте архитектором судьбы, а не просто наблюдателем...</span>
+        </div>
+    </div>
+
+    <div class="calc-container" style="text-align: left; padding: 50px;">
+        
+        <!-- Карточки преимуществ -->
+       <div class="benefits-row">
+    <div class="benefit-card-old">
+        <div class="benefit-icon">👁️</div>
+        <h4>Видеть невидимое</h4>
+        <p>Вы будете смотреть на дату рождения и видеть не просто цифры, а судьбу, таланты и скрытые боли человека. Вас невозможно будет обмануть.</p>
+    </div>
+    <div class="benefit-card-old">
+        <div class="benefit-icon">💰</div>
+        <h4>Обрести свободу</h4>
+        <p>Нумеролог — это профессия без границ. Консультируйте из любой точки мира, управляйте своим графиком и доходом. Спрос на осознанность растёт каждый день.</p>
+    </div>
+    <div class="benefit-card-old">
+        <div class="benefit-icon">🔑</div>
+        <h4>Помогать людям</h4>
+        <p>Нет ничего приятнее, чем видеть, как после вашей консультации у человека загораются глаза, и он находит свой путь. Вы станете проводником к счастью.</p>
+    </div>
+    <div class="benefit-card-old">
+        <div class="benefit-icon">🧬</div>
+        <h4>Взломать код</h4>
+        <p>Нумерология — это математика судьбы. Вы научитесь читать людей как открытую книгу, понимая их мотивы и потенциал лучше, чем они сами. Это власть знания.</p>
+    </div>
+</div>
+
+        <!-- Временная шкала модулей -->
+        <h3 style="color: var(--gold); margin: 50px 0 30px;">🌙 Программа курса</h3>
+        <div class="module-timeline">
+            <div class="timeline-node">
+                <div class="node-icon">📖</div>
+                <div class="node-content">
+                    <h4>Модуль 1: Архитектура Личности</h4>
+                    <p>Расчёт психоматрицы по 17 позициям. Сильные и слабые стороны, рекомендации. <strong>11 уроков</strong></p>
+                </div>
+            </div>
+            <div class="timeline-node">
+                <div class="node-icon">🔮</div>
+                <div class="node-content">
+                    <h4>Модуль 2: Код Судьбы</h4>
+                    <p>Кармические задачи, предназначение, родовые сценарии. Почему мы повторяем ошибки родителей. <strong>2 урока</strong></p>
+                </div>
+            </div>
+            <div class="timeline-node">
+                <div class="node-icon">💰</div>
+                <div class="node-content">
+                    <h4>Модуль 3: Деньги и Реализация</h4>
+                    <p>В какой профессии лежат ваши миллионы? Как разблокировать финансовый поток. <strong>3 урока</strong></p>
+                </div>
+            </div>
+            <div class="timeline-node">
+                <div class="node-icon">❤️</div>
+                <div class="node-content">
+                    <h4>Модуль 4: Магия Отношений</h4>
+                    <p>Совместимость, конфликты, кармические союзы. Как найти «своего» человека. <strong>2 урока</strong></p>
+                </div>
+            </div>
+            <div class="timeline-node">
+                <div class="node-icon">👶</div>
+                <div class="node-content">
+                    <h4>Модуль 5: Детская матрица</h4>
+                    <p>Ключ к пониманию ребенка и его развитию. <strong>1 урок</strong></p>
+                </div>
+            </div>
+            <div class="timeline-node">
+                <div class="node-icon">📈</div>
+                <div class="node-content">
+                    <h4>Модуль 6: Прогнозирование</h4>
+                    <p>Как моделировать свою жизнь в периоде личного года. <strong>6 уроков</strong></p>
+                </div>
+            </div>
+            <div class="timeline-node">
+                <div class="node-icon">✨</div>
+                <div class="node-content">
+                    <h4>Бонус: Монетизация</h4>
+                    <p>Как начать консультировать, найти первых клиентов и не бояться назвать цену. </p>
+                </div>
+            </div>
+        </div>
+            
+                <!-- Блок с ценами (3D карточки) -->
+        <div style="background: linear-gradient(135deg, rgba(155,135,245,0.1), rgba(212,175,55,0.1)); padding: 0px 66px; 
+                    border-radius: 37px; margin-top: 5px; text-align: center; border: 1px solid var(--gold);">
+            <h3 style="margin-bottom: 10px;">✨ Начните свой путь Мастера уже сегодня</h3>
+            <p style="margin-bottom: 30px; opacity:0.9;">Выберите удобный формат обучения:</p>
+            
+            <div class="pricing-cards">
+                <!-- Карточка 1 -->
+                <div class="pricing-card pricing-card-gold">
+                    <div class="pricing-badge">📥</div>
+                    <h4>Самостоятельное изучение</h4>
+                    <p class="pricing-desc">Полный курс в PDF + Видеоуроки</p>
+                    <div class="pricing-price">15 000 ₽</div>
+                    <button class="btn-course" onclick="buyCourseFile()">Выбрать</button>
+                </div>
+                
+                <!-- Карточка 2 -->
+                <div class="pricing-card pricing-card-premium">
+                    <div class="pricing-badge">💎 ТОП</div>
+                    <h4>Личное наставничество</h4>
+                    <p class="pricing-desc">Обучение 1 на 1 со мной + Практика</p>
+                    <div class="pricing-price">50 000 ₽</div>
+                    <div class="seats-left">Осталось 3 места на ближайший поток</div>
+                    <button class="btn-course btn-course-premium" onclick="bookPersonalMentoring()">Записаться</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Счётчик выпускников -->
+        <div style="text-align:center; margin-top:40px;">
+            <div class="graduates-counter">
+                <span>Уже <strong id="graduatesCount">127</strong> мастеров изменили свою жизнь с нами</span>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+     <!-- ДЕТСКАЯ МАТРИЦА (УПРОЩЁННАЯ – ТОЛЬКО КВАДРАТ ПИФАГОРА) -->
+<section id="child-matrix">
+    <div class="calc-container">
+        <h2 style="color: var(--gold); text-align: center; margin-bottom: 5px;">Детская Матрица</h2>
+        <p style="text-align: center; color: #aaa; margin-bottom: 25px; font-size: 0.9rem;">
+            Узнайте характер, таланты и ключи к воспитанию ребёнка по квадрату Пифагора
+        </p>
+
+        <!-- Поля ввода -->
+        <div class="child-inputs">
+            <input type="text" id="childNameInput" placeholder="Имя ребёнка" class="modal-input">
+            <input type="date" id="childDateInput" class="modal-input">
+        </div>
+
+        <button class="btn-gold full-width" onclick="calculateChildMatrix()">Рассчитать Матрицу</button>
+
+        <!-- Лоадер -->
+        <div id="child-loader" class="magic-loader" style="display: none; margin-top: 20px;">
+            <div class="magic-circle"></div>
+            <div class="magic-circle"></div>
+            <div class="magic-symbols"><span>★</span><span>👶</span></div>
+        </div>
+
+        <!-- Результат -->
+        <div id="child-result" style="display: none; margin-top: 30px;">
+            <h3 id="child-result-title" style="text-align: center; color: #fff; margin-bottom: 20px;"></h3>
+            
+            <!-- Таблица квадрата Пифагора -->
+            <div id="child-pythagoras-table" style="margin-bottom: 30px;"></div>
+            
+            <!-- Краткие расшифровки -->
+            <div id="child-pythagoras-decode" style="text-align: left;"></div>
+
+            <!-- Призыв к полной консультации -->
+            <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,215,0,0.2);">
+                <h4 style="color: var(--gold); margin-bottom: 10px;">✨ Хотите полный разбор талантов и задач ребёнка?</h4>
+                <p style="color: #ccc; font-size: 0.9rem; margin-bottom: 20px;">
+                    Закажите персональную консультацию с глубоким анализом по 22 арканам и рекомендациями по воспитанию.
+                </p>
+                <button class="btn-gold" style="width: 100%; font-size: 1.1rem; padding: 15px;" onclick="bookService('Детская матрица (полная)', 'https://zoyanum.getplatinum.ru/payment/6WeXiTa')">
+                    <i class="fa-solid fa-calendar-check"></i> Записаться на консультацию
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+    </main>
+
+     <!-- FOOTER -->
+     
+    <footer>
+        <div class="footer-container">
+            
+            <!-- Колонка 1: Реквизиты -->
+            <div class="footer-col">
+                <h4>Реквизиты</h4>
+                <p>Кухлевская Зоя Викторовна</p>
+                <p>ИНН: 240300628541</p>
+                
+            </div>
+
+            <!-- Колонка 2: Поддержка -->
+            <div class="footer-col">
+                <h4>Поддержка</h4>
+                <a href="https://t.me/zoya_viik" target="_blank"><i class="fa-brands fa-telegram"></i> @zoya_viik</a>
+                <a href="zoya.instar@mail.ru"><i class="fa-solid fa-envelope"></i> zoya.instar@mail.ru</a>
+                           </div>
+
+            <!-- Колонка 3: Документы (Ссылки на модалки) -->
+            <div class="footer-col">
+                <h4>Документы</h4>
+                <a href="#" onclick="document.getElementById('privacy-text-modal').style.display='flex'; return false;">Политика конфиденциальности</a>
+                <a href="#" onclick="document.getElementById('offer-text-modal').style.display='flex'; return false;">Договор оферты</a>
+                      </div>
+                 </div>
+
+        <!-- Нижняя полоса -->
+        <div class="footer-bottom">
+            <div class="copyright">
+                © 2025 Astra Numerology. Все права защищены.
+            </div>
+            <div class="payment-icons">
+                <!-- Иконки платежных систем (FontAwesome) -->
+                <i class="fa-brands fa-cc-visa"></i>
+                <i class="fa-brands fa-cc-mastercard"></i>
+                <i class="fa-brands fa-cc-apple-pay"></i>
+                <!-- Текстовые иконки для тех, которых нет в шрифтах -->
+                <span class="pay-text">MIR</span>
+                <span class="pay-text">SBP</span>
+            </div>
+        </div>
+    </footer>
+
+   <!-- МОДАЛЬНЫЕ ОКНА С ПОЛНЫМ ТЕКСТОМ -->
+
+<!-- 1. Матрица Личности -->
+<div id="modal-matrix" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModals()">&times;</span>
+        <h2>Матрица анализа личности</h2>
+        <div class="modal-text">
+            <p>Представляю уникальную методику статистического психоанализа, которая разберёт вас «по нотам» — по 17 ключевым позициям!</p>
+            <h4>Что вас ждёт в процессе познания?</h4>
+            <p>Вы не просто заглянете вглубь себя — вы проживёте увлекательное путешествие по закоулкам собственной души. Готовы ли вы встретиться с настоящим собой? Готовы ли узнать, какие механизмы управляют вашими решениями и поступками? Эта методика даст ответы на самые сокровенные вопросы!</p>
+            <h4>Моя миссия — научить вас:</h4>
+            <ul><li>делать осознанный выбор, который приведёт к успеху;</li><li>получать гарантированный результат в любых начинаниях.</li></ul>
+            <h4>Главная цель:</h4>
+            <p>Не просто выявить ваши сильные и слабые стороны, а превратить их в мощный инструмент для достижения целей. Мы поможем вам:</p>
+            <ul><li>раскрыть дремлющий талант;</li><li>найти свой профессиональный путь;</li><li>осознать свою жизненную миссию.</li></ul>
+            <h4>Что входит в подробный разбор?</h4>
+            <p>Мы погрузимся в глубины вашей личности и проанализируем: характер, энергию, интересы, здоровье, логику, труд, удачу, долг, память, темперамент, семейные установки, привычки и самооценку.</p>
+            <p>И это ещё не всё! Мы уделим внимание вашим индивидуальным особенностям и разработаем персональную стратегию, которая поможет превратить недостатки в преимущества.</p>
+            <p><strong>Превратите «минусы» в «плюсы» — станьте автором собственной судьбы! 🎯</strong></p>
+            <p style="margin-top:20px; font-style:italic; color:#aaa;">* Длительность консультации: 2 часа</p>
+            <span class="price">12 500 ₽</span>
+            <!-- 👇 КНОПКА С ОПЛАТОЙ -->
+            <button class="btn-gold" onclick="bookService('Матрица Личности', 'https://zoyanum.getplatinum.ru/cabinet/link/12386/1')">
+                <i class="fa-solid fa-gem"></i> Оплатить и Записаться
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Прогноз на год -->
+<div id="modal-forecast" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModals()">&times;</span>
+        <h2>Прогнозирование на год</h2>
+        <div class="modal-text">
+            <p>САМАЯ ВОСТРЕБОВАННАЯ КОНСУЛЬТАЦИЯ, которая хорошо показывает, как можно моделировать свою жизнь в периоде личного года! Через какие действия, в каких состояниях.</p>
+            <h4>В консультацию входит:</h4>
+            <ul><li><strong>ЛИЧНОСТЬ:</strong> на что обратить внимание, как благоприятно проявлять себя как личность в предстоящем году;</li><li><strong>ФИНАНСЫ И ЛИЧНАЯ ЖИЗНЬ:</strong> общая тенденция, через что улучшить;</li><li><strong>СФЕРА ИЗМЕНЕНИЙ, ТРАНСФОРМАЦИЙ, КАРЬЕРЫ:</strong> так же, что может тормозить вас в предстоящем году, а где ваш рост и сила;</li></ul>
+            <p>Ваши главные СУДЬБАНОСНЫЕ СОБЫТИЯ на протяжении вашего 9-летнего цикла (какие задачи необходимо выполнять, чтобы обойти негативные последствия).</p>
+            <p>ПРОГНОСТИКА не говорит о том, что будет, она не гадает, она даёт рекомендации на данный период времени. Какие необходимо делать действия в плюсе, для того чтобы жизнь раскрывала перед вами возможности, играла позитивными красками — вот это про прогностику!</p>
+            <span class="price">8 500 ₽</span>
+            <!-- 👇 КНОПКА С ОПЛАТОЙ -->
+            <button class="btn-gold" onclick="bookService('Прогноз на год', 'https://zoyanum.getplatinum.ru/payment/qpElIXe')">
+                <i class="fa-solid fa-gem"></i> Оплатить и Записаться
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Совместимость -->
+<div id="modal-compat" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModals()">&times;</span>
+        <h2>Совместимость отношений</h2>
+        <div class="modal-text">
+            <ul><li>Для чего вы встретились, что отражает вам партнёр, какие качества вы будете развивать благодаря своему избраннику.</li><li>Задачи вашей пары — эта информация о том, что необходимо проработать в этих отношениях вам обоим, помощь в развитии друг друга.</li><li>Деньги в паре, что очень часто является причиной конфликтов в семье. Рекомендации по сохранению отношений, в чём является поддержка, а где кроется причина недопониманий.</li><li>Какие роли в семье, кто более инициативен, а кто более самостоятелен.</li><li>Энергетическое взаимодействие друг друга, эмоциональная зависимость — есть ли она?</li><li>Какие факторы ставят под удар ваши отношения. Как с ними работать.</li></ul>
+            <p>Эта консультация помогает найти ключ к партнёру и понять, какое поведение характерно вам и вашему избраннику в ваших отношениях. После того, как изучите эту информацию, вы перестанете упрекать любимого за излишнюю напористость или, наоборот, за его мягкость.</p>
+            <span class="price">9 000 ₽</span>
+            <!-- 👇 КНОПКА С ОПЛАТОЙ -->
+            <button class="btn-gold" onclick="bookService('Совместимость', 'https://zoyanum.getplatinum.ru/payment/3c60hMp')">
+               <i class="fa-solid fa-gem"></i> Оплатить и Записаться
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 4. Профессия -->
+<div id="modal-prof" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModals()">&times;</span>
+        <h2>Профессия и реализация</h2>
+        <div class="modal-text">
+            <p>Если вы хоть раз задавали себе вопрос «А тем ли я занимаюсь?», сомневались в правильности пути, который выбрали, или просто честно признаётесь, что ещё не нашли себя, — эта консультация для вас.</p>
+            <h4>Здесь вы поймёте:</h4>
+            <ul><li>В какой сфере будете чувствовать себя на своём месте.</li><li>Что мешает вам расти, даже если вы уже знаете, по какой дороге идти.</li><li>Какой бизнес лучше открывать и на что обратить внимание, чтобы он был успешен.</li><li>Наиболее благоприятные годы для любых профессиональных начинаний.</li><li><strong>Какая точка вашего душевного комфорта</strong> — это то, от чего мы наполняемся и берём силу, то есть зона жизненного баланса. Ведь именно она показывает, к чему стремиться наша душа, выбирая ту или иную деятельность.</li></ul>
+            <span class="price">7 000 ₽</span>
+            <!-- 👇 КНОПКА С ОПЛАТОЙ -->
+            <button class="btn-gold" onclick="bookService('Профессия', 'https://zoyanum.getplatinum.ru/payment/43xh2Q3')">
+                <i class="fa-solid fa-gem"></i> Оплатить и Записаться
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 5. Финансы -->
+<div id="modal-finance" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModals()">&times;</span>
+        <h2>Расчет финансового канала</h2>
+        <div class="modal-text">
+            <ul><li>то, с чего начинается вопрос денег (какие присутствуют убеждения, блокировки и препятствия — это то, что мешает свободному течению потока вашей жизни);</li><li>какой путь к финансовой цели — ваши действия через взаимодействие с обществом (человеком). Отношения влияют на деньги и деньги влияют на отношения;</li><li>каков её результат (это энергия позволяет реализовать то, что хочется нам по деньгам).</li></ul>
+            <p>Данный разбор объёмно показывает возможности, которые позволяют вам реализовать себя даже в той профессии, которую вы выбираете из зоны своего комфорта. Это информация позволяет наладить жизнь таким образом, чтобы Вы могли взаимодействовать со своими финансовыми потоками как образ действий, образ мыслей, образ взаимодействия с миром, для того чтобы денег становилось больше.</p>
+            <span class="price">5 000 ₽</span>
+            <!-- 👇 КНОПКА С ОПЛАТОЙ -->
+            <button class="btn-gold" onclick="bookService('Финансы', 'https://zoyanum.getplatinum.ru/payment/VJ8eqHd')">
+                <i class="fa-solid fa-gem"></i> Оплатить и Записаться
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 6. Детская матрица -->
+<div id="modal-child" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModals()">&times;</span>
+        <h2>Детская матрица, основные секторы и развитие</h2>
+        <div class="modal-text">
+            <h4>Почему это важно?</h4>
+            <ul><li>Помогает родителям лучше понять ребёнка и выстроить доверительные отношения.</li><li>Позволяет вовремя заметить и раскрыть таланты малыша.</li><li>Даёт инструменты для гармоничного развития личности.</li><li>Помогает избежать типичных ошибок в воспитании, связанных с непониманием природы ребёнка.</li><li>Создаёт основу для осознанного выбора хобби, секций, будущей профессии.</li></ul>
+            <h4>Для кого эта услуга?</h4>
+            <ul><li>для родителей, которые хотят лучше понять своего ребёнка;</li><li>педагогов и психологов, работающих с детьми;</li><li>всех, кто стремится создать для ребёнка оптимальные условия для развития.</li></ul>
+            <span class="price">6 000 ₽</span>
+            <!-- 👇 КНОПКА С ОПЛАТОЙ -->
+            <button class="btn-gold" onclick="bookService('Детская матрица', 'https://zoyanum.getplatinum.ru/payment/6WeXiTa')">
+                <i class="fa-solid fa-gem"></i> Оплатить и Записаться
+            </button>
+        </div>
+    </div>
+</div>
+
+	
+
+
+<!-- 1. МОДАЛЬНОЕ ОКНО ОПЛАТЫ (С ОФЕРТОЙ) -->
+<div id="payment-modal" class="payment-modal">
+    <div class="payment-modal-content">
+        <span class="close-modal" onclick="closePaymentModal()">&times;</span>
+        
+        <h3 class="payment-title">Оформление заказа</h3>
+        <p id="payment-product-name" style="color: #fff; font-size: 1.1rem; margin-bottom: 20px;">Название услуги</p>
+        <p class="payment-hint">
+  После оплаты <strong>сделайте скриншот чека</strong> и вернитесь на эту вкладку/страницу — далее появится окно, чтобы отправить чек в Telegram.
+</p>
+		
+        <!-- Поле Email -->
+        <input type="email" id="client-email" class="payment-input" placeholder="Введите ваш Email" required>
+        
+        <!-- Кнопка оплаты -->
+        <button id="final-pay-btn" class="btn-gold" style="width: 100%; margin-top: 15px; background: linear-gradient(90deg, #9b87f5, #7E69AB); color: white; border: none;">
+            ОПЛАТИТЬ
+        </button>
+
+        <!-- Чекбокс и ССЫЛКИ -->
+        <div class="offer-checkbox-wrapper">
+            <input type="checkbox" id="offer-agree" class="custom-checkbox">
+            <label for="offer-agree" class="offer-label">
+                Я подтверждаю, что мне исполнилось 18 лет, и я согласен с 
+                <!-- Ссылка на Оферту -->
+                <a href="#" onclick="document.getElementById('offer-text-modal').style.display='flex'; return false;">Договором оферты</a> и 
+                <!-- Ссылка на Политику -->
+                <a href="#" onclick="document.getElementById('privacy-text-modal').style.display='flex'; return false;">Политикой обработки данных</a>.
+            </label>
+        </div>
+    </div>
+</div>
+
+    
+<!-- 2. ТЕКСТ ОФЕРТЫ (Всплывающий) -->
+<div id="offer-text-modal" class="modal" style="z-index: 3000;">
+    <div class="modal-content" style="max-width: 800px; text-align: left; height: 80vh; overflow-y: auto;">
+        <span class="close-modal" onclick="document.getElementById('offer-text-modal').style.display='none'">&times;</span>
+        <h3 style="color: var(--gold);">Договор оферты</h3>
+		<p>г. Дивногорск </p>
+		<p> Дата публикации: «7» марта 2026 г.</p>
+        <div style="color: #ccc; font-size: 0.9rem; line-height: 1.6;">
+            <p><strong>1. Общие положения</strong></p>
+           
+
+<p>1.1. Настоящий документ является официальным предложением (публичной офертой) Кухлевской Зои Викторовны, зарегистрированной в качестве плательщика налога на профессиональный доход (самозанятого), ИНН 240300628541 (далее — «Исполнитель»), адресованным любому физическому лицу (далее — «Заказчик»), и содержит все существенные условия договора на оказание информационно-консультационных услуг.</p>
+
+<p>1.2. В соответствии со статьёй 435 и частью 2 статьи 437 Гражданского кодекса Российской Федерации, настоящий документ является публичной офертой. В случае принятия изложенных ниже условий и оплаты услуг, физическое лицо, производящее акцепт данной оферты, становится Заказчиком.</p>
+
+<p>1.3. Акцептом настоящей оферты является:</p>
+
+<p>оплата любой услуги, представленной на сайте Исполнителя;</p>
+<p>заполнение формы заказа на сайте Исполнителя;</p>
+<p>направление заявки на оказание услуг посредством личных сообщений;</p>
+<p>подписка на рассылку Исполнителя.</p>
+<p>1.4. Акцепт оферты означает полное и безоговорочное принятие Заказчиком всех условий настоящего Договора без каких-либо изъятий и ограничений и равносилен заключению письменного договора.</p>
+
+1.5. Заказчик обязуется полностью ознакомиться с настоящим Договором до момента оплаты услуг. Оплата услуг является подтверждением того, что Заказчик ознакомлен и согласен со всеми условиями настоящего Договора.
+
+<p><strong>2. ПРЕДМЕТ ДОГОВОРА </strong></p>
+<p>2.1. Исполнитель обязуется оказать Заказчику информационно-консультационные услуги в сфере нумерологии (далее — «Услуги»), а Заказчик обязуется оплатить эти услуги в порядке и на условиях, предусмотренных настоящим Договором.</p>
+
+<p>2.2. Перечень Услуг, оказываемых Исполнителем:</p>
+
+<p>Консультационные услуги:</p>
+
+<p>Анализ матрицы личности</p>
+<p>Детская матрица</p>
+<p>Прогноз на год</p>
+<p>Анализ совместимости</p>
+<p>Финансовый канал</p>
+<p>Профессия и реализация</p>
+О<p>бразовательные услуги:</p>
+
+<p>Самостоятельное обучение (доступ к обучающим материалам)</p>
+<p>Личное обучение с Исполнителем</p>
+<p>2.3. Полный перечень Услуг, их описание и актуальная стоимость указаны на сайте Исполнителя: [НАЗВАНИЕ САЙТА].</p>
+
+<p>2.4. Услуги оказываются в онлайн-формате посредством:</p>
+
+<p>аудио/видеозаписей консультаций;</p>
+<p>PDF-файлов;</p>
+<p>аудио/видеосозвонов;</p>
+<p>записей уроков;</p>
+<p>доступа к обучающим материалам.</p>
+<p><strong> 3. ПОРЯДОК ОКАЗАНИЯ УСЛУГ </strong></p>
+<p>3.1. Заказчик оформляет заказ на Услуги одним из следующих способов:</p>
+
+<p>через форму заказа на сайте Исполнителя;<p>
+<p>посредством личных сообщений в социальных сетях или мессенджерах Исполнителя;</p>
+<p>по электронной почте: zoya.instar@mail.ru.</p>
+<p>3.2. Для оказания Услуг Заказчик предоставляет Исполнителю необходимые данные: ФИО, дату рождения, контактную информацию и иные сведения, необходимые для оказания конкретной Услуги.</p>
+
+<p>3.3. Исполнитель приступает к оказанию Услуг после поступления оплаты на расчётный счёт Исполнителя или подтверждения оплаты платёжной системой.</p>
+
+<p>3.4. Сроки оказания Услуг:</p>
+
+Консультационные услуги оказываются в течение 2–4 рабочих дней с момента подтверждения оплаты.
+Обратная связь по результатам консультации предоставляется в течение 30 календарных дней с момента оказания Услуги.
+Доступ к материалам самостоятельного обучения предоставляется в течение 24 часов с момента подтверждения оплаты.
+Личное обучение проводится по согласованному между сторонами графику и включает 30 уроков.
+<p>3.5. Доступ к материалам самостоятельного обучения предоставляется бессрочно с момента оплаты.</p>
+
+<p>3.6. Услуга считается оказанной надлежащим образом и в полном объёме:</p>
+
+для консультационных услуг — с момента направления Заказчику результатов консультации (записи, PDF-файла) или проведения онлайн-консультации;
+для самостоятельного обучения — с момента предоставления доступа к обучающим материалам;
+для личного обучения — с момента проведения каждого отдельного урока.
+ <p><strong> 4. СТОИМОСТЬ УСЛУГ И ПОРЯДОК ОПЛАТЫ </strong></p>
+<p>4.1. Стоимость Услуг указана на сайте Исполнителя в российских рублях.</p>
+
+<p>4.2. Исполнитель вправе в одностороннем порядке изменять стоимость Услуг. Изменение стоимости не распространяется на уже оплаченные Услуги.</p>
+
+<p>4.3. Оплата Услуг производится в порядке 100% предоплаты одним из способов, указанных на сайте Исполнителя.</p>
+
+<p>4.4. Оплата производится посредством платёжной системы, интегрированной на сайте Исполнителя. Исполнитель не несёт ответственности за работу третьих лиц, обеспечивающих функционирование платёжной системы.</p>
+
+<p>4.5. Обязанность Заказчика по оплате считается исполненной с момента поступления денежных средств на счёт Исполнителя или получения Исполнителем подтверждения от платёжной системы.</p>
+
+<p>4.6. Заказчик самостоятельно несёт ответственность за правильность и своевременность произведённых платежей.</p>
+
+ <p><strong> 5. ВОЗВРАТ ДЕНЕЖНЫХ СРЕДСТВ </strong></p>
+<p>5.1. Возврат денежных средств осуществляется на основании письменного заявления Заказчика, направленного на электронную почту Исполнителя: zoya.instar@mail.ru.</p>
+
+<p>5.2. Условия возврата денежных средств:</p>
+
+<p>5.2.1. Консультационные услуги:</p>
+
+До начала оказания Услуги (до момента направления результата консультации или проведения онлайн-консультации) — возврат 100% оплаченной стоимости.
+После начала оказания Услуги — возврат денежных средств не производится.
+<p>5.2.2. Самостоятельное обучение:</p>
+
+До момента предоставления доступа к обучающим материалам — возврат 100% оплаченной стоимости.
+После предоставления доступа к обучающим материалам — возврат денежных средств не производится, так как Услуга считается оказанной в полном объёме.
+<p>5.2.3. Личное обучение:</p>
+
+До начала первого урока — возврат 100% оплаченной стоимости.
+После начала обучения и до прохождения 15 уроков — возврат 50% от оплаченной стоимости.
+После прохождения 15 уроков и более — возврат денежных средств не производится.
+<p>5.3. Ограничения по возврату:</p>
+Возврат денежных средств не производится в случаях, если оплата Услуг была осуществлена:
+
+в рассрочку через банк или иную кредитную организацию;
+в кредит через банк или иную кредитную организацию.
+В указанных случаях Заказчик самостоятельно урегулирует вопросы возврата денежных средств с соответствующей кредитной организацией в соответствии с условиями заключённого кредитного договора или договора рассрочки.
+
+<p>5.4. Возврат денежных средств осуществляется в течение 10 (десяти) рабочих дней с момента получения Исполнителем заявления на возврат.</p>
+
+<p>5.5. Возврат денежных средств производится тем же способом, которым была произведена оплата, если иное не согласовано сторонами.</p>
+
+<p><strong> 6. ПРАВА И ОБЯЗАННОСТИ СТОРОН </strong></p>
+<p>6.1. Исполнитель обязуется:</p>
+
+<p>6.1.1. Оказать Услуги надлежащего качества в соответствии с условиями настоящего Договора.</p>
+
+<p>6.1.2. Оказать Услуги в установленные настоящим Договором сроки.</p>
+
+<p>6.1.3. Предоставить Заказчику информацию, необходимую для получения Услуг.</p>
+
+<p>6.1.4. Сохранять конфиденциальность информации, полученной от Заказчика в процессе оказания Услуг.</p>
+
+<p>6.1.5. Обеспечить доступ к оплаченным обучающим материалам на условиях, указанных в настоящем Договоре.</p>
+
+<p>6.2. Исполнитель вправе:</p>
+
+<p>6.2.1. Получать от Заказчика информацию, необходимую для оказания Услуг.</p>
+
+<p>6.2.2. Самостоятельно определять формы и методы оказания Услуг.</p>
+
+<p>6.2.3. Вносить изменения в содержание Услуг, не влияющие на их качество.</p>
+
+<p>6.2.4. Приостановить или отказать в оказании Услуг в случае нарушения Заказчиком условий настоящего Договора.</p>
+
+<p>6.2.5. Изменять условия настоящего Договора в одностороннем порядке с уведомлением путём публикации новой редакции на сайте. Изменения не распространяются на уже оплаченные Услуги.</p>
+
+<p>6.3. Заказчик обязуется:</p>
+
+<p>6.3.1. Предоставить достоверную информацию, необходимую для оказания Услуг.</p>
+
+<p>6.3.2. Оплатить Услуги в порядке и сроки, установленные настоящим Договором.</p>
+
+<p>6.3.3. Самостоятельно обеспечить техническую возможность получения Услуг (доступ в интернет, необходимое программное обеспечение, устройства).</p>
+
+<p>6.3.4. Соблюдать авторские права Исполнителя на предоставляемые материалы.</p>
+
+<p>6.3.5. Не передавать третьим лицам доступ к обучающим материалам, записям консультаций и иным материалам, полученным от Исполнителя.</p>
+
+<p>6.4. Заказчик вправе:</p>
+
+<p>6.4.1. Получить Услуги в соответствии с условиями настоящего Договора.</p>
+
+<p>6.4.2. Обращаться к Исполнителю за разъяснениями по вопросам оказания Услуг.</p>
+
+<p>6.4.3. Требовать возврата денежных средств в случаях, предусмотренных настоящим Договором.</p>
+
+<p><strong> 7. ИНТЕЛЛЕКТУАЛЬНАЯ СОБСТВЕННОСТЬ  </strong></p>
+<p>7.1. Все материалы, предоставляемые Исполнителем в рамках оказания Услуг (тексты, аудиозаписи, видеозаписи, PDF-файлы, методики, презентации и иные материалы), являются объектами интеллектуальной собственности Исполнителя и охраняются законодательством Российской Федерации об авторском праве.</p>
+
+<p>7.2. Заказчик вправе использовать полученные материалы исключительно для личных целей.</p>
+
+<p>7.3. Заказчику запрещается:</p>
+
+копировать, распространять, публиковать материалы Исполнителя;
+передавать доступ к материалам третьим лицам;
+использовать материалы в коммерческих целях;
+перепродавать материалы или доступ к ним;
+записывать онлайн-консультации и уроки без письменного согласия Исполнителя;
+публично воспроизводить материалы любым способом.
+<p>7.4. В случае нарушения Заказчиком условий настоящего раздела Исполнитель вправе:</p>
+
+немедленно прекратить оказание Услуг без возврата денежных средств;
+заблокировать доступ к обучающим материалам;
+требовать возмещения убытков в соответствии с законодательством Российской Федерации;
+требовать выплаты компенсации в размере от 10 000 (десяти тысяч) до 5 000 000 (пяти миллионов) рублей за каждый факт нарушения в соответствии со статьёй 1301 Гражданского кодекса Российской Федерации.
+<p><strong> 8. ОГРАНИЧЕНИЕ ОТВЕТСТВЕННОСТИ И ОТКАЗ ОТ ГАРАНТИЙ  </strong></p>
+<p>8.1. ВАЖНО! Заказчик понимает и соглашается с тем, что:</p>
+
+<p>8.1.1. Услуги, оказываемые Исполнителем, носят исключительно информационно-консультационный и развлекательный характер.</p>
+
+<p>8.1.2. Нумерология не является наукой в традиционном понимании, медицинской практикой, психотерапией или психологической помощью.</p>
+
+<p>8.1.3. Информация, предоставляемая в рамках оказания Услуг, не является медицинским диагнозом, медицинской рекомендацией, психологической помощью или руководством к действию.</p>
+
+<p>8.1.4. Все рекомендации, прогнозы и выводы, предоставляемые Исполнителем, носят исключительно рекомендательный характер и основаны на субъективной интерпретации нумерологических данных.</p>
+
+<p>8.1.5. Результаты консультаций не могут рассматриваться как гарантия каких-либо конкретных результатов в жизни Заказчика.</p>
+
+<p>8.2. Исполнитель не несёт ответственности за:</p>
+
+<p>8.2.1. Решения, действия или бездействие Заказчика, предпринятые на основании полученной информации.</p>
+
+<p>8.2.2. Любые прямые или косвенные убытки, возникшие у Заказчика в связи с использованием информации, полученной в рамках оказания Услуг.</p>
+
+<p>8.2.3. Несоответствие результатов оказанных Услуг субъективным ожиданиям Заказчика.</p>
+
+<p>8.2.4. Неполучение Заказчиком ожидаемого результата от применения рекомендаций Исполнителя.</p>
+
+<p>8.2.5. Технические сбои, вызванные действиями третьих лиц (провайдеров, платёжных систем, хостинг-провайдеров).</p>
+
+<p>8.2.6. Невозможность оказания Услуг по причинам, не зависящим от Исполнителя.</p>
+
+<p>8.3. Заказчик подтверждает, что он психически здоров, дееспособен и самостоятельно несёт ответственность за все решения, принимаемые им в своей жизни.</p>
+
+<p>8.4. Заказчик соглашается, что при наличии проблем со здоровьем (физическим или психическим) он обязуется обращаться к соответствующим специалистам (врачам, психологам, психотерапевтам), а не полагаться исключительно на консультации Исполнителя.</p>
+
+  <p><strong> 9. КОНФИДЕНЦИАЛЬНОСТЬ  </strong></p>
+<p>9.1. Исполнитель обязуется сохранять конфиденциальность информации, полученной от Заказчика в процессе оказания Услуг, и не передавать её третьим лицам без согласия Заказчика, за исключением случаев, предусмотренных законодательством Российской Федерации.</p>
+
+<p>9.2. Заказчик обязуется сохранять конфиденциальность содержания консультаций, обучающих материалов и любой иной информации, полученной от Исполнителя.</p>
+
+<p>9.3. Обработка персональных данных Заказчика осуществляется в соответствии с Политикой обработки персональных данных, размещённой на сайте Исполнителя.</p>
+
+<p><strong> 10. ФОРС-МАЖОР    </strong></p>
+<p>10.1. Стороны освобождаются от ответственности за частичное или полное неисполнение обязательств по настоящему Договору, если такое неисполнение явилось следствием обстоятельств непреодолимой силы (форс-мажор): стихийных бедствий, войн, террористических актов, действий государственных органов, эпидемий, пандемий, технических сбоев глобального характера и иных обстоятельств, не зависящих от воли сторон.</p>
+
+<p>10.2. Сторона, для которой создалась невозможность исполнения обязательств, обязана уведомить другую сторону о наступлении и прекращении указанных обстоятельств в течение 5 (пяти) рабочих дней.</p>
+
+   <p><strong> 11. ПОРЯДОК РАЗРЕШЕНИЯ СПОРОВ   </strong></p>
+<p>11.1. Все споры и разногласия, возникающие между сторонами по настоящему Договору, разрешаются путём переговоров.</p>
+
+<p>11.2. Претензионный порядок урегулирования споров является обязательным. Срок рассмотрения претензии составляет 15 (пятнадцать) рабочих дней с момента её получения.</p>
+
+<p>11.3. Претензии направляются в письменной форме на электронную почту:</p>
+
+Исполнителя: zoya.instar@mail.ru
+Заказчика: на электронную почту, указанную при оформлении заказа.
+<p>11.4. В случае невозможности разрешения споров путём переговоров они подлежат рассмотрению в суде по месту нахождения Исполнителя в соответствии с законодательством Российской Федерации.</p>
+
+  <p><strong> 12. СРОК ДЕЙСТВИЯ ДОГОВОРА   </strong></p>
+<p>12.1. Настоящий Договор вступает в силу с момента акцепта Заказчиком и действует до полного исполнения сторонами своих обязательств.</p>
+
+<p>12.2. Исполнитель вправе в любое время изменить условия настоящего Договора в одностороннем порядке. Изменения вступают в силу с момента публикации новой редакции Договора на сайте Исполнителя.</p>
+
+<p>12.3. Заказчик обязан самостоятельно отслеживать изменения условий настоящего Договора на сайте Исполнителя.</p>
+
+<p><strong> 13. РЕКВИЗИТЫ ИСПОЛНИТЕЛЯ    </strong></p>
+<p>Самозанятый: Кухлевская Зоя Викторовна</p>
+
+<p>Статус: плательщик налога на профессиональный доход (самозанятый)</p>
+
+<p>ИНН: 240300628541</p>
+
+<p>Адрес регистрации: 663090, Красноярский край, г. Дивногорск, ул. 30 лет Победы, д. 10, кв. 37</p>
+
+<p>Электронная почта: zoya.instar@mail.ru</p>
+
+<p>Сайт: Архитектура Души</p>
+
+<p><strong> 14. ЗАКЛЮЧИТЕЛЬНЫЕ ПОЛОЖЕНИЯ    </strong></p>
+<p>14.1. Настоящий Договор составлен в соответствии с законодательством Российской Федерации.</p>
+
+<p>14.2. Признание судом недействительности какого-либо положения настоящего Договора не влечёт недействительности остальных положений.</p>
+
+<p>14.3. Во всём, что не предусмотрено настоящим Договором, стороны руководствуются действующим законодательством Российской Федерации.</p>
+
+<p>Дата последнего обновления: «7» марта 2026 г.</p>
+                       
+        </div>
+    </div>
+</div>
+
+<!-- 3. ТЕКСТ ПОЛИТИКИ (Всплывающий) -->
+<div id="privacy-text-modal" class="modal" style="z-index: 3000;">
+    <div class="modal-content" style="max-width: 800px; text-align: left; height: 80vh; overflow-y: auto;">
+        <span class="close-modal" onclick="document.getElementById('privacy-text-modal').style.display='none'">&times;</span>
+        <h3 style="color: var(--gold);">Политика обработки персональных данных</h3>
+        <div style="color: #ccc; font-size: 0.9rem; line-height: 1.6;">
+		<p>Дата публикации: «7» марта 2026 г.</p>
+
+            <p><strong>1. ОБЩИЕ ПОЛОЖЕНИЯ</strong></p>
+            <p>1.1. Настоящая Политика обработки персональных данных (далее — «Политика») разработана в соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных» и определяет порядок обработки персональных данных пользователей сайта [НАЗВАНИЕ САЙТА] (далее — «Сайт»).</p>
+
+<p>1.2. Оператором персональных данных является:</p>
+
+<p>Кухлевская Зоя Викторовна</p>
+
+<p>Статус: плательщик налога на профессиональный доход (самозанятый)</p>
+
+<p>ИНН: 240300628541</p>
+
+<p>Адрес регистрации: 663090, Красноярский край, г. Дивногорск, ул. 30 лет Победы, д. 10, кв. 37</p>
+
+<p>Электронная почта: zoya.instar@mail.ru</p>
+
+<p>(далее — «Оператор»)</p>
+
+<p>1.3. Настоящая Политика распространяется на все персональные данные, которые Оператор может получить от пользователей Сайта (далее — «Пользователь», «Субъект персональных данных»).</p>
+
+<p>1.4. Использование Сайта, заполнение форм на Сайте, оформление заказа, подписка на рассылку означает безоговорочное согласие Пользователя с настоящей Политикой и указанными в ней условиями обработки персональных данных.</p>
+
+<p>1.5. В случае несогласия с условиями настоящей Политики Пользователь должен прекратить использование Сайта.</p>
+            
+            <p><strong>2. ОСНОВНЫЕ ПОНЯТИЯ</strong></p>
+            <p>2.1. Персональные данные — любая информация, относящаяся к прямо или косвенно определённому или определяемому физическому лицу (субъекту персональных данных).</p>
+
+<p>2.2. Обработка персональных данных — любое действие (операция) или совокупность действий (операций), совершаемых с использованием средств автоматизации или без использования таких средств с персональными данными, включая сбор, запись, систематизацию, накопление, хранение, уточнение (обновление, изменение), извлечение, использование, передачу (распространение, предоставление, доступ), обезличивание, блокирование, удаление, уничтожение персональных данных.</p>
+
+<p>2.3. Оператор — лицо, самостоятельно или совместно с другими лицами организующее и (или) осуществляющее обработку персональных данных, а также определяющее цели обработки персональных данных, состав персональных данных, подлежащих обработке, действия (операции), совершаемые с персональными данными.</p>
+
+<p>2.4. Конфиденциальность персональных данных — обязательное для соблюдения Оператором или иным получившим доступ к персональным данным лицом требование не допускать их распространения без согласия субъекта персональных данных или наличия иного законного основания.</p>
+            
+            <p><strong>3. ПЕРЕЧЕНЬ ОБРАБАТЫВАЕМЫХ ПЕРСОНАЛЬНЫХ ДАННЫХ</strong></p>
+            <p>3.1. Оператор обрабатывает следующие персональные данные Пользователей:</p>
+
+<p>3.1.1. Данные, предоставляемые Пользователем самостоятельно:</p>
+
+<p>-фамилия, имя, отчество;</p>
+<p>-адрес электронной почты (e-mail);</p>
+<p>-номер телефона;</p>
+<p>-дата рождения (для оказания нумерологических услуг);</p>
+<p>-время рождения (при наличии, для оказания нумерологических услуг);</p>
+<p>-место рождения (при наличии, для оказания нумерологических услуг);</p>
+<p>-данные третьих лиц, предоставленные Пользователем с их согласия (данные партнёра для анализа совместимости, данные ребёнка для детской матрицы).</p>
+<p>3.1.2. Данные, получаемые автоматически при посещении Сайта:</p>
+
+<p>-IP-адрес;</p>
+<p>-данные файлов cookie;</p>
+<p>-информация о браузере и устройстве;</p>
+<p>-время доступа к Сайту;</p>
+<p>-адреса посещённых страниц;</p>
+<p>-реферер (адрес предыдущей страницы).</p>
+<p>3.2. Оператор не осуществляет сбор и обработку:</p>
+
+<p>платёжных данных (данные банковских карт обрабатываются исключительно платёжной системой);</p>
+<p>специальных категорий персональных данных (расовая, национальная принадлежность, политические взгляды, религиозные убеждения, состояние здоровья, интимная жизнь).</p>
+            <p>3.3. Автоматические расчёты на Сайте</p>
+
+<p>3.3.1. Сайт предоставляет возможность проведения нумерологических расчётов 
+на основе данных, вводимых Пользователем (дата рождения, имя).</p>
+
+<p>3.3.2. Указанные данные обрабатываются исключительно на устройстве </p>
+<p>Пользователя (в браузере) с использованием технологии JavaScript.</p>
+
+<p>3.3.3. Данные, введённые для автоматических расчётов, НЕ передаются </p>
+<p>на сервер Оператора, НЕ сохраняются и НЕ подлежат обработке Оператором.</p>
+
+<p>3.3.4. Оператор не имеет доступа к данным, введённым Пользователем </p>
+<p>для автоматических расчётов, и не несёт ответственности за их сохранность 
+на устройстве Пользователя.</p>
+            <p><strong>4. ЦЕЛИ ОБРАБОТКИ ПЕРСОНАЛЬНЫХ ДАННЫХ</strong></p>
+            <p>4.1. Оператор обрабатывает персональные данные Пользователя в следующих целях:</p>
+
+<p>4.1.1. Оказание информационно-консультационных услуг в сфере нумерологии.</p>
+
+<p>4.1.2. Предоставление доступа к обучающим материалам.</p>
+
+<p>4.1.3. Идентификация Пользователя для оказания услуг.</p>
+
+<p>4.1.4. Связь с Пользователем для уточнения информации, уведомления о статусе заказа, ответов на запросы.</p>
+
+<p>4.1.5. Направление информационных и рекламных материалов (при наличии согласия Пользователя на получение рассылки).</p>
+
+<p>4.1.6. Улучшение качества работы Сайта, удобства его использования.</p>
+
+<p>4.1.7. Проведение статистических и иных исследований на основе обезличенных данных.</p>
+
+<p>4.1.8. Исполнение требований законодательства Российской Федерации.</p>
+
+<p><strong>5. ПРАВОВЫЕ ОСНОВАНИЯ ОБРАБОТКИ ПЕРСОНАЛЬНЫХ ДАННЫХ</strong></p>
+
+<p>5.1. Оператор обрабатывает персональные данные Пользователя на следующих правовых основаниях:</p>
+
+<p>5.1.1. Согласие субъекта персональных данных на обработку его персональных данных (статья 6, пункт 1, подпункт 1 Федерального закона № 152-ФЗ).</p>
+
+<p>5.1.2. Исполнение договора, стороной которого является субъект персональных данных (статья 6, пункт 1, подпункт 5 Федерального закона № 152-ФЗ).</p>
+
+<p>5.1.3. Законные интересы Оператора, за исключением случаев, когда над такими интересами превалируют интересы или основные права и свободы субъекта персональных данных.</p>
+
+<p><strong>6. ПОРЯДОК СБОРА И ХРАНЕНИЯ ПЕРСОНАЛЬНЫХ ДАННЫХ</strong></p>
+
+<p>6.1. Сбор персональных данных осуществляется следующими способами:</p>
+
+<p>заполнение форм на Сайте;</p>
+<p>оформление заказа на Сайте;</p>
+<p>подписка на рассылку;</p>
+<p>личная переписка с Оператором (электронная почта, мессенджеры, социальные сети);</p>
+<p>автоматический сбор данных при посещении Сайта (cookies, данные о посещениях).</p>
+<p>6.2. Персональные данные хранятся в защищённом облачном хранилище с ограниченным доступом.</p>
+
+<p>6.3. Оператор обеспечивает сохранность персональных данных и принимает все необходимые меры для защиты персональных данных от неправомерного доступа.</p>
+
+<p>6.4. Персональные данные Пользователя хранятся в течение всего срока оказания услуг и в течение 3 (трёх) лет после прекращения отношений с Пользователем, если иное не предусмотрено законодательством Российской Федерации.</p>
+
+
+<p><strong>7. ПЕРЕДАЧА ПЕРСОНАЛЬНЫХ ДАННЫХ ТРЕТЬИМ ЛИЦАМ</strong></p>
+
+<p>7.1. Оператор не передаёт персональные данные Пользователей третьим лицам, за исключением следующих случаев:</p>
+
+<p>7.1.1. Пользователь дал явное согласие на передачу данных.</p>
+
+<p>7.1.2. Передача необходима для исполнения договора с Пользователем (например, передача данных платёжной системе для обработки платежа).</p>
+
+<p>7.1.3. Передача предусмотрена законодательством Российской Федерации в рамках установленной законодательством процедуры.</p>
+
+<p>7.1.4. Передача необходима для защиты прав и законных интересов Оператора в судебном порядке.</p>
+
+<p>7.2. При использовании Сайта данные могут автоматически передаваться следующим сервисам:</p>
+
+<p>платёжные системы (для обработки платежей);</p>
+<p>системы веб-аналитики (Яндекс.Метрика, Google Analytics и подобные — при наличии).</p>
+<p>7.3. Указанные сервисы обрабатывают данные в соответствии с собственными политиками конфиденциальности.</p>
+
+<p><strong>8. COOKIES И АВТОМАТИЧЕСКИ СОБИРАЕМЫЕ ДАННЫЕ</strong></p>
+<p>8.1. Сайт использует файлы cookies для обеспечения корректной работы Сайта, улучшения пользовательского опыта, сбора статистики посещений.</p>
+<p>8.2.  Cookies — это небольшие текстовые файлы, которые сохраняются на устройстве Пользователя при посещении Сайта.</p>
+<p>8.3. Пользователь может самостоятельно управлять файлами cookies через настройки своего браузера, включая возможность отключения cookies. Отключение cookies может повлиять на функциональность Сайта.</p>
+<p>8.4. Продолжая использование Сайта, Пользователь даёт согласие на использование cookies в соответствии с настоящей Политикой.</p>
+
+<p><strong>9. ПРАВА СУБЪЕКТА ПЕРСОНАЛЬНЫХ ДАННЫХ</strong></p>
+
+<p>9.1. Пользователь имеет право:</p>
+
+<p>9.1.1. Получать информацию, касающуюся обработки его персональных данных.</p>
+
+<p>9.1.2. Требовать уточнения, блокирования или уничтожения персональных данных, если они являются неполными, устаревшими, неточными, незаконно полученными или не являются необходимыми для заявленной цели обработки.</p>
+
+<p>9.1.3. Отозвать согласие на обработку персональных данных.</p>
+
+<p>9.1.4. Требовать прекращения обработки персональных данных в целях продвижения товаров, работ, услуг (отписка от рассылки).</p>
+
+<p>9.1.5. Обжаловать действия или бездействие Оператора в уполномоченный орган по защите прав субъектов персональных данных (Роскомнадзор) или в судебном порядке.</p>
+
+<p>9.2. Для реализации своих прав Пользователь может направить соответствующий запрос на электронную почту Оператора: zoya.instar@mail.ru.</p>
+
+<p>9.3. Запрос должен содержать:</p>
+
+<p>ФИО Пользователя;</p>
+<p>контактные данные (e-mail, телефон);</p>
+<p>суть запроса;</p>
+<p>подтверждение личности (при необходимости).</p>
+<p>9.4. Оператор рассматривает запрос в течение 10 (десяти) рабочих дней с момента его получения.</p>
+
+<p><strong>10. ОТЗЫВ СОГЛАСИЯ НА ОБРАБОТКУ ПЕРСОНАЛЬНЫХ ДАННЫХ</strong></p>
+
+<p>10.1. Пользователь вправе в любой момент отозвать своё согласие на обработку персональных данных, направив соответствующее уведомление на электронную почту Оператора: zoya.instar@mail.ru.</p>
+
+<p>10.2. После получения уведомления об отзыве согласия Оператор прекращает обработку персональных данных и уничтожает их в течение 30 (тридцати) календарных дней, за исключением случаев, когда обработка может быть продолжена в соответствии с законодательством.</p>
+
+<p>10.3. Отзыв согласия на обработку персональных данных влечёт за собой невозможность оказания услуг Оператором.</p>
+
+<p><strong>11. МЕРЫ ПО ЗАЩИТЕ ПЕРСОНАЛЬНЫХ ДАННЫХ</strong></p>
+
+<p>11.1. Оператор принимает необходимые и достаточные организационные и технические меры для защиты персональных данных Пользователей от неправомерного или случайного доступа, уничтожения, изменения, блокирования, копирования, распространения, а также от иных неправомерных действий третьих лиц.</p>
+
+<p>11.2. Меры по защите персональных данных включают:</p>
+
+<p>ограничение доступа к персональным данным;</p>
+<p>использование защищённых каналов связи;</p>
+<p>хранение данных в защищённом облачном хранилище;</p>
+<p>регулярное обновление средств защиты информации.</p>
+
+<p><strong>12. ОБРАБОТКА ПЕРСОНАЛЬНЫХ ДАННЫХ ТРЕТЬИХ ЛИЦ</strong></p>
+
+<p>12.1. При оказании отдельных услуг (анализ совместимости, детская матрица) Пользователь может предоставлять персональные данные третьих лиц (партнёра, ребёнка).</p>
+
+<p>12.2. Предоставляя персональные данные третьих лиц, Пользователь подтверждает, что:</p>
+
+<p>-получил согласие указанных лиц (или их законных представителей) на обработку их персональных данных Оператором;</p>
+<p>-уполномочен действовать от имени указанных лиц в части предоставления их персональных данных.</p>
+<p>12.3. Ответственность за получение согласия третьих лиц на обработку их персональных данных несёт Пользователь.</p>
+
+<p><strong>13. РАССЫЛКА</strong></p>
+<p>13.1. Пользователь может подписаться на информационную и/или рекламную рассылку Оператора.</p>
+
+<p>13.2. Подписка на рассылку осуществляется добровольно путём:</p>
+
+<p>-заполнения формы подписки на Сайте;</p>
+<p>-проставления соответствующей отметки при оформлении заказа.</p>
+<p>13.3. Пользователь вправе в любой момент отказаться от получения рассылки:</p>
+
+<p>перейдя по ссылке «отписаться» в письме;</p>
+<p>направив соответствующее уведомление на электронную почту Оператора.</p>
+
+<p><strong>14. ИЗМЕНЕНИЕ ПОЛИТИКИ</strong></p>
+
+<p>14.1. Оператор вправе вносить изменения в настоящую Политику без предварительного уведомления Пользователей.</p>
+
+<p>14.2. Новая редакция Политики вступает в силу с момента её размещения на Сайте, если иное не предусмотрено новой редакцией Политики.</p>
+
+<p>14.3. Пользователь обязуется самостоятельно отслеживать изменения настоящей Политики.</p>
+
+<p>14.4. Продолжение использования Сайта после внесения изменений в Политику означает согласие Пользователя с такими изменениями.</p>
+
+<p><strong>15. КОНТАКТНАЯ ИНФОРМАЦИЯ</strong></p>
+<p>По всем вопросам, связанным с обработкой персональных данных, Пользователь может обращаться к Оператору:</p>
+
+<p>Кухлевская Зоя Викторовна</p>
+
+<p>Электронная почта: zoya.instar@mail.ru</p>
+
+<p>Адрес: 663090, Красноярский край, г. Дивногорск, ул. 30 лет Победы, д. 10, кв. 37</p>
+
+<p><strong>16. ЗАКЛЮЧИТЕЛЬНЫЕ ПОЛОЖЕНИЯ</strong></p>
+
+<p>16.1. Настоящая Политика разработана в соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных» и иными нормативными правовыми актами Российской Федерации в области защиты персональных данных.</p>
+
+<p>16.2. Все возможные споры, связанные с настоящей Политикой, подлежат разрешению в соответствии с законодательством Российской Федерации.</p>
+
+<p>16.3. Признание судом какого-либо положения настоящей Политики недействительным не влечёт недействительности иных положений.</p>
+
+<p>Дата последнего обновления: «7» марта 2024 г.</p>
+
+
+        </div>
+    </div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО КОЛЕСА (PRO VERSION) -->
+<div id="wheel-modal" class="modal" style="display: none; z-index: 3000;">
+    <div class="modal-content" style="text-align: center; background: #1a1a2e; border: 2px solid var(--gold); max-width: 450px;">
+        <span class="close-modal" onclick="document.getElementById('wheel-modal').style.display='none'">&times;</span>
+        
+        <h3 style="color:var(--gold); margin-bottom: 5px;">🔮 Колесо Судьбы</h3>
+        <p style="color:#aaa; font-size: 0.9rem; margin-bottom: 20px;">Крути и забирай свой подарок</p>
+        
+        <!-- Обертка колеса -->
+        <div class="wheel-wrapper">
+            <div class="wheel-pointer-pro"></div>
+            <div id="the-wheel" class="wheel-pro">
+                <!-- 0: Приз 5% -->
+                <div class="wheel-segment-pro" style="--i:0;"><i class="fa-solid fa-percent" style="font-size: 18px;"></i></div>
+                <!-- 1: Пусто -->
+                <div class="wheel-segment-pro" style="--i:1;"><span style="font-size: 12px; color: #aaa;">☹️</span></div>
+                <!-- 2: Приз 10% -->
+                <div class="wheel-segment-pro" style="--i:2;"><i class="fa-solid fa-star" style="font-size: 18px;"></i></div>
+                <!-- 3: Пусто -->
+                <div class="wheel-segment-pro" style="--i:3;"><span style="font-size: 12px; color: #aaa;">☹️</span></div>
+                <!-- 4: Сюрприз -->
+                <div class="wheel-segment-pro" style="--i:4;"><i class="fa-solid fa-gift" style="font-size: 18px;"></i></div>
+                <!-- 5: Пусто -->
+                <div class="wheel-segment-pro" style="--i:5;"><span style="font-size: 12px; color: #aaa;">☹️</span></div>
+                <!-- 6: Приз 5% -->
+                <div class="wheel-segment-pro" style="--i:6;"><i class="fa-solid fa-percent" style="font-size: 18px;"></i></div>
+                <!-- 7: Пусто -->
+                <div class="wheel-segment-pro" style="--i:7;"><span style="font-size: 12px; color: #aaa;">☹️</span></div>
+                <!-- 8: Приз 10% -->
+                <div class="wheel-segment-pro" style="--i:8;"><i class="fa-solid fa-star" style="font-size: 18px;"></i></div>
+                <!-- 9: Пусто -->
+                <div class="wheel-segment-pro" style="--i:9;"><span style="font-size: 12px; color: #aaa;">☹️</span></div>
+                <!-- 10: Сюрприз -->
+                <div class="wheel-segment-pro" style="--i:10;"><i class="fa-solid fa-gift" style="font-size: 18px;"></i></div>
+                <!-- 11: Пусто -->
+                <div class="wheel-segment-pro" style="--i:11;"><span style="font-size: 12px; color: #aaa;">☹️</span></div>
+            </div>
+        </div>
+        
+        <button id="spin-btn" class="btn-gold" onclick="doSpin()" style="margin-top: 30px; width: 100%; box-shadow: 0 0 15px var(--gold);">
+            ИСПЫТАТЬ УДАЧУ
+        </button>
+        
+        <!-- Результат -->
+        <div id="win-result" style="display:none; margin-top:20px; color:var(--gold); font-size:1.2rem; font-weight:bold;"></div>
+    </div>
+</div>
+
+<!-- ОКНО ПОБЕДИТЕЛЯ (Всплывает после выигрыша) -->
+<div id="winner-modal" class="modal" style="display: none; z-index: 3100;">
+    <div class="modal-content" style="text-align: center; background: linear-gradient(135deg, #2a1b4e, #000); border: 2px solid var(--gold);">
+        <h2 style="color:var(--gold); font-size: 2rem; margin-bottom: 10px;">🎉 ПОЗДРАВЛЯЮ!</h2>
+        <p style="color:#fff;">Ваш выигрыш:</p>
+        
+        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; margin: 20px 0; border: 1px solid var(--purple-light);">
+            <div style="font-size: 3rem; margin-bottom: 10px;">🎁</div>
+            <h3 id="winner-prize-name" style="color: #fff; text-transform: uppercase;">ПРИЗ</h3>
+            <p style="color: #aaa; font-size: 0.8rem; margin-top: 10px;">Скидка действует на любую услугу или обучение</p>
+        </div>
+
+        <p style="color: #ccc; font-size: 0.9rem; line-height: 1.5;">
+            📸 <strong>Сделайте скриншот</strong> этого экрана прямо сейчас и отправьте мне в Telegram, чтобы забрать подарок.
+        </p>
+
+        <button class="btn-gold" onclick="sendScreenshotToTg()" style="width: 100%; margin-top: 20px;">
+            <i class="fa-brands fa-telegram"></i> Отправить скриншот
+        </button>
+        <button class="btn-close" onclick="document.getElementById('winner-modal').style.display='none'" style="margin-top: 10px;">Закрыть</button>
+    </div>
+</div>
+
+<!-- ✅ КНОПКА ПОДАРКА (ВИДНА ВСЕГДА) -->
+<div class="fortune-btn" onclick="spinWheel()">🎁</div>
+
+<!-- 6. ПОДКЛЮЧЕНИЕ СКРИПТОВ -->
+<script src="script.js"></script>
+
+<!-- ✅ МОДАЛЬНОЕ ОКНО: ОТПРАВКА ЧЕКА В TELEGRAM -->
+<div id="receipt-modal" class="modal" style="display:none; z-index: 3200;">
+  <div class="modal-content receipt-modal-content">
+    <!-- используем уже существующую функцию закрытия всех модалок -->
+    <span class="close-modal" onclick="closeModals()">&times;</span>
+
+    <div class="receipt-icon">🧾</div>
+    <h3 class="receipt-title">Оплата выполнена</h3>
+
+    <p class="receipt-text">
+      Пожалуйста, <strong>сделайте скриншот чека</strong> (квитанции) и отправьте его в Telegram.
+    </p>
+
+    <p class="receipt-text">
+      Спасибо! После оплаты нажмите <strong>ОК</strong>, чтобы отправить чек в Telegram.
+    </p>
+
+    <div class="receipt-actions">
+      <button id="receipt-ok-btn" class="btn-gold" type="button">
+        <i class="fa-brands fa-telegram"></i> ОК — отправить в Telegram
+      </button>
+      <button id="receipt-cancel-btn" class="btn-close" type="button" onclick="closeModals()">
+        Позже
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- КРАСИВОЕ ОКНО "НЕ ПОВЕЗЛО" -->
+<div id="lose-modal" class="modal" style="display: none; z-index: 3150;">
+    <div class="modal-content" style="text-align: center; background: linear-gradient(135deg, #1a1a2e, #0f0f1a); border: 2px solid var(--purple-light); max-width: 420px;">
+        
+        <div style="font-size: 4rem; margin-bottom: 10px;">🌙</div>
+        
+        <h2 style="color: #b8a9e8; margin-bottom: 10px;">Звёзды сегодня шалят...</h2>
+        
+        <p id="lose-text" style="color: #fff; font-size: 1.1rem; margin-bottom: 15px;">
+            В этот раз не сложилось
+        </p>
+        
+        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; margin: 20px 0; border: 1px solid rgba(255,255,255,0.1);">
+            <p style="color: #aaa; font-size: 0.95rem; line-height: 1.6; margin: 0;">
+                ✨ Но не расстраивайтесь!<br>
+                <strong style="color: var(--gold);">Удача уже на пути к вам</strong> —<br>
+                возможно, она ждёт вас в чём-то большем 💫
+            </p>
+        </div>
+        
+        <p style="color: #888; font-size: 0.85rem; margin-bottom: 20px;">
+            А пока загляните в мои услуги —<br>
+            там точно найдётся что-то особенное для вас 🔮
+        </p>
+        
+        <button class="btn-gold" onclick="closeLoseModal(); showSection('services');" style="width: 100%;">
+            <i class="fa-solid fa-sparkles"></i> Посмотреть услуги
+        </button>
+        
+        <button class="btn-close" onclick="closeLoseModal()" style="margin-top: 10px;">
+            Закрыть
+        </button>
+    </div>
+</div>
+
+
+<!-- СКРЫТЫЙ КОНТЕЙНЕР ДЛЯ РЕНДЕРА PDF (Вставить сразу после модалки, перед </body>) -->
+<div id="pdf-hidden-container" style="display: none;"></div>
+    
+    <!-- Модальное окно для шаринга с картинкой -->
+<!-- Модальное окно для шаринга с картинкой -->
+<div id="share-image-modal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 500px; text-align: center;">
+        <span class="close-modal" onclick="document.getElementById('share-image-modal').style.display='none'">&times;</span>
+        <h3 style="color: var(--gold);">Ваш результат</h3>
+        <div id="share-image-container" style="margin: 20px 0;">
+            <!-- Сюда будет вставлена сгенерированная картинка -->
+        </div>
+        
+        <!-- Текст для публикации (просто текст, без полосы прокрутки) -->
+        <div style="margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; text-align: left; word-wrap: break-word;">
+            
+            <div id="share-post-text" style="color: #fff; font-size: 1rem; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word;"></div>
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <a id="share-vk" href="#" target="_blank" class="btn-gold" style="background: #4C75A3;">ВКонтакте</a>
+            <a id="share-tg" href="#" target="_blank" class="btn-gold" style="background: #229ED9;">Telegram</a>
+            <a id="share-ok" href="#" target="_blank" class="btn-gold" style="background: #F5821F;">Одноклассники</a>
+            <button class="btn-gold" onclick="downloadShareImage()" style="background: var(--purple-light);">Скачать картинку</button>
+        </div>
+    </div>
+</div>
+       <!-- Скрытый блок для генерации красивой карточки-резюме -->
+<div id="share-card-template" style="display: none; width: 600px; padding: 30px; background: linear-gradient(145deg, #1a1a2e, #16213e); border-radius: 20px; border: 2px solid var(--gold); box-shadow: 0 0 30px rgba(212,175,55,0.3); color: #fff; font-family: 'Cormorant Garamond', serif; text-align: center;">
+    <!-- Логотип/заголовок -->
+    <div style="font-size: 2.5rem; color: var(--gold); text-transform: uppercase; letter-spacing: 4px; margin-bottom: 10px;">ASTRA</div>
+    <div style="font-size: 1.5rem; color: #ddd; margin-bottom: 20px; font-style: italic;">Мой психологический портрет</div>
+    
+    <!-- Имя пользователя -->
+    <div id="share-card-name" style="font-size: 2.9rem; color: var(--gold); margin: 10px 0 20px; text-shadow: 0 0 20px rgba(212,175,55,0.4);"></div>
+    
+    <!-- Основные числа: ЧИСЛО СУДЬБЫ и СЧАСТЛИВОЕ ЧИСЛО -->
+    <div style="display: flex; justify-content: space-around; margin: 30px 0;">
+        <div>
+            <div style="font-size: 2rem; color: #aaa;">Число судьбы</div>
+            <div id="share-card-lifepath" style="font-size: 4rem; color: var(--purple-light); font-weight: bold;"></div>
+        </div>
+        <div>
+            <div style="font-size: 2rem; color: #aaa;">Моё счастливое число</div>
+            <div id="share-card-lucky" style="font-size: 4rem; color: var(--gold); font-weight: bold;"></div>
+        </div>
+    </div>
+    
+    <!-- Моя стихия (увеличен размер) -->
+    <div style="margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+        <div style="font-size: 2rem; color: #aaa;">Моя стихия</div>
+        <div id="share-card-element" style="font-size: 2.5rem; color: #a8dadc; font-weight: bold;"></div>
+    </div>
+    </div>
+     <!-- ... тут весь ваш старый код (секции, блоки с результатами и т.д.) ... -->
+
+    <div id="master-modal" class="master-modal" onclick="closeMasterModal()">
+        <div class="master-content" onclick="event.stopPropagation()">
+            <span class="close-master" onclick="closeMasterModal()">&times;</span>
+            <h2 id="master-title"></h2>
+            <div id="master-text"></div>
+        </div>
+    </div>  
+    <button type="button" onclick="fillTestDates()" style="margin-top:10px;">📅 Заполнить тестовыми датами</button>
+    
+<script src="js/data-cells.js"></script>
+<script src="js/data-compatibility.js"></script>
+<script src="js/child-life-path-texts.js"></script>
+<script src="js/data-child.js"></script>
+<script src="js/synthesis-templates.js"></script>      <!-- НОВЫЙ -->
+<script src="js/synthesis-data.js"></script>
+<script src="js/data-life-path-descriptions.js"></script>
+<script src="js/data-life-path.js"></script>
+<script src="js/data-money.js"></script>
+<script src="js/data-financial.js"></script>
+<script src="js/data-parent-child.js"></script>
+<script src="js/data-row-texts.js"></script>
+<script src="js/data-synthesis-pythagoras.js"></script>
+<script>
+function fillTestDates() {
+    document.getElementById('parentDate').value = '1994-05-10';
+    document.getElementById('childDate').value = '2017-04-02';
+    document.getElementById('parentName').value = 'Родитель';
+    document.getElementById('childName').value = 'Ребёнок';
+    // Можно добавить и другие поля
+}
+    
+</script>
+    <!-- НЕЗАВИСИМОЕ ОКНО ОПЛАТЫ ДЛЯ ГЛАВНОЙ СТРАНИЦЫ -->
+<div id="unlock-payment-modal" class="payment-modal">
+    <div class="payment-modal-content" style="max-width: 480px;">
+        <span class="close-modal" onclick="closeUnlockPaymentModal()">&times;</span>
+        <h3>🔓 </h3>
+        <h3 class="payment-title" style="color: var(--gold);"> Полный разбор личности</h3>
+        <p style="color: #ddd; margin-bottom: 20px;">Детальные расшифровки, 11 синтезов, прогнозы и PDF-отчёт</p>
+        <div style="font-size: 2.5rem; color: var(--gold); margin-bottom: 20px;">499 ₽</div>
+        
+        <input type="email" id="unlock-client-email" class="payment-input" placeholder="Введите ваш Email" required>
+        
+        <button id="unlock-final-pay-btn" class="btn-gold" style="width: 100%; margin-top: 15px; background: linear-gradient(90deg, #9b87f5, #7E69AB); color: white; border: none;">
+            ОПЛАТИТЬ
+        </button>
+        
+        <div class="offer-checkbox-wrapper">
+            <input type="checkbox" id="unlock-offer-agree" class="custom-checkbox">
+            <label for="unlock-offer-agree" class="offer-label">
+                Я подтверждаю, что мне исполнилось 18 лет, и я согласен с 
+                <a href="#" onclick="document.getElementById('offer-text-modal').style.display='flex'; return false;">Договором оферты</a> и 
+                <a href="#" onclick="document.getElementById('privacy-text-modal').style.display='flex'; return false;">Политикой обработки данных</a>.
+            </label>
+        </div>
+        <p class="payment-hint" style="margin-top: 15px;">
+            После оплаты вам будут доступны <strong>4</strong> расчета
+        </p>
+    </div>
+</div>
+    <!-- МОДАЛЬНОЕ ОКНО "ПОПЫТКИ ИСЧЕРПАНЫ" -->
+<div id="no-attempts-modal" class="modal" style="z-index: 3100;">
+    <div class="modal-content" style="max-width: 450px; text-align: center; background: linear-gradient(145deg, #1a1a2e, #252045); border: 2px solid var(--gold); border-radius: 24px; padding: 35px 25px;">
+        <span class="close-modal" onclick="closeNoAttemptsModal()" style="position: absolute; top: 15px; right: 20px; font-size: 28px; color: var(--gold); cursor: pointer;">&times;</span>
+        <div style="font-size: 4rem; margin-bottom: 15px;">🔒</div>
+        <h3 style="color: var(--gold); font-size: 1.8rem; margin-bottom: 15px;">Лимит исчерпан</h3>
+        <p style="color: #ddd; margin-bottom: 20px;">Вы использовали все 4 платных расчёта. Чтобы продолжить, приобретите новый доступ.</p>
+        <button class="btn-gold" onclick="openUnlockPaymentModal(); closeNoAttemptsModal();" style="width: 100%; padding: 16px; font-size: 1.2rem; border-radius: 50px;">
+            <i class="fa-solid fa-cart-shopping"></i> Купить ещё расчёты (499 ₽)
+        </button>
+        <button class="btn-close" onclick="closeNoAttemptsModal()" style="margin-top: 10px;">Закрыть</button>
+    </div>
+</div>
+</body>
+</html>
