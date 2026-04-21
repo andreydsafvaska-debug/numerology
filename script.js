@@ -1,6 +1,12 @@
 // ВАШ НОМЕР WHATSAPP
 const myPhone = "79956506287";
 
+
+
+// ⚡ ТЕСТОВЫЙ РЕЖИМ (true = всё бесплатно, false = платно)
+const TEST_MODE = true;
+
+
 // Функция для безопасного экранирования HTML-спецсимволов
 function escapeHTML(str) {
     if (!str) return '';
@@ -18,6 +24,16 @@ const SERVER_URL = 'https://numerology-vnjx.onrender.com'; // ← ЗАМЕНИТ
 
 // Асинхронная проверка токена при загрузке страницы
 async function checkPremiumAccess() {
+
+    // ... ДЛЯ ТЕСТА
+    if (TEST_MODE) {
+        premiumAccess = true;
+        localStorage.setItem('premiumAccess', 'true');
+        return true;
+    }
+    // ... ДЛЯ ТЕСТА
+
+
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('access');
     const tokenToCheck = token || currentToken;
@@ -68,6 +84,12 @@ async function checkPremiumAccess() {
 
 // Функция списания одной попытки перед платным расчётом
 async function useCalculation() {
+
+    // в тестовом режиме всегда успешно
+      if (TEST_MODE) return true;  // в тестовом режиме всегда успешно
+    // в тестовом режиме всегда успешно
+
+
     if (!premiumAccess || !currentToken) return false;
     try {
         const response = await fetch(`${SERVER_URL}/use-calculation`, {
@@ -1138,9 +1160,7 @@ html += `<details class="decode-card">
         calculateLuckyItems(data, nameNum, userName);
         calculateYearChart(inp);
       // ===================================
-        
-        // Кнопка "Поделиться"
-        const shareBtnHtml = `<button class="btn-gold" style="margin-top:15px; width:100%; font-size:0.9rem;" onclick="shareWithImage()"><i class="fa-solid fa-share-nodes"></i> Поделиться результатом</button>`;
+                     
         let shareContainer = document.getElementById('share-btn-container');
         if (!shareContainer) {
             shareContainer = document.createElement('div');
@@ -1220,9 +1240,8 @@ function drawRadarChart(data) {
     svg.setAttribute("viewBox", "0 0 400 400");
     const centerX = 200;
     const centerY = 200;
-    const maxRadius = 140; 
-    
-    // Описания секторов
+    const maxRadius = 150;
+
     const explanations = {
         1: { title: "Характер", text: "Сила воли, стержень, способность отстаивать свои границы и лидерство." },
         2: { title: "Энергия", text: "Ваш жизненный ресурс, способность действовать, общаться и влиять на других." },
@@ -1246,14 +1265,14 @@ function drawRadarChart(data) {
         { name: 'Долг', key: 8, max: 3 },
         { name: 'Память', key: 9, max: 4 }
     ];
-    
+
     const numParams = params.length;
     const angleStep = (2 * Math.PI) / numParams;
-    
-    svg.innerHTML = ''; 
-    
-    // 1. Сетка
-    const levels = 4;
+
+    svg.innerHTML = '';
+
+    // Сетка (5 уровней)
+    const levels = 5;
     for (let level = 1; level <= levels; level++) {
         const r = (maxRadius / levels) * level;
         const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -1261,8 +1280,8 @@ function drawRadarChart(data) {
         circle.setAttribute('r', r); circle.setAttribute('class', 'radar-grid');
         svg.appendChild(circle);
     }
-    
-    // 2. Оси
+
+    // Оси
     for (let i = 0; i < numParams; i++) {
         const angle = i * angleStep - Math.PI / 2;
         const x = centerX + maxRadius * Math.cos(angle);
@@ -1272,8 +1291,7 @@ function drawRadarChart(data) {
         axis.setAttribute('x2', x); axis.setAttribute('y2', y);
         axis.setAttribute('class', 'radar-axis');
         svg.appendChild(axis);
-        
-        // Подписи
+
         const labelRadius = maxRadius + 30;
         const labelX = centerX + labelRadius * Math.cos(angle);
         const labelY = centerY + labelRadius * Math.sin(angle);
@@ -1283,70 +1301,66 @@ function drawRadarChart(data) {
         label.textContent = params[i].name;
         svg.appendChild(label);
     }
-    
-    // 3. Фигура
+
+    // Фигура
     let areaPath = '';
     const points = [];
-    
+
     for (let i = 0; i < numParams; i++) {
         const angle = i * angleStep - Math.PI / 2;
         let val = data.c[params[i].key];
-        let normVal = Math.min(val, params[i].max); 
+        let normVal = Math.min(val, params[i].max);
         if (normVal === 0) normVal = 0.1;
 
         const valueRatio = normVal / params[i].max;
         const r = valueRatio * maxRadius;
-        
+
         const x = centerX + r * Math.cos(angle);
         const y = centerY + r * Math.sin(angle);
-        
-        points.push({ x, y, val, key: params[i].key }); // Сохраняем key для описания
+
+        points.push({ x, y, val, key: params[i].key });
         areaPath += (i === 0 ? 'M' : 'L') + `${x},${y}`;
     }
     areaPath += 'Z';
-    
+
     const area = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     area.setAttribute('d', areaPath);
     area.setAttribute('class', 'radar-area');
     svg.appendChild(area);
-    
-    // 4. Точки с КЛИКОМ
+
+    // Точки с кликом
     for (let i = 0; i < points.length; i++) {
         const p = points[i];
-        
-        // Группа для увеличения области клика
+
         const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
         g.style.cursor = "pointer";
-        
+
         const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         circle.setAttribute('cx', p.x); circle.setAttribute('cy', p.y);
-        circle.setAttribute('r', '9');
+        circle.setAttribute('r', '10');
         circle.setAttribute('class', 'radar-point-circle');
-        
+
         const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         text.setAttribute('x', p.x); text.setAttribute('y', p.y + 4);
         text.setAttribute('class', 'radar-point-value');
         text.textContent = p.val;
-        
-        // --- ЛОГИКА КЛИКА ---
-        g.onclick = function() {
-            // Подсветка активной точки
-            document.querySelectorAll('.radar-point-circle').forEach(c => {
-                c.setAttribute('stroke', '#D4AF37'); 
-                c.setAttribute('stroke-width', '2');
-            });
-            circle.setAttribute('stroke', '#fff'); // Белая обводка активной
-            circle.setAttribute('stroke-width', '4');
 
-            // Показ описания
+        g.onclick = function() {
+            document.querySelectorAll('.radar-point-circle').forEach(c => {
+                c.setAttribute('stroke', '#D4AF37');
+                c.setAttribute('stroke-width', '3');
+            });
+            circle.setAttribute('stroke', '#fff');
+            circle.setAttribute('stroke-width', '5');
+
             const tooltip = document.getElementById('radar-tooltip');
             const tTitle = document.getElementById('radar-tooltip-title');
             const tDesc = document.getElementById('radar-tooltip-desc');
             const info = explanations[p.key];
 
             tTitle.innerHTML = `${info.title}: <span style="color:#fff">${p.val}</span>`;
-            tDesc.innerHTML = `${info.text} <br><br> <em>(Чем больше цифра, тем сильнее качество).</em>`;
-            
+            tDesc.innerHTML = `${info.text} <br><br><em>(Чем больше цифра, тем сильнее качество).</em>`;
+
             tooltip.style.display = 'block';
         };
 
@@ -1354,7 +1368,7 @@ function drawRadarChart(data) {
         g.appendChild(text);
         svg.appendChild(g);
     }
-    
+
     document.getElementById('radar-container').style.display = 'block';
     setTimeout(() => document.getElementById('radar-container').style.opacity = '1', 200);
 }
@@ -3376,6 +3390,11 @@ async function calculateMoneyMatrix() {
     // Лоадер
     document.getElementById('result-money').style.display = 'none';
     document.getElementById('loader-money').style.display = 'flex';
+    // Показываем кнопку PDF, если есть премиум-доступ
+    if (premiumAccess) {
+    const pdfBtn = document.getElementById('download-money-pdf');
+    if (pdfBtn) pdfBtn.style.display = 'inline-block';
+}
 
     setTimeout(() => {
         const d = new Date(date);
@@ -3454,6 +3473,12 @@ function calculateMoneyCompat() {
     // Лоадер
     document.getElementById('result-money-compat').style.display = 'none';
     document.getElementById('loader-money-compat').style.display = 'flex';
+
+    // Показываем кнопку PDF, если есть премиум-доступ
+    if (premiumAccess) {
+    const pdfBtn = document.getElementById('download-money-pdf');
+    if (pdfBtn) pdfBtn.style.display = 'inline-block';
+}
 
     setTimeout(() => {
         // --- МАТЕМАТИКА ---
@@ -7039,3 +7064,58 @@ function updateAttemptsDisplay(remaining) {
 // (найдите место, где data.success и premiumAccess = true)
 // добавьте строку:
 // updateAttemptsDisplay(data.remaining);
+
+// Интерактивность радара
+document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('radar-canvas');
+    if (!canvas) return;
+    const tooltip = document.getElementById('radar-tooltip');
+    const tooltipTitle = document.getElementById('radar-tooltip-title');
+    const tooltipDesc = document.getElementById('radar-tooltip-desc');
+
+    const explanations = {
+        1: { title: "Характер", text: "Сила воли, лидерство, способность отстаивать границы." },
+        2: { title: "Энергия", text: "Жизненный ресурс, общительность, влияние на других." },
+        3: { title: "Интерес", text: "Тяга к знаниям, творчеству, обучаемость." },
+        4: { title: "Здоровье", text: "Физическая выносливость, иммунитет, красота." },
+        5: { title: "Логика", text: "Интуиция, аналитика, планирование." },
+        6: { title: "Труд", text: "Мастерство, усидчивость, практичность." },
+        7: { title: "Удача", text: "Везение, покровительство, интуиция." },
+        8: { title: "Долг", text: "Ответственность, забота, терпимость." },
+        9: { title: "Память", text: "Мудрость, интеллект, предвидение." }
+    };
+
+    canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const mouseX = (e.clientX - rect.left) * scaleX;
+        const mouseY = (e.clientY - rect.top) * scaleY;
+
+        const points = canvas.points;
+        if (!points) return;
+
+        let hovered = null;
+        points.forEach(p => {
+            const dx = mouseX - p.x;
+            const dy = mouseY - p.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < 15) hovered = p;
+        });
+
+        if (hovered) {
+            const info = explanations[hovered.key];
+            tooltipTitle.innerHTML = `${info.title}: <span style="color:${hovered.color}">${hovered.val}</span>`;
+            tooltipDesc.textContent = info.text;
+            tooltip.style.display = 'block';
+            canvas.style.cursor = 'pointer';
+        } else {
+            tooltip.style.display = 'none';
+            canvas.style.cursor = 'default';
+        }
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+        tooltip.style.display = 'none';
+    });
+});
