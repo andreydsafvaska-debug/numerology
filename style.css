@@ -358,11 +358,19 @@ input[type="date"]::-webkit-calendar-picker-indicator {
         max-width: 100%;
         padding: 0;
         margin: 0;
+        box-sizing: border-box;
     }
-
+    
+.child-inputs {
+    width: 100%;
+    box-sizing: border-box;
+}
+    
     .inputs-group {
         gap: 15px;
         width: 100%;
+        box-sizing: border-box;
+        flex-wrap: wrap;
     }
 
     /* Стиль для подсказки формата даты */
