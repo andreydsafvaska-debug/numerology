@@ -24,7 +24,7 @@ html {
 }
 
 body {
-    margin: 0;
+   margin: 0;
     padding: 0;
     font-family: 'Open Sans', sans-serif;
     background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
@@ -48,14 +48,8 @@ body {
     height: 1px;
     background: transparent;
     z-index: -1;
-    will-change: transform;
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    perspective: 1000px;
-}
-#stars, #stars2, #stars3 {
-    will-change: transform;
-    transform: translateZ(0);
+
+
 }
 
 @keyframes animStar {
@@ -155,18 +149,26 @@ main {
 section {
     display: none;
     padding: 20px;
-    animation: fadeIn 0.8s ease-out;
+    animation: fadeIn 0.5s ease-out;
     position: relative;
     z-index: 2;
+
 }
 
 section.active {
     display: block;
+
+
 }
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 768px) {
+    body, section, section.active {
+
+    }
 }
 
 /* ============================================
@@ -336,7 +338,43 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     max-width: 550px;
     padding: 25px;
 }
+/* ============================================
+   Адаптпция полей ввода
+   ============================================ */
+@media (max-width: 768px) {
+    /* Исправляем вылезание полей ввода */
+    input[type="text"],
+    input[type="date"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+        padding: 12px 15px !important;
+        font-size: 16px !important; /* чтобы не срабатывал зум при фокусе */
+    }
 
+    /* Контейнеры полей тоже ограничиваем */
+    .input-block {
+        width: 100%;
+        max-width: 100%;
+        padding: 0;
+        margin: 0;
+    }
+
+    .inputs-group {
+        gap: 15px;
+        width: 100%;
+    }
+
+    /* Стиль для подсказки формата даты */
+    .date-hint {
+        display: block;
+        font-size: 0.75rem;
+        color: #aaa;
+        margin-top: 4px;
+        margin-bottom: 8px;
+        text-align: left;
+    }
+}
 /* ============================================
    МАТРИЦА ПИФАГОРА
    ============================================ */

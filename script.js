@@ -259,24 +259,32 @@ createStars('stars3', 100, 3, 150);
    НАВИГАЦИЯ МЕЖДУ СЕКЦИЯМИ
    ============================================ */
 function showSection(id) {
-    // 1. Скрыть все секции
+    // Сначала плавно скрываем все секции
     document.querySelectorAll('section').forEach(section => {
-        section.classList.remove('active');
-        section.style.display = 'none';
+        section.style.opacity = '0';
+        section.style.transition = 'opacity 0.3s ease';
     });
-    // 2. Показать выбранную секцию
-    const activeSection = document.getElementById(id);
-    if (activeSection) {
-        activeSection.classList.add('active');
-        activeSection.style.display = 'block';
-    }
-    // 3. Обновить активную кнопку в меню
-    document.querySelectorAll('.nav-links button').forEach(btn => btn.classList.remove('active'));
-    const activeBtn = document.getElementById('btn-' + id);
-    if (activeBtn) activeBtn.classList.add('active');
-    // 4. Прокрутка вверх
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    
+
+    // Через короткую задержку переключаем видимость
+    setTimeout(() => {
+        document.querySelectorAll('section').forEach(section => {
+            section.classList.remove('active');
+            section.style.display = 'none';
+        });
+        const activeSection = document.getElementById(id);
+        if (activeSection) {
+            activeSection.classList.add('active');
+            activeSection.style.display = 'block';
+            // Принудительно вызываем перерисовку, затем делаем видимым
+            activeSection.offsetHeight; // reflow
+            activeSection.style.opacity = '1';
+        }
+        // Обновляем кнопки меню
+        document.querySelectorAll('.nav-links button').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.getElementById('btn-' + id);
+        if (activeBtn) activeBtn.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 300);
     if (premiumAccess) updateUIForPremium();
 }
 
@@ -7117,5 +7125,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     canvas.addEventListener('mouseleave', () => {
         tooltip.style.display = 'none';
+    });
+});
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('section').forEach(s => {
+        if (!s.classList.contains('active')) {
+            s.style.display = 'none';
+            s.style.opacity = '0';
+        } else {
+            s.style.opacity = '1';
+        }
     });
 });
