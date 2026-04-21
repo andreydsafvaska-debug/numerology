@@ -48,6 +48,14 @@ body {
     height: 1px;
     background: transparent;
     z-index: -1;
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+#stars, #stars2, #stars3 {
+    will-change: transform;
+    transform: translateZ(0);
 }
 
 @keyframes animStar {
@@ -891,16 +899,16 @@ footer {
 /* ============================================
    РАДАРНАЯ ДИАГРАММА (PRO)
    ============================================ */
+/* УЛУЧШЕННАЯ РАДАРНАЯ ДИАГРАММА */
 .radar-container {
-    margin: -4px auto;
+    margin: 30px auto;
     text-align: center;
-    position: relative;
 }
 
 .radar-chart {
     position: relative;
     width: 100%;
-    max-width: 450px; /* Увеличили размер */
+    max-width: 600px;
     height: auto;
     aspect-ratio: 1 / 1;
     margin: 0 auto;
@@ -909,53 +917,76 @@ footer {
 .radar-svg {
     width: 100%;
     height: 100%;
-    overflow: visible; /* Чтобы текст не обрезался */
-    filter: drop-shadow(0 0 10px rgba(212,175,55,0.2));
+    filter: drop-shadow(0 0 15px rgba(212,175,55,0.3));
+    cursor: pointer;
 }
 
 .radar-grid {
     fill: none;
-    stroke: rgba(255, 255, 255, 0.1); /* Тонкая сетка */
-    stroke-width: 1;
+    stroke: rgba(255,255,255,0.15);
+    stroke-width: 1.5;
 }
 
 .radar-axis {
-    stroke: rgba(255, 255, 255, 0.1);
-    stroke-width: 1;
-    stroke-dasharray: 4 4; /* Пунктирная линия осей */
+    stroke: rgba(255,255,255,0.2);
+    stroke-width: 1.5;
+    stroke-dasharray: 5 5;
 }
 
 .radar-area {
-    fill: rgba(212, 175, 55, 0.4); /* Золотая заливка */
-    stroke: var(--gold);
-    stroke-width: 2.5;
-    filter: drop-shadow(0 0 8px var(--gold)); /* Свечение */
-    transition: all 1s ease;
+    fill: rgba(212,175,55,0.35);
+    stroke: #D4AF37;
+    stroke-width: 3;
+    filter: drop-shadow(0 0 12px #D4AF37);
+    transition: all 0.5s ease;
 }
 
 .radar-label {
-    fill: var(--purple-light);
-    font-size: 12px;
+    fill: #9b87f5;
+    font-size: 14px;
     font-family: 'Open Sans', sans-serif;
     font-weight: 600;
     text-anchor: middle;
-    alignment-baseline: middle;
     text-transform: uppercase;
     letter-spacing: 1px;
+    text-shadow: 0 0 8px rgba(155,135,245,0.5);
+}
+
+.radar-point-circle {
+    fill: #1a1a2e;
+    stroke: #D4AF37;
+    stroke-width: 3;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.radar-point-circle:hover {
+    fill: #D4AF37;
+    stroke: #fff;
+    stroke-width: 4;
+    transform: scale(1.2);
+    transform-origin: center;
 }
 
 .radar-point-value {
     fill: #fff;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: bold;
     text-anchor: middle;
     alignment-baseline: middle;
+    pointer-events: none;
 }
 
-.radar-point-circle {
-    fill: var(--bg-dark);
-    stroke: var(--gold);
-    stroke-width: 2;
+/* Подсказка при клике */
+#radar-tooltip {
+    margin-top: 25px;
+    padding: 18px 22px;
+    background: rgba(20,20,40,0.9);
+    border: 1px solid #D4AF37;
+    border-radius: 16px;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    transition: opacity 0.3s ease;
 }
 
 /* ============================================
@@ -3297,62 +3328,6 @@ html::-webkit-scrollbar-thumb:hover {
     }
 }
 
-/* Кнопки курса – компактный и красивый вид */
-.btn-course {
-    background: linear-gradient(135deg, var(--gold), #b89220);
-    color: #1A1F2C;
-    border: none;
-    border-radius: 40px;        /* скруглённые, современные */
-    font-family: 'Open Sans', sans-serif;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.3s;
-    text-decoration: none;
-    display: inline-block;
-    text-align: center;
-    padding: 12px 20px;         /* уменьшенный паддинг */
-    width: auto;                /* не растягивается на всю ширину */
-    min-width: 200px;           /* минимальная ширина, чтобы не было слишком узко */
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-
-.btn-course:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(212, 175, 55, 0.4);
-    background: var(--gold-hover);
-}
-
-.btn-course-mentor {
-    background: linear-gradient(135deg, #7E69AB, #9b87f5);
-    border: 1px solid rgba(255,255,255,0.3);
-    color: white;
-}
-
-.btn-course-mentor:hover {
-    background: linear-gradient(135deg, #9b87f5, #b8a9f0);
-    box-shadow: 0 8px 20px rgba(155, 135, 245, 0.4);
-}
-
-/* Контейнер для кнопок – центрируем и даём отступы */
-.course-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    flex-wrap: wrap;
-    margin-top: 20px;
-}
-
-/* Мобильная адаптация – кнопки в столбик, но уже */
-@media (max-width: 600px) {
-    .course-buttons {
-        flex-direction: column;
-        align-items: center;
-    }
-    .btn-course {
-        width: 100%;
-        max-width: 280px;
-    }
-}
 
 /* Стиль для заголовка радара */
 #radar-container h4 {
@@ -3586,7 +3561,7 @@ h1 {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-width: 280px;
+    min-width: 134px;
     padding: 20px 30px;
     border: none;
     border-radius: 60px;
@@ -3673,20 +3648,104 @@ h1 {
     margin-right: 8px;
     font-size: 1.2rem;
 }
-
+/* Карточки цен (3D эффект) */
+.pricing-cards {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+.pricing-card {
+    background: rgba(20,20,35,0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    padding: 35px 30px;
+    width: 300px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+}
+.pricing-card-gold {
+    border-top: 4px solid var(--gold);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+.pricing-card-premium {
+    border-top: 4px solid var(--purple-light);
+    box-shadow: 0 15px 35px rgba(155,135,245,0.2);
+}
+.pricing-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 25px 40px rgba(0,0,0,0.5);
+    border-color: var(--gold);
+}
+.pricing-badge {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+.pricing-card h4 {
+    color: #fff;
+    margin-bottom: 10px;
+    font-size: 1.5rem;
+}
+.pricing-desc {
+    color: #aaa;
+    font-size: 0.9rem;
+    min-height: 40px;
+}
+.pricing-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    color: var(--gold);
+    margin: 20px 0;
+    font-weight: bold;
+}
+.seats-left {
+    background: rgba(255,107,107,0.15);
+    color: #ff9f9f;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    margin-bottom: 20px;
+    border: 1px dashed #ff6b6b;
+}
+.btn-course-premium {
+    background: linear-gradient(135deg, #7E69AB, #9b87f5) !important;
+    color: white !important;
+    border: none !important;
+}
+.btn-course-premium:hover {
+    background: linear-gradient(135deg, #9b87f5, #b8a9f0) !important;
+    box-shadow: 0 0 25px rgba(155,135,245,0.5) !important;
+}
 /* Адаптация для мобильных */
 @media (max-width: 680px) {
     .course-buttons {
-        gap: 20px;
+        flex-direction: column;
+        align-items: center;
+        padding: 0 10px;
     }
     
     .btn-course {
-        min-width: 260px;
-        padding: 18px 25px;
+         width: 100%;
+        max-width: 280px;
+        margin: 0 auto; /* Центрирование */
+        padding: 18px 20px;
+        white-space: normal;
+        word-wrap: break-word;
+        box-sizing: border-box;
     }
     
     .btn-course strong {
         font-size: 1.2rem;
+    }
+    .btn-course span {
+        white-space: normal;
+        display: block;
+    }
+    .btn-course strong {
+        display: block;
+        margin-top: 5px;
     }
 }
 
@@ -4047,76 +4106,7 @@ h1 {
     margin: 5px 0;
 }
 
-/* Карточки цен (3D эффект) */
-.pricing-cards {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    flex-wrap: wrap;
-}
-.pricing-card {
-    background: rgba(20,20,35,0.9);
-    backdrop-filter: blur(10px);
-    border-radius: 30px;
-    padding: 35px 30px;
-    width: 300px;
-    text-align: center;
-    border: 1px solid rgba(255,255,255,0.1);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    position: relative;
-}
-.pricing-card-gold {
-    border-top: 4px solid var(--gold);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-}
-.pricing-card-premium {
-    border-top: 4px solid var(--purple-light);
-    box-shadow: 0 15px 35px rgba(155,135,245,0.2);
-}
-.pricing-card:hover {
-    transform: translateY(-10px) scale(1.02);
-    box-shadow: 0 25px 40px rgba(0,0,0,0.5);
-    border-color: var(--gold);
-}
-.pricing-badge {
-    font-size: 2.5rem;
-    margin-bottom: 15px;
-}
-.pricing-card h4 {
-    color: #fff;
-    margin-bottom: 10px;
-    font-size: 1.5rem;
-}
-.pricing-desc {
-    color: #aaa;
-    font-size: 0.9rem;
-    min-height: 40px;
-}
-.pricing-price {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 2.5rem;
-    color: var(--gold);
-    margin: 20px 0;
-    font-weight: bold;
-}
-.seats-left {
-    background: rgba(255,107,107,0.15);
-    color: #ff9f9f;
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    margin-bottom: 20px;
-    border: 1px dashed #ff6b6b;
-}
-.btn-course-premium {
-    background: linear-gradient(135deg, #7E69AB, #9b87f5) !important;
-    color: white !important;
-    border: none !important;
-}
-.btn-course-premium:hover {
-    background: linear-gradient(135deg, #9b87f5, #b8a9f0) !important;
-    box-shadow: 0 0 25px rgba(155,135,245,0.5) !important;
-}
+
 
 /* Счётчик выпускников */
 .graduates-counter {
@@ -4224,4 +4214,47 @@ h1 {
 .attempts-counter i {
     color: var(--gold);
     margin-right: 8px;
+}
+
+/* Исправление для секции курса на мобильных */
+@media (max-width: 680px) {
+    #course .calc-container {
+        padding: 20px 10px !important;
+        margin: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    #course .pricing-cards {
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 auto !important;
+    }
+    #course .pricing-card {
+        width: 100% !important;
+        max-width: 350px !important;
+        margin: 10px auto !important;
+        box-sizing: border-box !important;
+    }
+    #course .btn-course {
+        width: 100% !important;
+        max-width: 280px !important;
+        margin: 10px auto !important;
+        padding: 18px 20px !important;
+        white-space: normal !important;
+        word-wrap: break-word !important;
+        display: block !important;
+        text-align: center !important;
+    }
+    #course .benefits-row {
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+    #course .benefit-card-old {
+        width: 100% !important;
+        max-width: 300px !important;
+        margin: 10px auto !important;
+    }
 }
