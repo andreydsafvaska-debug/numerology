@@ -6,7 +6,7 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
+// --- ЗАГРУЗКА ТОКЕНОВ (ДОБАВЛЕНО) ---
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', 'https://andreydsafvaska-debug.github.io');
     res.header('Access-Control-Allow-Headers', 'Content-Type');
