@@ -1,13 +1,14 @@
 const express = require('express');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
+const chromium = require('@sparticuz/chromium');
 const cors = require('cors');
-const fs = require('fs');          // <-- ДОБАВЛЕНО
+const fs = require('fs');
 const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors()); // временно разрешить все домены
+app.use(cors()); // временно
 app.use(express.json({ limit: '10mb' }));
 
 // --- ЗАГРУЗКА ТОКЕНОВ (ДОБАВЛЕНО) ---
