@@ -7,7 +7,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors({ origin: 'https://andreydsafvaska-debug.github.io' }));
+app.use(cors()); // временно разрешить все домены
 app.use(express.json({ limit: '10mb' }));
 
 // --- ЗАГРУЗКА ТОКЕНОВ (ДОБАВЛЕНО) ---
