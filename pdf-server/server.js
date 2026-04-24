@@ -1,5 +1,6 @@
 const express = require('express');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
+const chromium = require('@sparticuz/chromium');
 const cors = require('cors');
 const fs = require('fs');          // <-- ДОБАВЛЕНО
 const path = require('path');
@@ -155,9 +156,12 @@ app.post('/generate-pdf', async (req, res) => {
         const html = buildReportHTML(payload);
 
         const browser = await puppeteer.launch({
-            headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
-        });
+    args: chromium.args,
+    executablePath: await chromium.executablePath(),
+    headless: chromium.headless,
+    defaultViewport: chromium.defaultViewport,
+    ignoreHTTPSErrors: true
+});
         const page = await browser.newPage();
         await page.setContent(html, { waitUntil: 'networkidle0' });
 
@@ -256,9 +260,12 @@ app.post('/generate-pdf-from-html', async (req, res) => {
         console.log(`[${new Date().toISOString()}] Генерация PDF из HTML`);
 
         const browser = await puppeteer.launch({
-            headless: 'new',
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
-        });
+    args: chromium.args,
+    executablePath: await chromium.executablePath(),
+    headless: chromium.headless,
+    defaultViewport: chromium.defaultViewport,
+    ignoreHTTPSErrors: true
+});
         const page = await browser.newPage();
         await page.setContent(html, { waitUntil: 'networkidle0' });
 
