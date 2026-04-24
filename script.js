@@ -6889,7 +6889,7 @@ const payload = {
     }
 };
         // 4. Отправляем на сервер
-        const response = await fetch('http://localhost:3000/generate-pdf', {
+        const response = await fetch('${SERVER_URL/generate-pdf', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -6918,7 +6918,7 @@ const payload = {
 
     } catch (error) {
         console.error('Ошибка генерации PDF:', error);
-        alert('Не удалось создать PDF. Убедитесь, что сервер запущен (http://localhost:3000).');
+        alert('Не удалось создать PDF. Убедитесь, что сервер запущен (http://${SERVER_URL).');
     } finally {
         if (btn) {
             btn.disabled = false;

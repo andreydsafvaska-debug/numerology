@@ -1,14 +1,21 @@
 const express = require('express');
 const puppeteer = require('puppeteer-core');
 const chromium = require('@sparticuz/chromium');
-const cors = require('cors');
 const fs = require('fs');          // <-- ДОБАВЛЕНО
 const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors()); // Временно разрешаем все источники
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', 'https://andreydsafvaska-debug.github.io');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+    } else {
+        next();
+    }
+});
 app.use(express.json({ limit: '10mb' }));
 
 // --- ЗАГРУЗКА ТОКЕНОВ (ДОБАВЛЕНО) ---
