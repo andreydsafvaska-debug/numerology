@@ -245,6 +245,42 @@ app.post('/use-calculation', (req, res) => {
     });
 });
 
+// Маршрут для генерации PDF из готового HTML (для всех разделов)
+app.post('/generate-pdf-from-html', async (req, res) => {
+    try {
+        const { html } = req.body;
+        if (!html) {
+            return res.status(400).json({ error: 'HTML обязателен' });
+        }
+
+        console.log(`[${new Date().toISOString()}] Генерация PDF из HTML`);
+
+        const browser = await puppeteer.launch({
+            headless: 'new',
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
+        const page = await browser.newPage();
+        await page.setContent(html, { waitUntil: 'networkidle0' });
+
+        const pdfBuffer = await page.pdf({
+            format: 'A4',
+            printBackground: true,
+            margin: { top: '0mm', bottom: '0mm', left: '0mm', right: '0mm' },
+            displayHeaderFooter: false
+        });
+
+        await browser.close();
+
+        res.setHeader('Content-Type', 'application/pdf');
+        const encodedFileName = encodeURIComponent('report.pdf');
+        res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodedFileName}`);
+        res.send(pdfBuffer);
+    } catch (error) {
+        console.error('Ошибка при генерации PDF из HTML:', error);
+        res.status(500).json({ error: 'Не удалось создать PDF' });
+    }
+});
+
 // Запуск сервера
 app.listen(PORT, () => {
     console.log(`✅ PDF-сервер запущен на http://localhost:${PORT}`);
