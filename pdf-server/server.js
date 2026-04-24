@@ -1,21 +1,13 @@
 const express = require('express');
-const puppeteer = require('puppeteer-core');
-const chromium = require('@sparticuz/chromium');
+const puppeteer = require('puppeteer');
+const cors = require('cors');
 const fs = require('fs');          // <-- ДОБАВЛЕНО
 const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-// --- ЗАГРУЗКА ТОКЕНОВ (ДОБАВЛЕНО) ---
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'https://andreydsafvaska-debug.github.io');
-    res.header('Access-Control-Allow-Headers', 'Content-Type');
-    if (req.method === 'OPTIONS') {
-        res.sendStatus(200);
-    } else {
-        next();
-    }
-});
+
+app.use(cors({ origin: 'https://andreydsafvaska-debug.github.io' }));
 app.use(express.json({ limit: '10mb' }));
 
 // --- ЗАГРУЗКА ТОКЕНОВ (ДОБАВЛЕНО) ---
@@ -163,12 +155,9 @@ app.post('/generate-pdf', async (req, res) => {
         const html = buildReportHTML(payload);
 
         const browser = await puppeteer.launch({
-    args: chromium.args,
-    executablePath: await chromium.executablePath(),
-    headless: chromium.headless,
-    defaultViewport: chromium.defaultViewport,
-    ignoreHTTPSErrors: true
-});
+            headless: 'new',
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
         const page = await browser.newPage();
         await page.setContent(html, { waitUntil: 'networkidle0' });
 
@@ -254,45 +243,6 @@ app.post('/use-calculation', (req, res) => {
         remaining: 4 - tokenEntry.used,
         locked: tokenEntry.used >= 4
     });
-});
-
-// Маршрут для генерации PDF из готового HTML (для всех разделов)
-app.post('/generate-pdf-from-html', async (req, res) => {
-    try {
-        const { html } = req.body;
-        if (!html) {
-            return res.status(400).json({ error: 'HTML обязателен' });
-        }
-
-        console.log(`[${new Date().toISOString()}] Генерация PDF из HTML`);
-
-        const browser = await puppeteer.launch({
-    args: chromium.args,
-    executablePath: await chromium.executablePath(),
-    headless: chromium.headless,
-    defaultViewport: chromium.defaultViewport,
-    ignoreHTTPSErrors: true
-});
-        const page = await browser.newPage();
-        await page.setContent(html, { waitUntil: 'networkidle0' });
-
-        const pdfBuffer = await page.pdf({
-            format: 'A4',
-            printBackground: true,
-            margin: { top: '0mm', bottom: '0mm', left: '0mm', right: '0mm' },
-            displayHeaderFooter: false
-        });
-
-        await browser.close();
-
-        res.setHeader('Content-Type', 'application/pdf');
-        const encodedFileName = encodeURIComponent('report.pdf');
-        res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodedFileName}`);
-        res.send(pdfBuffer);
-    } catch (error) {
-        console.error('Ошибка при генерации PDF из HTML:', error);
-        res.status(500).json({ error: 'Не удалось создать PDF' });
-    }
 });
 
 // Запуск сервера

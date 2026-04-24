@@ -579,11 +579,6 @@ document.getElementById('compat-names').innerHTML = `${safeName1 || 'Мужчи�
         stopMagicAnimation('magic-numbers-compat');
         document.getElementById('loader-compat').style.display = 'none';
         document.getElementById('result-compat').style.opacity = '1';
-                // Показываем кнопку PDF, если есть премиум-доступ
-        if (premiumAccess) {
-            const pdfBtn = document.getElementById('download-compat-pdf');
-            if (pdfBtn) pdfBtn.style.display = 'inline-block';
-        }
     }, 1500); // Увеличил время до 1.5 сек для красоты
 }
         
@@ -3407,7 +3402,6 @@ async function calculateMoneyMatrix() {
     if (premiumAccess) {
     const pdfBtn = document.getElementById('download-money-pdf');
     if (pdfBtn) pdfBtn.style.display = 'inline-block';
-        
 }
 
     setTimeout(() => {
@@ -5213,11 +5207,6 @@ async function calculateParentChild() {
         document.getElementById('loader-parent-child').style.display = 'none';
         document.getElementById('result-parent-child').style.display = 'block';
         stopMagicAnimation('magic-numbers-parent-child');
-                // Показываем кнопку PDF, если есть премиум-доступ
-        if (premiumAccess) {
-            const pdfBtn = document.getElementById('download-compat-pdf');
-            if (pdfBtn) pdfBtn.style.display = 'inline-block';
-        }
     }, 1500);
 }
 
@@ -6889,19 +6878,19 @@ const payload = {
     }
 };
         // 4. Отправляем на сервер
-        const response = await fetch('${SERVER_URL/generate-pdf', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                userName,
-                birthDate,
-                matrix: matrixCells,
-                lifePath: data.master || data.lp,
-                nameNum,
-                syntheses,
-                forecasts
-            })
-        });
+const response = await fetch(`${SERVER_URL}/generate-pdf`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        userName,
+        birthDate,
+        matrix: matrixCells,
+        lifePath: data.master || data.lp,
+        nameNum,
+        syntheses,
+        forecasts
+    })
+});
 
         if (!response.ok) throw new Error('Ошибка сервера');
 
@@ -6918,7 +6907,7 @@ const payload = {
 
     } catch (error) {
         console.error('Ошибка генерации PDF:', error);
-        alert('Не удалось создать PDF. Убедитесь, что сервер запущен (http://${SERVER_URL).');
+        alert('Не удалось создать PDF. Убедитесь, что сервер запущен (http://localhost:3000).');
     } finally {
         if (btn) {
             btn.disabled = false;
@@ -7149,9 +7138,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// ==========================================================
-// ФУНКЦИЯ ГЕНЕРАЦИИ PDF ДЛЯ ОСТАЛЬНЫХ РАЗДЕЛОВ
-// ==========================================================
+// Функция для скачивания PDF из разделов (Совместимость, Финансы, Родитель-ребёнок)
 async function downloadSectionPDF(section) {
     if (!premiumAccess) {
         openUnlockPaymentModal();
@@ -7161,38 +7148,39 @@ async function downloadSectionPDF(section) {
     let html = '';
     let filename = 'report.pdf';
 
-    // Вспомогательная функция безопасного получения текста
+    // Безопасное получение текста из поля
     const getText = (id) => document.getElementById(id)?.value?.trim() || '';
 
-    if (section === 'compat') {
-        const name1 = getText('nameP1') || 'Партнёр 1';
-        const name2 = getText('nameP2') || 'Партнёр 2';
-        const date1 = getText('dateP1');
-        const date2 = getText('dateP2');
-        const matricesContainer = document.getElementById('matrices-compare-container')?.innerHTML || '';
-        const compatNumber = document.getElementById('compat-number')?.textContent?.trim() || '';
-        const compatText = document.getElementById('compat-text')?.innerHTML || '';
+    try {
+        if (section === 'compat') {
+            const name1 = getText('nameP1') || 'Партнёр 1';
+            const name2 = getText('nameP2') || 'Партнёр 2';
+            const date1 = getText('dateP1');
+            const date2 = getText('dateP2');
+            const matrices = document.getElementById('matrices-compare-container')?.innerHTML || '';
+            const compatNumber = document.getElementById('compat-number')?.textContent?.trim() || '';
+            const compatText = document.getElementById('compat-text')?.innerHTML || '';
 
-        html = `<!DOCTYPE html>
+            html = `<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><title>Совместимость ${name1} и ${name2}</title>
 <style>body{background:#1a1a2e;color:#eee;font-family:'Cormorant Garamond',serif;padding:40px;} h1,h2{color:#D4AF37;} .matrix-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;} .matrix-cell{background:#1e1e3a;border:1px solid #D4AF37;border-radius:8px;padding:8px;text-align:center;}</style>
 </head><body>
 <h1>Совместимость партнёров</h1>
 <h2>${name1} и ${name2}</h2>
 <p>Даты рождения: ${date1} и ${date2}</p>
-<div>${matricesContainer}</div>
+<div>${matrices}</div>
 <h2>Энергия союза: ${compatNumber}</h2>
 <div>${compatText}</div>
 <p style="margin-top:40px;text-align:center;color:#aaa;">© Astra Numerology</p>
 </body></html>`;
-        filename = `Совместимость_${name1}_${name2}.pdf`;
+            filename = `Совместимость_${name1}_${name2}.pdf`;
 
-    } else if (section === 'money') {
-        let content = document.getElementById('result-money')?.innerHTML || '';
-        if (!content || document.getElementById('result-money')?.style.display === 'none') {
-            content = document.getElementById('result-money-compat')?.innerHTML || '';
-        }
-        html = `<!DOCTYPE html>
+        } else if (section === 'money') {
+            let content = document.getElementById('result-money')?.innerHTML || '';
+            if (!content || document.getElementById('result-money')?.style.display === 'none') {
+                content = document.getElementById('result-money-compat')?.innerHTML || '';
+            }
+            html = `<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><title>Финансовый архетип</title>
 <style>body{background:#1a1a2e;color:#eee;font-family:'Cormorant Garamond',serif;padding:40px;} h1,h2{color:#D4AF37;} .matrix-card{background:rgba(0,0,0,0.2);padding:15px;border-radius:10px;margin:15px 0;}</style>
 </head><body>
@@ -7200,13 +7188,13 @@ async function downloadSectionPDF(section) {
 ${content}
 <p style="margin-top:40px;text-align:center;color:#aaa;">© Astra Numerology</p>
 </body></html>`;
-        filename = `Финансовый_архетип.pdf`;
+            filename = `Финансовый_архетип.pdf`;
 
-    } else if (section === 'parentchild') {
-        const parentName = getText('parentName') || 'Родитель';
-        const childName = getText('childName') || 'Ребёнок';
-        const content = document.getElementById('result-parent-child')?.innerHTML || '';
-        html = `<!DOCTYPE html>
+        } else if (section === 'parentchild') {
+            const parentName = getText('parentName') || 'Родитель';
+            const childName = getText('childName') || 'Ребёнок';
+            const content = document.getElementById('result-parent-child')?.innerHTML || '';
+            html = `<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><title>Родитель и ребёнок</title>
 <style>body{background:#1a1a2e;color:#eee;font-family:'Cormorant Garamond',serif;padding:40px;} h1,h2{color:#D4AF37;}</style>
 </head><body>
@@ -7215,12 +7203,11 @@ ${content}
 ${content}
 <p style="margin-top:40px;text-align:center;color:#aaa;">© Astra Numerology</p>
 </body></html>`;
-        filename = `Родитель_ребёнок_${childName}.pdf`;
-    }
+            filename = `Родитель_ребёнок_${childName}.pdf`;
+        }
 
-    if (!html) return;
+        if (!html) return;
 
-    try {
         const response = await fetch(`${SERVER_URL}/generate-pdf-from-html`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
