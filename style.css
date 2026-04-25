@@ -28,6 +28,7 @@ body {
     padding: 0;
     font-family: 'Open Sans', sans-serif;
     background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+    background: #090A0F; /* запасной цвет на случай, если градиент не загрузится */
     color: var(--text-main);
     min-height: 100vh;
     overflow-x: hidden;
@@ -37,6 +38,10 @@ body {
     flex-direction: column;
 }
 
+section {
+    background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+    min-height: 100vh;
+}
 /* ============================================
    ЗВЕЗДЫ И ФОН
    ============================================ */
@@ -50,6 +55,13 @@ body {
     z-index: -1;
 
 
+}
+/* Аппаратное ускорение для звёзд */
+#stars, #stars2, #stars3 {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
 }
 
 @keyframes animStar {

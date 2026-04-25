@@ -261,15 +261,27 @@ app.post('/check-token', (req, res) => {
     if (!token) return res.status(400).json({ error: 'Token required' });
 
     const now = new Date();
-    const tokenEntry = tokensData.tokens.find(t => t.token === token);
-    if (!tokenEntry) return res.status(403).json({ success: false, error: 'Invalid token' });
+    let tokenEntry = tokensData.tokens.find(t => t.token === token);
 
+    if (!tokenEntry) {
+        // Токен не найден — создаём новый (автоматическая регистрация)
+        tokenEntry = {
+            token: token,
+            used: 0,
+            lastUsed: null,
+            lockedUntil: null
+        };
+        tokensData.tokens.push(tokenEntry);
+        saveTokens();
+    }
+
+    // Проверяем карантин
     if (tokenEntry.lockedUntil && new Date(tokenEntry.lockedUntil) > now) {
         return res.status(403).json({ success: false, error: 'Token in quarantine' });
     }
 
+    // Если токен был полностью использован, но карантин истёк – сбрасываем
     if (tokenEntry.used >= 4) {
-        // если карантин истёк — сбрасываем
         tokenEntry.used = 0;
         tokenEntry.lastUsed = null;
         tokenEntry.lockedUntil = null;
