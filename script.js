@@ -236,24 +236,6 @@ function openOfferText() {
     document.getElementById('offer-text-modal').style.display = 'flex';
 }
 
-/* ============================================
-   СОЗДАНИЕ ЗВЁЗДНОГО ФОНА
-   ============================================ */
-function createStars(id, c, s, d) {
-    const l = document.getElementById(id);
-    let sh = [];
-    for(let i = 0; i < c; i++) {
-        sh.push(`${Math.random()*2000}px ${Math.random()*2000}px #FFF`);
-    }
-    l.style.boxShadow = sh.join(',');
-    l.style.width = s + 'px';
-    l.style.height = s + 'px';
-    l.style.animation = `animStar ${d}s linear infinite`;
-}
-
-createStars('stars', 700, 1, 50);
-createStars('stars2', 200, 2, 100);
-createStars('stars3', 100, 3, 150);
 
 /* ============================================
    НАВИГАЦИЯ МЕЖДУ СЕКЦИЯМИ
@@ -7230,3 +7212,56 @@ ${content}
         alert('Не удалось создать PDF. Попробуйте позже.');
     }
 }
+
+// Новый звёздный фон на Canvas
+(function() {
+    const canvas = document.getElementById('star-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let stars = [];
+    const STAR_COUNT = 400; // Можешь менять количество звёзд
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+
+    function createStars() {
+        stars = [];
+        for (let i = 0; i < STAR_COUNT; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 1.8 + 0.2,
+                speed: Math.random() * 0.3 + 0.05,
+                opacity: Math.random() * 0.5 + 0.3
+            });
+        }
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        stars.forEach(star => {
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255,255,255,${star.opacity})`;
+            ctx.fill();
+            // Движение вверх
+            star.y -= star.speed;
+            if (star.y < -5) {
+                star.y = canvas.height + 5;
+                star.x = Math.random() * canvas.width;
+            }
+        });
+        requestAnimationFrame(draw);
+    }
+
+    window.addEventListener('resize', () => {
+        resize();
+        createStars();
+    });
+
+    resize();
+    createStars();
+    draw();
+})();

@@ -39,7 +39,7 @@ body {
 }
 
 section {
-    background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+    background: transparent;
     min-height: 100vh;
 }
 /* ============================================
@@ -56,13 +56,7 @@ section {
 
 
 }
-/* Аппаратное ускорение для звёзд */
-#stars, #stars2, #stars3 {
-    will-change: transform;
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    perspective: 1000px;
-}
+
 
 @keyframes animStar {
     from { transform: translateY(0px); }
@@ -4315,4 +4309,15 @@ h1 {
         max-width: 300px !important;
         margin: 10px auto !important;
     }
+}
+
+#star-canvas {
+    background: transparent !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: -1 !important;
+    pointer-events: none !important;
 }
