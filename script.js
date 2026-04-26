@@ -1,3 +1,15 @@
+// Временный отладчик для поиска вызова toLowerCase на undefined
+(function() {
+    const original = String.prototype.toLowerCase;
+    String.prototype.toLowerCase = function() {
+        if (this === undefined || this === null) {
+            console.trace('ОШИБКА: toLowerCase вызван на undefined/null');
+            return '';
+        }
+        return original.call(this);
+    };
+})();
+
 // ВАШ НОМЕР WHATSAPP
 const myPhone = "79956506287";
 
@@ -5,7 +17,38 @@ const myPhone = "79956506287";
 
 // ⚡ ТЕСТОВЫЙ РЕЖИМ (true = всё бесплатно, false = платно)
 const TEST_MODE = true;
-
+// ==========================================================
+//  ПРОВЕРКА ЦЕЛОСТНОСТИ ДАННЫХ (защита от пропажи файлов)
+// ==========================================================
+/*(function checkRequiredData() {
+    const required = {
+        'cellTexts':              typeof cellTexts !== 'undefined',
+        'rowTexts':               typeof rowTexts !== 'undefined',
+        'compatibilityDescriptions': typeof compatibilityDescriptions !== 'undefined',
+        'moneyMatrixData':        typeof moneyMatrixData !== 'undefined',
+        'moneyCompatData':        typeof moneyCompatData !== 'undefined',
+        'parentChildTexts':       typeof parentChildTexts !== 'undefined',
+        'childLifePathTexts':     typeof childLifePathTexts !== 'undefined',
+        'pythagorasSynthesis':    typeof pythagorasSynthesis !== 'undefined',
+        'lifePathDescriptions':   typeof lifePathDescriptions !== 'undefined',
+        'lifePathAdvice':         typeof lifePathAdvice !== 'undefined',
+        'arcanaFullData':         typeof arcanaFullData !== 'undefined'  // если есть файл data-arcana-full.js
+    };
+    const missing = Object.keys(required).filter(key => !required[key]);
+    if (missing.length > 0) {
+        // Показываем сообщение вместо всего контента
+        document.body.innerHTML = `
+            <div style="display:flex;align-items:center;justify-content:center;height:100vh;color:white;font-size:1.2rem;text-align:center;background:#0f0c29;padding:20px;">
+                <div>
+                    <h2 style="color:#D4AF37; font-family: 'Cormorant Garamond', serif;">⚠️ Ошибка загрузки данных</h2>
+                    <p style="color:#ccc;">Отсутствуют следующие модули:</p>
+                    <p style="color:#ff6b6b; font-weight:bold;">${missing.join(', ')}</p>
+                    <p style="color:#aaa; margin-top:20px;">Пожалуйста, обновите страницу (F5) или свяжитесь с администратором.</p>
+                </div>
+            </div>`;
+        //throw new Error('Отсутствуют обязательные данные: ' + missing.join(', '));
+    }
+})();*/
 
 // Функция для безопасного экранирования HTML-спецсимволов
 function escapeHTML(str) {
@@ -15,12 +58,60 @@ function escapeHTML(str) {
     });
 }
 
+// Индикация загрузки PDF
+function setPdfLoading(btnId) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.disabled = true;
+    btn.classList.add('pdf-loading');
+    btn.setAttribute('data-original-html', btn.innerHTML);
+    btn.setAttribute('data-original-display', btn.style.display || '');
+    btn.style.display = 'inline-block';   // покажем кнопку, если была скрыта
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Генерация PDF...';
+}
+
+function resetPdfButton(btnId) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    const originalHTML = btn.getAttribute('data-original-html');
+    if (originalHTML) btn.innerHTML = originalHTML;
+    const originalDisplay = btn.getAttribute('data-original-display');
+    if (originalDisplay !== undefined) btn.style.display = originalDisplay;
+    btn.disabled = false;
+    btn.classList.remove('pdf-loading');
+}
+
 // ==========================================================
 // ПРЕМИУМ-ДОСТУП С СЕРВЕРОМ (ОДНОРАЗОВЫЕ ТОКЕНЫ)
 // ==========================================================
 let premiumAccess = false;
 let currentToken = localStorage.getItem('accessToken') || '';
 const SERVER_URL = 'https://numerology-pdf-server.onrender.com'; // ← ЗАМЕНИТЕ НА ВАШ РЕАЛЬНЫЙ URL СЕРВЕРА
+// При загрузке проверяем сохранённый токен и показываем счётчик
+(async function showCounterIfPaid() {
+    const token = localStorage.getItem('accessToken');
+    if (!token) return;
+
+    try {
+        const resp = await fetch(`${SERVER_URL}/check-token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token })
+        });
+        const data = await resp.json();
+        if (data.success) {
+            updateAttemptsDisplay(data.remaining);
+            premiumAccess = true;
+            localStorage.setItem('premiumAccess', 'true');
+        } else {
+            // токен недействителен – чистим
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('premiumAccess');
+        }
+    } catch (e) {
+        console.warn('Не удалось проверить токен при загрузке', e);
+    }
+})();
 
 // Асинхронная проверка токена при загрузке страницы
 async function checkPremiumAccess() {
@@ -265,7 +356,11 @@ function showSection(id) {
         document.querySelectorAll('.nav-links button').forEach(btn => btn.classList.remove('active'));
         const activeBtn = document.getElementById('btn-' + id);
         if (activeBtn) activeBtn.classList.add('active');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const section = document.getElementById(id);
+if (section) {
+    const top = section.getBoundingClientRect().top + window.pageYOffset - 100;
+    window.scrollTo({ top: top, behavior: 'smooth' });
+}
     }, 300);
     if (premiumAccess) updateUIForPremium();
 }
@@ -502,103 +597,20 @@ window.onclick = e => {
 /* ============================================
    РАСЧЁТ СОВМЕСТИМОСТИ ПАРТНЁРОВ (PRO)
    ============================================ */
-async function calculateCompat() {
-    if (!premiumAccess) {
-        openUnlockPaymentModal();
-        return;
-    }
-    const canProceed = await useCalculation();
-    if (!canProceed) return;
-
-    const d1 = document.getElementById('dateP1').value;
-    const d2 = document.getElementById('dateP2').value;
-    // ... дальше ваш существующий код без изменений
-	
-	// Имена нужны только для вывода на экран, в расчёте числа T они не участвуют
-    const n1 = document.getElementById('nameP1').value.trim();
-    const n2 = document.getElementById('nameP2').value.trim();
-    
-    if(!d1 || !d2) return alert("Пожалуйста, введите обе даты!");
-    
-    document.getElementById('result-compat').style.opacity = '0';
-    document.getElementById('loader-compat').style.display = 'flex';
-	startMagicAnimation('magic-numbers-compat');
-    
-    setTimeout(() => {
-        const gsn = d => {
-            let s = 0;
-            let st = d.replace(/-/g, '');
-            for(let c of st) s += parseInt(c);
-            while(s > 9) s = s.toString().split('').reduce((a, b) => +a + (+b), 0);
-            return s;
+// Совместимость загружается лениво
+function calculateCompat() {
+    if (window._compatLoaded) {
+        calculateCompatReal();
+    } else {
+        // Загружаем модуль и выполняем расчёт
+        const script = document.createElement('script');
+        script.src = 'js/compatibility.js';
+        script.onload = function() {
+            window._compatLoaded = true;
+            calculateCompatReal();
         };
-        
-        let t = gsn(d1) + gsn(d2);
-        
-                
-        while(t > 9) t = t.toString().split('').reduce((a, b) => +a + (+b), 0);
-        
-        const dataP1 = calculateMatrixData(d1);
-        const dataP2 = calculateMatrixData(d2);
-        
-        document.getElementById('matrices-compare-container').innerHTML = `
-            <div class="compat-matrices-wrapper">
-                ${renderMatrixHTML(dataP1, "Мужчина", n1)}
-                ${renderMatrixHTML(dataP2, "Женщина", n2)}
-            </div>`;
-        
-        if(n1 || n2) {
-const safeName1 = escapeHTML(n1);
-const safeName2 = escapeHTML(n2);
-document.getElementById('compat-names').innerHTML = `${safeName1 || 'Мужчина'} & ${safeName2 || 'Женщина'}`;			 document.getElementById('result-compat').style.opacity = '0';
-    // Показываем новый лоадер
-    document.getElementById('loader-compat').style.display = 'flex';
-    startMagicAnimation('magic-numbers-compat');
-    
-    setTimeout(() => {
-        // ... расчёты ...
-        
-        stopMagicAnimation('magic-numbers-compat');
-        document.getElementById('loader-compat').style.display = 'none';
-        document.getElementById('result-compat').style.opacity = '1';
-    }, 1500); // Увеличил время до 1.5 сек для красоты
-}
-        
-        
-        // ПОЛУЧАЕМ ОПИСАНИЕ ИЗ НОВОЙ БАЗЫ
-        const desc = compatibilityDescriptions[t] || compatibilityDescriptions[9];
-
-        // ФОРМИРУЕМ HTML
-        const htmlContent = `
-            <h4 style='color:var(--gold); margin-bottom:10px; font-size: 1.8rem; text-align:center;'>${desc.title} — Число ${t}</h4>
-            
-            <div style="background: rgba(212,175,55,0.1); padding: 20px; border-radius: 10px; margin-bottom: 25px; border-left: 4px solid var(--gold);">
-                <p style="margin:0; font-size: 1.1rem;"><em>${desc.essence}</em></p>
-            </div>
-
-            <h4 style='color:var(--purple-light); margin-top:20px;'><i class="fa-solid fa-bolt"></i> Энергетика и Динамика</h4>
-            <p>${desc.dynamics}</p>
-
-            <h4 style='color:var(--purple-light); margin-top:20px;'><i class="fa-solid fa-fire"></i> Секс и Чувства</h4>
-            <p>${desc.sex}</p>
-
-            <h4 style='color:var(--purple-light); margin-top:20px;'><i class="fa-solid fa-coins"></i> Финансовая Карма</h4>
-            <p>${desc.money}</p>
-
-            <h4 style='color:#ff6b6b; margin-top:20px;'><i class="fa-solid fa-triangle-exclamation"></i> Зона Конфликта</h4>
-            <p>${desc.conflict}</p>
-
-            <div style="margin-top: 25px; background: rgba(155, 135, 245, 0.15); padding: 20px; border-radius: 10px;">
-                <h4 style='color:var(--gold); margin:0 0 10px 0;'><i class="fa-solid fa-key"></i> Магический Ключ</h4>
-                <p style="margin:0;"><strong>${desc.advice}</strong></p>
-            </div>
-        `;
-        
-        document.getElementById('compat-number').innerText = t;
-        document.getElementById('compat-text').innerHTML = htmlContent;
-        document.getElementById('loader-compat').style.display = 'none';
-        document.getElementById('result-compat').style.opacity = '1';
-    }, 1000);
+        document.head.appendChild(script);
+    }
 }
 
 /* ============================================
@@ -1149,6 +1161,13 @@ html += `<details class="decode-card">
         drawRadarChart(data);
         calculateLuckyItems(data, nameNum, userName);
         calculateYearChart(inp);
+        
+        const shareBtnHtml = `
+<div style="display:flex; justify-content:center; gap:10px; margin-top:20px;">
+    <button onclick="shareWithImage()" class="btn-gold" style="font-size:0.9rem; padding:8px 16px;">
+        <i class="fa-solid fa-share-nodes"></i> Поделиться результатом
+    </button>
+</div>`;
       // ===================================
                      
         let shareContainer = document.getElementById('share-btn-container');
@@ -1410,7 +1429,7 @@ function calculateLifePath(dateString) {
 
 /* ---------- Определение пола ---------- */
 function detectGenderAdvanced(name) {
-    const lower = name.toLowerCase().trim();
+    const lower = (name || '').toLowerCase().trim();
 
     const femaleEndings = ['а','я','ия','ья','ея'];
     const maleExceptions = ['никита','илья','кузьма','фома','лука','савва','данила'];
@@ -2798,8 +2817,16 @@ function reduceToSingleDigit(n) {
    БЫСТРАЯ СОВМЕСТИМОСТЬ (УМНАЯ ВЕРСИЯ)
    ============================================ */
 function quickCompatibility() {
-    const name1 = document.getElementById('quick-name1').value.trim();
-    const name2 = document.getElementById('quick-name2').value.trim();
+    
+     const el1 = document.getElementById('quick-name1');
+    const el2 = document.getElementById('quick-name2');
+    if (!el1 || !el2) {
+        console.warn('Поля быстрой совместимости не найдены');
+        return;
+    }
+    
+    const name1 = el1.value.trim();
+    const name2 = el2.value.trim();
     
     if (!name1 || !name2) {
         alert('Пожалуйста, введите оба имени!');
@@ -3163,6 +3190,17 @@ window.addEventListener('scroll', function() {
     }
     
     lastScrollTop = scrollTop;
+    
+    // Добавление тени для меню при скролле
+window.addEventListener('scroll', function() {
+    const nav = document.getElementById('main-nav');
+    if (!nav) return;
+    if (window.scrollY > 50) {
+        nav.classList.add('scrolled');
+    } else {
+        nav.classList.remove('scrolled');
+    }
+});
 });
 
 
@@ -3172,32 +3210,46 @@ window.addEventListener('scroll', function() {
 function calculateChildMatrix() {
     const nameInput = document.getElementById('childNameInput');
     const dateInput = document.getElementById('childDateInput');
-    
-    if (!nameInput || !dateInput || !dateInput.value) {
-        return alert("Пожалуйста, введите имя и дату рождения ребёнка!");
+
+    if (!nameInput || !dateInput) {
+        console.warn('Поля детской матрицы не найдены на странице');
+        return;
     }
 
-    const name = nameInput.value.trim() || "Ребёнок";
+    if (!dateInput.value) {
+        alert('Пожалуйста, введите дату рождения ребёнка!');
+        return;
+    }
+
+    const name = (nameInput.value && nameInput.value.trim()) || 'Ребёнок';
     const date = dateInput.value;
 
-    document.getElementById('child-result').style.display = 'none';
-    document.getElementById('child-loader').style.display = 'flex';
+    const resultBlock = document.getElementById('child-result');
+    const loader = document.getElementById('child-loader');
+
+    if (resultBlock) resultBlock.style.display = 'none';
+    if (loader) loader.style.display = 'flex';
 
     setTimeout(() => {
-        // Расчёт психоматрицы
-        const data = calculateMatrixData(date);
-        const nameNum = calculateNameNumber(name);
-        
-        const safeName = escapeHTML(name);
-        const lifePath = data.master || data.lp;
-        document.getElementById('child-result-title').innerHTML = 
-            `Матрица Пифагора для: <span style="color:var(--gold)">${safeName}</span>`;
+        try {
+            // Расчёт матрицы
+            const data = calculateMatrixData(date);
+            const nameNum = calculateNameNumber(name);
+            const safeName = escapeHTML(name);
+            const lifePath = data.master || data.lp;
 
-        const getS = (n) => {
-            let s = "";
-            for(let k = 0; k < data.c[n]; k++) s += n;
-            return s || "—";
-        };
+            // Заголовок
+            const titleEl = document.getElementById('child-result-title');
+            if (titleEl) {
+                titleEl.innerHTML = `Матрица Пифагора для: <span style="color:var(--gold)">${safeName}</span>`;
+            }
+
+            // Вспомогательная функция для отображения цифр
+            const getS = (n) => {
+                let s = '';
+                for (let k = 0; k < (data.c[n] || 0); k++) s += n;
+                return s || '—';
+            };
 
         // Таблица 17 ячеек
         const tableHtml = `
@@ -3361,92 +3413,45 @@ document.getElementById('child-pythagoras-decode').innerHTML = decodeHtml;
         document.getElementById('child-loader').style.display = 'none';
         document.getElementById('child-result').style.display = 'block';
 
+         } catch (error) {
+        console.error('Ошибка в детской матрице:', error);
+        alert('Во время расчёта произошла ошибка. Обновите страницу.');
+        const loader = document.getElementById('child-loader');
+        if (loader) loader.style.display = 'none';
+    }
     }, 1000);
 }
   
-async function calculateMoneyMatrix() {
-    if (!premiumAccess) {
-        openUnlockPaymentModal();
-        return;
+/* ============================================
+   ФИНАНСОВЫЙ АРХЕТИП – ЛЕНИВАЯ ЗАГРУЗКА
+   ============================================ */
+
+function calculateMoneyMatrix() {
+    if (window._moneyLoaded) {
+        // файл уже загружен, сразу вызываем реальную функцию
+        window._realCalculateMoneyMatrix();
+    } else {
+        // загружаем модуль
+        const script = document.createElement('script');
+        script.src = 'js/money.js';
+        script.onload = function() {
+            window._realCalculateMoneyMatrix();
+        };
+        document.head.appendChild(script);
     }
-    const canProceed = await useCalculation();
-    if (!canProceed) return;
-
-    const name = document.getElementById('moneyName').value;
-    const date = document.getElementById('moneyDate').value;
-
-    if(!date) return alert("Введите дату рождения!");
-
-    // Лоадер
-    document.getElementById('result-money').style.display = 'none';
-    document.getElementById('loader-money').style.display = 'flex';
-    // Показываем кнопку PDF, если есть премиум-доступ
-    if (premiumAccess) {
-    const pdfBtn = document.getElementById('download-money-pdf');
-    if (pdfBtn) pdfBtn.style.display = 'inline-block';
 }
 
-    setTimeout(() => {
-        const d = new Date(date);
-        const day = d.getDate();
-        const month = d.getMonth() + 1;
-        const year = d.getFullYear();
-
-        // Функция сведения к 22
-        const reduce22 = (n) => {
-            let res = n;
-            while (res > 22) {
-                res = res.toString().split('').reduce((a, b) => +a + +b, 0);
-            }
-            return res;
+function calculateMoneyCompat() {
+    if (window._moneyLoaded) {
+        window._realCalculateMoneyCompat();
+    } else {
+        const script = document.createElement('script');
+        script.src = 'js/money.js';
+        script.onload = function() {
+            window._realCalculateMoneyCompat();
         };
-
-        // --- ТОЧКИ ДЛЯ ФИНАНСОВ ---
-        // 1. СФЕРА РЕАЛИЗАЦИИ (День - Личность)
-        // Кем работать, чтобы перло.
-        const pointProf = reduce22(day);
-
-        // 2. АКТИВАТОР / КЛЮЧ (Месяц - Вдохновение)
-        // Что делать, чтобы деньги пришли (Духовная часть).
-        const pointActive = reduce22(month);
-
-        // 3. БЛОК / КАРМА (Сумма всей даты - Общий фон)
-        // Что мешает, главная ошибка.
-        const sumAll = reduce22(day + month + year.toString().split('').reduce((a, b) => +a + +b, 0));
-        const pointBlock = sumAll; // Или можно взять Кармический хвост, но Сумма даты тоже отлично показывает урок.
-
-        // --- ВЫВОД В КРУЖОЧКИ ---
-        document.getElementById('val-block').innerText = pointBlock;
-        document.getElementById('val-prof').innerText = pointProf;
-        document.getElementById('val-active').innerText = pointActive;
-
-        document.getElementById('money-user-title').innerText = `Финансовый код: ${name || 'Гость'}`;
-
-        // --- ВЫВОД ТЕКСТА (БЕРЕМ ИЗ БАЗЫ) ---
-        // База будет называться moneyMatrixData
-        
-        const getData = (num) => moneyMatrixData[num] || { 
-            block: "Описание...", prof: "Описание...", active: "Описание..." 
-        };
-
-        const dataBlock = getData(pointBlock);
-        const dataProf = getData(pointProf);
-        const dataActive = getData(pointActive);
-
-        document.getElementById('desc-block').innerHTML = 
-            `<strong>Аркан ${pointBlock}:</strong> ${dataBlock.block}`;
-            
-        document.getElementById('desc-prof').innerHTML = 
-            `<strong>Аркан ${pointProf}:</strong> ${dataProf.prof}`;
-            
-        document.getElementById('desc-active').innerHTML = 
-            `<strong>Аркан ${pointActive}:</strong> ${dataActive.active}`;
-
-        // Показываем
-        document.getElementById('loader-money').style.display = 'none';
-        document.getElementById('result-money').style.display = 'block';
-
-    }, 1500);
+        document.head.appendChild(script);
+    }
 }
 
 /* ============================================
@@ -3550,2209 +3555,21 @@ document.getElementById('money-compat-names').innerHTML =
     }, 1500);
 }
 
-
-// ============================================================
-// БЛОК КАЛЬКУЛЯТОРА «РОДИТЕЛЬ – РЕБЁНОК»
-// ============================================================
-
-// Вспомогательная функция: возраст
-function calculateAge(birthDate) {
-    const today = new Date();
-    const birth = new Date(birthDate);
-    let age = today.getFullYear() - birth.getFullYear();
-    const m = today.getMonth() - birth.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-    return age;
-}
-
-// Возрастной период
-function getAgePeriod(age) {
-    if (age <= 3) return { name: 'Базовая привязанность (0–3 года)', code: 'attachment' };
-    if (age <= 6) return { name: 'Социализация (4–6 лет)', code: 'social' };
-    if (age <= 12) return { name: 'Обучение (7–12 лет)', code: 'learning' };
-    if (age <= 17) return { name: 'Сепарация (13–17 лет)', code: 'separation' };
-    if (age <= 25) return { name: 'Отделение (18–25 лет)', code: 'leaving' };
-    return { name: 'Взрослые дети (26+)', code: 'adult' };
-}
-
-// Названия ячеек
-function getCellName(num) {
-    const names = {
-        1: 'Характер', 2: 'Энергия', 3: 'Интерес',
-        4: 'Здоровье', 5: 'Логика', 6: 'Труд',
-        7: 'Удача', 8: 'Долг', 9: 'Память'
-    };
-    return names[num];
-}
-
-// Список всех 17 показателей
-function getIndicatorsList(parentMatrix, childMatrix) {
-    const indicators = [];
-    for (let i = 1; i <= 9; i++) {
-        indicators.push({
-            name: getCellName(i),
-            parentValue: parentMatrix.c[i],
-            childValue: childMatrix.c[i],
-            category: 'cell',
-            importance: (i === 1) ? 1 : 2
-        });
-    }
-    indicators.push(
-        { name: 'Цель', parentValue: parentMatrix.goal, childValue: childMatrix.goal, category: 'row', importance: 2 },
-        { name: 'Семья', parentValue: parentMatrix.family, childValue: childMatrix.family, category: 'row', importance: 2 },
-        { name: 'Привычки', parentValue: parentMatrix.habits, childValue: childMatrix.habits, category: 'row', importance: 3 },
-        { name: 'Самооценка', parentValue: parentMatrix.self, childValue: childMatrix.self, category: 'col', importance: 2 },
-        { name: 'Быт', parentValue: parentMatrix.life, childValue: childMatrix.life, category: 'col', importance: 3 },
-        { name: 'Талант', parentValue: parentMatrix.talent, childValue: childMatrix.talent, category: 'col', importance: 2 },
-        { name: 'Темперамент', parentValue: parentMatrix.temp, childValue: childMatrix.temp, category: 'diag', importance: 2 },
-        { name: 'Дух', parentValue: parentMatrix.spirit, childValue: childMatrix.spirit, category: 'diag', importance: 2 }
-    );
-    return indicators;
-}
-
-// Классификация разницы
-function classifyIndicators(indicators) {
-    return indicators.map(ind => {
-        const diff = ind.parentValue - ind.childValue;
-        let type = '';
-        if (ind.parentValue === ind.childValue) {
-            if (ind.parentValue <= 1) type = 'BOTH_WEAK';
-            else if (ind.parentValue >= 5) type = 'BOTH_EXCESS';
-            else type = 'MATCH';
-        } else if (Math.abs(diff) === 1) type = 'CLOSE';
-        else if (Math.abs(diff) === 2) type = 'MODERATE';
-        else if (diff >= 3) type = 'PARENT_STRONG';
-        else if (diff <= -3) type = 'CHILD_STRONG';
-        else type = 'MODERATE';
-
-        if (ind.parentValue >= 4 && ind.childValue === 0) type = 'CRITICAL_PARENT';
-        if (ind.parentValue === 0 && ind.childValue >= 4) type = 'CRITICAL_CHILD';
-        if (ind.parentValue === 0 && ind.childValue === 0) type = 'BOTH_WEAK';
-        if (ind.parentValue >= 5 && ind.childValue >= 5) type = 'BOTH_EXCESS';
-        return { ...ind, diff, type };
-    });
-}
-
-// Топ-3 гармонии
-function getTopHarmony(classified) {
-    const harmony = classified.filter(c => c.type === 'MATCH' || c.type === 'CLOSE');
-    harmony.sort((a, b) => a.importance - b.importance);
-    return harmony.slice(0, 3);
-}
-
-// Топ-3 напряжения
-function getTopTension(classified) {
-    const order = { 'CRITICAL_PARENT': 1, 'CRITICAL_CHILD': 2, 'BOTH_WEAK': 3, 'BOTH_EXCESS': 4, 'PARENT_STRONG': 5, 'CHILD_STRONG': 6 };
-    const tension = classified.filter(c => order[c.type]);
-    tension.sort((a, b) => (order[a.type] - order[b.type]));
-    return tension.slice(0, 3);
-}
-
-// Топ-3 роста
-function getTopGrowth(classified) {
-    const growth = classified.filter(c => c.type === 'PARENT_STRONG' || c.type === 'CHILD_STRONG');
-    growth.sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff));
-    return growth.slice(0, 3);
-}
-
-// Форматирование гармонии (использует parentChildTexts)
-function formatHarmonyZone(zone, parentMatrix, childMatrix) {
-    const name = zone.name;
-    const pv = zone.parentValue;
-    const cv = zone.childValue;
-    
-    // Определяем тип гармонии
-    let harmonyType = '';
-    let intro = '';
-    let body = '';
-    let howToStrengthen = '';
-    let example = '';
-    let ritual = '';
-    let mantra = '';
-    
-    // ----- 1. ХАРАКТЕР (ВОЛЯ) -----
-    if (name === 'Характер') {
-        if (pv <= 1 && cv <= 1) {
-            harmonyType = 'оба мягкие, неконфликтные';
-            intro = `Дорогие родители, у вас обоих мягкий, неконфликтный характер. Вы редко ссоритесь, легко уступаете друг другу, и в доме царит атмосфера тепла и принятия. Это огромный дар – ваша семья похожа на тихую гавань, где можно отдохнуть от штормов внешнего мира. Но есть и обратная сторона медали.`;
-            body = `Вам обоим может быть трудно принимать решения, отстаивать свои границы, проявлять инициативу. Вы можете «плыть по течению», упуская важные возможности. Например, вы долго обсуждаете, куда поехать в выходной, и в итоге остаётесь дома. Ребёнку трудно сказать «нет» сверстникам, он часто соглашается на невыгодное. Вы оба можете терпеть некомфортную ситуацию, вместо того чтобы её изменить. В школе ребёнка могут не замечать, потому что он не проявляет себя. Но это не слабость – это просто ваша общая черта. Ваша задача – не пытаться стать «жёсткими», а научиться проявлять волю вместе, мягко, но уверенно.`;
-            howToStrengthen = `Начните с малого: каждый день принимайте одно маленькое решение быстро, без долгих обсуждений. Например: «Сегодня на ужин мы едим гречку». Поддерживайте друг друга, когда кто-то проявляет инициативу. Хвалите ребёнка за любые попытки сказать «нет» или выбрать самостоятельно. Играйте в игры, где нужно быстро принимать решения (настолки, квесты). Главное – не давите, а поддерживайте. Ваша мягкость – не проблема, а фундамент доверия.`;
-            example = `У мамы и 10-летней Ани были одинаково мягкие характеры. Они никогда не спорили, но и никогда не решали важные вопросы – всё откладывали «на потом». Мы предложили им «день смелых решений»: каждое утро Аня выбирала, что наденет, мама – что приготовит на ужин. Через месяц они стали увереннее, а Аня в школе впервые сказала «нет» однокласснику, который просил списать. Мама сказала: «Я думала, что мягкость – это недостаток. Оказывается, это просто другой тип силы».`;
-            ritual = `Сядьте напротив друг друга. Возьмите по листу бумаги. Напишите: «Одно решение, которое я сегодня приму сам(а)». Прочитайте друг другу. Выполните. Вечером обсудите, что получилось. Хвалите друг друга за смелость.`;
-            mantra = `«Наша мягкость – не слабость, а особая сила. Она позволяет нам быть чуткими друг к другу. Мы учимся проявлять волю вместе, поддерживая, а не давя. Вместе мы можем всё – тихо, но уверенно».`;
-        } 
-        else if (pv >= 4 && cv >= 4) {
-            harmonyType = 'оба с сильным характером';
-            intro = `Вы оба – люди с сильными, волевыми характерами. Это значит, что в вашей семье часто будут сталкиваться две непререкаемые позиции. Вы оба привыкли быть правыми, и уступать не любите. С одной стороны, это даёт вам огромную энергию для достижения целей. С другой – постоянная борьба за власть может истощить ваши отношения.`;
-            body = `Вы оба знаете, как отстаивать своё мнение, не бояться говорить «нет», брать на себя ответственность. Это прекрасные качества, но они же могут приводить к конфликтам. Вы можете соревноваться, кто больше заработал, кто лучше учится, кто прав в споре. Дома часто звучат фразы: «Потому что я так сказал!» – «А я так хочу!». Вы оба устаёте от борьбы. Но есть и плюс: вы – мощная команда, если направите эту энергию в одно русло.`;
-            howToStrengthen = `Разделите зоны ответственности: в одних вопросах решаете вы, в других – ребёнок. Например, вы отвечаете за безопасность и финансы, ребёнок – за порядок в своей комнате и выбор хобби. Не лезьте на чужую территорию. Учитесь уступать в мелочах – это не слабость, а мудрость. И обязательно хвалите друг друга за умение договариваться, а не только за победу.`;
-            example = `Папа и 14-летний Дима постоянно спорили: кто главный. У обоих 4 единицы характера. Мы предложили разделить зоны: Дима отвечал за свой график и хобби, папа – за семейный бюджет и безопасность. Конфликты прекратились. Через месяц Дима сам спросил папу: «Как ты думаешь, стоит ли мне брать дополнительный кружок?». Папа сказал: «Он перестал бороться со мной и начал советоваться».`;
-            ritual = `Сядьте за стол. Напишите на листе: «В этих вопросах решаю я». Обменяйтесь листами. Прочитайте и обсудите. Договоритесь не лезть в чужие зоны.`;
-            mantra = `«Мы – два лидера в одной команде. Мы не конкуренты, а союзники. Сила не в том, чтобы всегда быть правым, а в том, чтобы вовремя остановиться и услышать друг друга. Вместе мы непобедимы».`;
-        } 
-        else {
-            harmonyType = 'близкие, но не одинаковые характеры';
-            intro = `Ваши характеры близки по силе, но не идентичны. Это даёт хорошее взаимопонимание, но иногда возникают небольшие трения – кто-то чуть более настойчив, кто-то чуть более уступчив. Эти отличия могут обогащать, если вы их осознаёте.`;
-            body = `Вы редко конфликтуете по-крупному, но мелкие недоразумения случаются. Например, один из вас хочет настоять на своём, другой – уступить, но потом жалеет. Важно открыто обсуждать: «Мне кажется, сейчас ты давишь. Давай попробуем по-другому». Учитесь замечать момент, когда настойчивость переходит в давление. И помните, что разница – не проблема, а возможность учиться друг у друга.`;
-            howToStrengthen = `Давайте друг другу право на «вето» в безопасных ситуациях. Например, ребёнок может сказать «нет» в выборе ужина, вы – в выборе времени для прогулки. Обсуждайте, где каждый из вас был сегодня слишком настойчив, а где – слишком уступчив. Это развивает рефлексию.`;
-            example = `Мама и 12-летний Миша часто спорили из-за гаджетов. Мама была чуть настойчивее, Миша – уступчивее, но потом обижался. Мы предложили им договариваться: «Ты выбираешь время, я – длительность». Конфликты прекратились. Миша сказал: «Теперь я чувствую, что моё мнение важно».`;
-            ritual = `В конце дня спросите друг друга: «Где я сегодня был слишком настойчив? Где мне стоило уступить?». Ответьте честно, без обид.`;
-            mantra = `«Мы разные, но это не мешает нам быть близкими. Наши отличия – не поле для битвы, а территория для открытий. Мы учимся уступать и настаивать, и это делает нас сильнее».`;
-        }
-    }
-    
-    // ----- 2. ЭНЕРГИЯ -----
-    else if (name === 'Энергия') {
-        if (pv <= 1 && cv <= 1) {
-            harmonyType = 'оба с низкой энергией';
-            intro = `У вас обоих от природы невысокий запас жизненной энергии. Вы быстро устаёте, нуждаетесь в частом отдыхе, тяжело переносите перегрузки. Это создаёт особый ритм жизни – вы оба понимаете друг друга, когда один говорит: «Я больше не могу». Это даёт взаимопонимание и принятие.`;
-            body = `Вы редко требуете друг от друга «подвигов», не раздражаетесь, когда кто-то хочет полежать. В доме тихо и спокойно. Но есть и риск: вы можете «тянуть» друг друга вниз, усиливать усталость, вместе избегать активностей. Например, отказываться от прогулок, потому что «оба устали». Важно не застревать в апатии.`;
-            howToStrengthen = `Введите «микродвижения»: 5-минутная зарядка, прогулка вокруг дома – лучше, чем ничего. Планируйте дела с большими перерывами. Следите за сном и питанием – качество отдыха напрямую влияет на ваш ресурс. И главное – не сравнивайте себя с «супер-активными» семьями. Ваш ритм – нормальный.`;
-            example = `Мама и 8-летний Дима оба быстро уставали. Вместо того чтобы лежать на диване, они ввели «5 минут активности»: просто попрыгать или пройтись. Через месяц они стали выходить на 15-минутные прогулки. Дима сказал: «Оказывается, двигаться не так уж трудно, если по чуть-чуть».`;
-            ritual = `Сядьте на пол, закройте глаза. 2 минуты просто дышите. Потом откройте глаза и скажите: «Мы вместе, и это даёт нам силы».`;
-            mantra = `«Энергия – не соревнование. Мы оба с маленькой батарейкой, но вместе мы – команда. Мы бережём силы друг друга и не требуем невозможного. Наш темп – это наш темп, и он хорош».`;
-        }
-        else if (pv >= 4 && cv >= 4) {
-            harmonyType = 'оба с высокой энергией';
-            intro = `Вы оба – «энерджайзеры». Вы можете вместе путешествовать, заниматься спортом, не замечать усталости. Это даёт вам огромные возможности для активного отдыха и совместных проектов. Ваша жизнь наполнена движением, и это прекрасно.`;
-            body = `Вы редко ссоритесь из-за «лени» – вы оба всегда готовы к действию. Но есть риск «перегрева»: вы можете не замечать, когда пора остановиться, подстёгивая друг друга к ещё большей активности. Ребёнок может не научиться чувствовать свои пределы, а вы – выгореть.`;
-            howToStrengthen = `Введите обязательные «часы покоя» – время, когда никто ничего не делает. Даже если не хочется. Учитесь замечать первые признаки усталости у себя и у ребёнка. Направляйте энергию в совместные проекты (ремонт, спорт, походы), чтобы не конкурировать.`;
-            example = `Папа и 12-летняя Аня оба были очень активны. Они постоянно куда-то бежали, пока Аня не начала болеть. Ввели «ленивую субботу» – день без планов. Аня восстановилась, а папа сказал: «Я и не знал, как важно иногда просто валяться».`;
-            ritual = `Раз в неделю устраивайте «день без дел» – никаких планов, только то, что хочется в моменте. Это тренирует умение расслабляться.`;
-            mantra = `«Наша энергия – наше богатство. Но мы учимся не только разгоняться, но и тормозить. Вместе мы можем и горы свернуть, и просто полежать на травке. И то, и другое – сила».`;
-        }
-        else {
-            harmonyType = 'близкий уровень энергии';
-            intro = `Ваши энергетические уровни близки, что помогает вам синхронизироваться. Вы примерно одинаково быстро устаёте и восстанавливаетесь. Это хорошо для совместного планирования, но может приводить к взаимному истощению, если оба не умеют отдыхать.`;
-            body = `Вы редко конфликтуете из-за разного темпа, но можете вместе «зависать» в апатии. Важно договариваться о режиме, который подходит обоим, и не заставлять друг друга «догонять», если один чувствует упадок.`;
-            howToStrengthen = `Планируйте совместный отдых: например, после активного дня – обязательно тихий вечер. Учитесь вместе замечать, когда пора остановиться. Хвалите друг друга за умение вовремя отдохнуть.`;
-            example = `Мама и сын примерно одинаково уставали. Они ввели ритуал: после школы и работы – 30 минут тишины. Конфликтов стало меньше, а продуктивность выросла.`;
-            ritual = `Вечером спросите друг друга: «Насколько ты устал по шкале от 1 до 10?». Если оба выше 5 – отмените все планы и просто отдохните.`;
-            mantra = `«Наш ритм – наше общее дело. Мы умеем и разгоняться, и тормозить вместе. Главное – мы делаем это в унисон».`;
-        }
-    }
-    
-    // ----- 3. ИНТЕРЕС (ПОЗНАНИЕ) -----
-    else if (name === 'Интерес') {
-        if (pv <= 1 && cv <= 1) {
-            harmonyType = 'оба с низким познавательным интересом';
-            intro = `Вы оба не очень любите учиться, читать, узнавать новое. Вам трудно сосредоточиться на интеллектуальной деятельности, вы быстро теряете интерес. Это создаёт взаимопонимание – вы не ругаете ребёнка за «нелюбовь к школе», потому что сами так же относитесь к учёбе.`;
-            body = `Вы можете вместе откладывать дела «на потом», избегать развития, застревать на одном уровне. Ребёнок может отстать в учёбе, потерять интерес к любому обучению. Но есть и плюс: вы не создаёте лишнего напряжения. Ваша задача – не заставлять, а мягко вводить познание через игру и практику.`;
-            howToStrengthen = `Начните с малого: 5 минут чтения в день, одно короткое видео на познавательную тему. Ищите практическое применение знаний – готовьте, мастерите, сажайте растения. Хвалите друг друга за любые проявления любопытства.`;
-            example = `Мама и 9-летний Дима оба не любили читать. Они начали смотреть 5-минутные научные ролики про животных. Через месяц Дима сам попросил книгу про динозавров. Мама сказала: «Оказывается, учиться можно и без скуки».`;
-            ritual = `Каждый вечер делитесь одним интересным фактом, который вы узнали за день. Не важно, откуда – из видео, разговора, наблюдения. Главное – сам факт.`;
-            mantra = `«Знания не приходят по приказу. Мы открываем их через радость и игру. Мы учимся вместе, понемногу, и это сближает нас».`;
-        }
-        else if (pv >= 4 && cv >= 4) {
-            harmonyType = 'оба с высоким познавательным интересом';
-            intro = `Вы оба любите учиться, читать, исследовать новое. Вы можете часами обсуждать прочитанное, смотреть научно-популярные фильмы, посещать лекции. Это даёт огромный ресурс для развития, но есть риск «интеллектуального перегруза».`;
-            body = `Вы можете требовать от себя и ребёнка слишком многого, не замечая усталости. Дом завален книгами, ребёнок посещает множество кружков и курсов. Вы можете сравнивать его с собой: «Я в твоём возрасте уже читал энциклопедии». Важно не перегружать и не забывать про отдых.`;
-            howToStrengthen = `Введите «дни без учёбы» – время, когда никто не читает, не учит, не развивается. Поощряйте не только интеллектуальные, но и практические, творческие хобби. Спрашивайте ребёнка, что ему НРАВИТСЯ, а не только «что полезно».`;
-            example = `Папа и 11-летний Миша оба увлекались астрономией. Они вместе смотрели лекции, но Миша начал уставать. Ввели «субботу без науки» – просто гуляли, играли в настолки. Миша сказал: «Я люблю астрономию, но мне нужно иногда отдыхать от неё».`;
-            ritual = `Раз в неделю устраивайте «день без мозгов» – никаких книг, лекций, образовательных видео. Только отдых, игры, природа.`;
-            mantra = `«Знания – наше общее сокровище. Но мы помним, что жизнь – не только учёба. Мы умеем и учиться, и отдыхать, и это делает нас счастливыми».`;
-        }
-        else {
-            harmonyType = 'близкий уровень познавательного интереса';
-            intro = `Вы примерно одинаково любознательны. Это помогает вам обсуждать новые темы, вместе искать информацию, поддерживать друг друга. Вы редко ссоритесь из-за «нежелания учиться».`;
-            body = `Иногда вы можете синхронно «застревать» в поверхностном интересе (быстро переключаться) или, наоборот, слишком углубляться. Важно находить баланс и не давить друг на друга.`;
-            howToStrengthen = `Планируйте совместные «познавательные выходные» – музей, лекция, книжный магазин. Делитесь тем, что узнали, и просите обратную связь. Если один устал – не давите, дайте время на отдых.`;
-            example = `Мама и дочь вместе увлеклись историей. Они смотрели фильмы, читали книги, но дочь стала отставать. Мама спросила: «Что тебе неинтересно?». Оказалось, дочери скучны войны, но нравится культура. Они переключились на историю костюма – и обе были в восторге.`;
-            ritual = `Вместе ведите «семейный журнал открытий» – записывайте интересные факты, которые узнали за неделю. Перечитывайте вместе.`;
-            mantra = `«Мы – команда исследователей. Мы делимся открытиями и уважаем темп друг друга. Наше любопытство – мост между нами».`;
-        }
-    }
-    
-    // ----- 4. ЗДОРОВЬЕ -----
-    else if (name === 'Здоровье') {
-        if (pv <= 1 && cv <= 1) {
-            harmonyType = 'оба со слабым здоровьем';
-            intro = `У вас обоих от природы невысокий запас физической прочности. Вы быстро устаёте, часто болеете, нуждаетесь в бережном режиме. Это создаёт взаимопонимание – вы не ругаете друг друга за «лень» или «болезненность».`;
-            body = `Вы вместе можете игнорировать спорт, закаливание, правильное питание, оправдывая себя «наследственностью». Но риск в том, что вы оба будете «тянуть» друг друга вниз. Важно не стыдиться, а действовать сообща.`;
-            howToStrengthen = `Введите щадящий, но регулярный режим: ложиться спать в одно время, гулять на свежем воздухе. Начните с малой физической активности – 10 минут зарядки, прогулка после ужина. Не стыдите себя за болезни – это не слабость, а особенность.`;
-            example = `Мама и 7-летний Дима оба часто болели. Они ввели «день здоровья» раз в неделю: вместе готовили полезный ужин, делали лёгкую зарядку, рано ложились спать. Через три месяца они стали болеть реже.`;
-            ritual = `Каждое утро делайте вместе 5-минутную зарядку под музыку. Не для рекордов, а для удовольствия.`;
-            mantra = `«Наше здоровье – наше общее дело. Мы бережём друг друга и не стыдимся слабости. Вместе мы сильнее, даже если болеем чаще других».`;
-        }
-        else if (pv >= 4 && cv >= 4) {
-            harmonyType = 'оба с крепким здоровьем';
-            intro = `У вас обоих отличное здоровье, выносливость, редко болеете. Это даёт огромный ресурс для активной жизни, путешествий, спорта. Вы можете не понимать, как это – болеть «просто так».`;
-            body = `Вы рискуете переоценивать свои силы, игнорировать сигналы усталости, требовать от ребёнка такой же выносливости, забывая, что он ещё растёт. Важно не перегружать и не обесценивать чужие проблемы со здоровьем.`;
-            howToStrengthen = `Не требуйте от ребёнка такой же выносливости – у него другой предел. Введите обязательные «часы отдыха» – даже если не хочется. Проходите профилактические осмотры – крепкое здоровье не значит «вечное».`;
-            example = `Папа и 10-летний Коля оба были крепкими. Папа требовал от сына таких же спортивных достижений, пока Коля не начал жаловаться на боли в спине. Оказалось, перегрузка. Ввели щадящий режим – и Коля снова полюбил спорт.`;
-            ritual = `Раз в месяц устраивайте «день тишины» – никакой активности, только отдых и восстановление. Это тренирует умение расслабляться.`;
-            mantra = `«Наше здоровье – наше богатство. Но мы помним, что даже крепкий дуб нуждается в отдыхе. Мы уважаем пределы друг друга и не требуем невозможного».`;
-        }
-        else {
-            harmonyType = 'близкий уровень здоровья';
-            intro = `Ваш физический ресурс примерно одинаков. Это помогает вам синхронизировать режим, вместе заниматься спортом, не конфликтовать из-за разницы в выносливости.`;
-            body = `Вы можете вместе «перегружаться» или, наоборот, оба лениться. Важно находить золотую середину и не соревноваться, кто выносливее.`;
-            howToStrengthen = `Планируйте совместную активность с учётом общего ритма. Вместе изучайте основы здорового образа жизни, ведите семейный дневник здоровья – отмечайте, сколько спали, что ели, как себя чувствовали.`;
-            example = `Мама и сын примерно одинаково переносили нагрузки. Они начали вместе ходить в бассейн – и полюбили это. Мама сказала: «Мы не соревнуемся, а просто радуемся движению».`;
-            ritual = `Вместе готовьте полезный ужин по новому рецепту. Обсуждайте, какие продукты дают энергию, а какие – отнимают.`;
-            mantra = `«Наше здоровье – наша общая забота. Мы двигаемся в одном ритме и поддерживаем друг друга. Вместе мы сильнее и здоровее».`;
-        }
-    }
-    
-    // ----- 5. ЛОГИКА (аналитический склад) -----
-    else if (name === 'Логика') {
-        if (pv <= 1 && cv <= 1) {
-            harmonyType = 'оба с низкой логикой, интуитивный склад';
-            intro = `Вы оба больше полагаетесь на интуицию, чувства, готовые решения из прошлого опыта. Вам трудно выстраивать длинные логические цепочки. Это создаёт взаимопонимание – вы не требуете друг от друга «железных» аргументов.`;
-            body = `Вы можете вместе принимать необдуманные решения, избегать планирования, попадать в финансовые ловушки. Но есть и плюс: вы редко страдаете от «аналитического паралича». Ваша задача – не стать «логиками», а научиться использовать внешние инструменты.`;
-            howToStrengthen = `Используйте чек-листы, календари, напоминалки. Вместе решайте простые логические задачки (головоломки, судоку). Обсуждайте решения вслух: «Если мы сделаем так, что будет потом?».`;
-            example = `Мама и сын оба не любили планировать. Они ввели «вечерний список» на завтра: 3 дела. Через месяц они стали более организованными. Сын сказал: «Оказывается, планировать не так уж сложно».`;
-            ritual = `Раз в неделю решайте вместе одну логическую задачку (можно из интернета). Пусть ребёнок предлагает свой способ, даже если он нелогичный – обсуждайте, почему он так думает.`;
-            mantra = `«Мы мыслим образами и чувствами. Это не хуже логики – это просто другое. Мы учимся структурировать мир через игру и поддержку».`;
-        }
-        else if (pv >= 4 && cv >= 4) {
-            harmonyType = 'оба с высокой логикой';
-            intro = `Вы оба обладаете отличным аналитическим мышлением. Вы любите раскладывать всё по полочкам, искать причинно-следственные связи, планировать. Это даёт вам огромное преимущество в решении проблем.`;
-            body = `Вы можете «засушивать» отношения чрезмерной рациональностью, не замечать эмоций друг друга, требовать логических обоснований даже там, где они не нужны (любовь, искусство, отдых). Важно не забывать про чувства.`;
-            howToStrengthen = `Учитесь слышать не только аргументы, но и чувства. Спрашивайте: «Что ты чувствуешь?» – и слушайте. Позволяйте себе «нелогичные» поступки – спонтанные прогулки, глупые шутки.`;
-            example = `Папа и дочь оба были «логиками». Они решали всё через анализ, но ссорились из-за мелочей. Ввели правило: «Сначала чувства, потом факты». Конфликтов стало меньше.`;
-            ritual = `Раз в неделю играйте в игру «Только чувства» – обсуждаете событие, используя только эмоциональные слова (без «потому что», «следовательно»).`;
-            mantra = `«Логика – наш инструмент, но не хозяин. Мы помним, что чувства так же важны, как и факты. Вместе мы – и разум, и сердце».`;
-        }
-        else {
-            harmonyType = 'близкий уровень логики';
-            intro = `Ваши аналитические способности близки. Это помогает вам понимать друг друга в деловых вопросах, планировании, учёбе. Вы редко спорите о «правильности» решений.`;
-            body = `Иногда вы можете «соревноваться», кто логичнее. Важно не забывать про эмоциональную сторону и не доказывать, что «ваша логика лучше». Ищите синтез.`;
-            howToStrengthen = `Цените, когда партнёр находит нестандартное решение. Не доказывайте правоту, а ищите компромисс. Учитесь признавать, когда чувства важнее логики.`;
-            example = `Мама и сын вместе решали головоломки. Они заметили, что иногда спорят, чей способ лучше. Договорились: сначала пробуем способ одного, потом другого. Выбираем тот, который быстрее.`;
-            ritual = `Вместе смотрите детективный фильм и пытайтесь угадать преступника. Обсуждайте ход мыслей.`;
-            mantra = `«Наша логика – наша общая опора. Мы уважаем разные подходы и учимся друг у друга. Вместе мы находим лучшие решения».`;
-        }
-    }
-    
-    // ----- 6. ТРУД (РАБОТОСПОСОБНОСТЬ) -----
-    else if (name === 'Труд') {
-        if (pv <= 1 && cv <= 1) {
-            harmonyType = 'оба с низкой работоспособностью';
-            intro = `Вам трудно заставить себя делать дела каждый день, вы быстро устаёте от однообразия, легко отвлекаетесь. Это создаёт взаимопонимание – вы оба знаете, как тяжело «вставать с дивана».`;
-            body = `Вы можете вместе откладывать важные задачи до последнего момента, а домашние дела накапливаются. Но вы не ругаете друг друга за «лентяйство». Ваша задача – не корить себя, а искать маленькие победы.`;
-            howToStrengthen = `Начните с микропривычек: не «убрать всю комнату», а «убрать одну вещь». Используйте таймер: работайте 10 минут, отдыхайте 5. Хвалите друг друга за каждый выполненный шаг.`;
-            example = `Мама и сын оба не любили убираться. Они ввели «10 минут порядка» вместе. Через неделю комната стала чище, а мама сказала: «Маленькие шаги работают лучше, чем героические усилия».`;
-            ritual = `Каждый день делайте одно «микродело» вместе (помыть 3 тарелки, вытереть стол). Отмечайте галочкой в календаре.`;
-            mantra = `«Мы не любим рутину, но мы умеем делать маленькие шаги. Вместе нам легче, чем поодиночке. Мы хвалим себя за каждый прогресс».`;
-        }
-        else if (pv >= 4 && cv >= 4) {
-            harmonyType = 'оба с высокой работоспособностью';
-            intro = `Вы оба трудолюбивы, усидчивы, любите доводить дела до конца. Это даёт вам огромный ресурс для достижений. Вы можете много работать, не уставая, и получать от этого удовольствие.`;
-            body = `Но есть риск «трудоголизма» – вы можете не замечать, когда пора остановиться, и требовать того же от ребёнка. Дом в идеальном порядке, но вы оба выгораете. Важно учиться отдыхать.`;
-            howToStrengthen = `Введите обязательные «часы ничегонеделания» – когда никто ничего не делает. Хвалите ребёнка не только за труд, но и за умение отдыхать. Направляйте трудолюбие в совместные проекты.`;
-            example = `Папа и сын оба были трудоголиками. Они вместе ремонтировали машину, но забывали про отдых. Ввели правило: после 2 часов работы – 30 минут перерыва. Стали меньше уставать.`;
-            ritual = `Раз в неделю устраивайте «день без дел» – никакой уборки, уроков, планов. Только то, что хочется.`;
-            mantra = `«Наше трудолюбие – наша сила. Но мы помним, что отдых – тоже часть работы. Мы умеем и созидать, и расслабляться. Вместе мы – баланс».`;
-        }
-        else {
-            harmonyType = 'близкий уровень трудолюбия';
-            intro = `Вы примерно одинаково усидчивы. Это помогает планировать совместные дела и не конфликтовать из-за «лени». Вы редко спорите о том, кто больше делает.`;
-            body = `Иногда вы можете синхронно «зависать» – оба откладывать важное. Важно поддерживать друг друга в такие моменты.`;
-            howToStrengthen = `Договаривайтесь о «времени работы» и «времени отдыха» вместе. Если оба чувствуете спад – не вините, а поддержите: «Давай сделаем маленький шаг».`;
-            example = `Мама и дочь вместе делали уроки. Они заметили, что если обе устали, то лучше отдохнуть 15 минут, а потом продолжить. Продуктивность выросла.`;
-            ritual = `Раз в месяц устраивайте «трудовой день»: вместе делаете большое дело (генеральная уборка, ремонт) – и потом вместе награждаете себя чем-то вкусным.`;
-            mantra = `«Наш ритм – наше общее дело. Мы работаем и отдыхаем вместе. Вместе мы – команда, которая знает, когда нажать на газ, а когда на тормоз».`;
-        }
-    }
-    
-    // ----- 7. УДАЧА (ВЕЗЕНИЕ) -----
-    else if (name === 'Удача') {
-        if (pv <= 1 && cv <= 1) {
-            harmonyType = 'оба с низкой удачей';
-            intro = `Вам редко везёт, вы привыкли всего добиваться трудом, планированием, упорством. Это формирует надёжный внутренний стержень. Вы не полагаетесь на «авось», и это ваша сила.`;
-            body = `Но может возникать чувство несправедливости: «Почему другим везёт, а нам нет?». Вы можете зависеть от контроля и бояться рисковать. Важно не впадать в пессимизм.`;
-            howToStrengthen = `Учитесь замечать маленькие «совпадения» – их можно тренировать. Ведите дневник удачных случайностей. Не завидуйте «везунчикам» – у них могут быть свои трудности. Позволяйте себе небольшие риски.`;
-            example = `Мама и сын часто жаловались, что им не везёт. Они начали записывать по одному приятному совпадению в день. Через месяц заметили, что «везти» стало чаще.`;
-            ritual = `Каждый вечер рассказывайте друг другу об одном «счастливом совпадении» дня – даже самом маленьком (зелёный свет, нашли потерянную вещь).`;
-            mantra = `«Удача не всегда к нам приходит, но мы умеем её замечать. Мы создаём свою удачу через подготовку и открытость. Вместе мы сильнее любых случайностей».`;
-        }
-        else if (pv >= 4 && cv >= 4) {
-            harmonyType = 'оба с высокой удачей';
-            intro = `Вам часто везёт. Вы оказываетесь в нужное время в нужном месте, получаете неожиданные подарки судьбы. Это прекрасный ресурс, но есть риск привыкнуть полагаться только на удачу.`;
-            body = `Вы можете перестать прилагать усилия, а когда удача отворачивается – впадать в панику. Важно не забывать про планирование и труд.`;
-            howToStrengthen = `Цените удачу, но не полагайтесь только на неё. Развивайте навыки, создавайте подушку безопасности. Направляйте удачу на помощь другим – это приумножает её.`;
-            example = `Папа и дочь часто выигрывали в лотереях. Но они не забывали работать. Однажды удача отвернулась, но их бизнес устоял благодаря запасу прочности.`;
-            ritual = `Ведите «дневник удачи»: записывайте, когда и как вам повезло, и анализируйте, что этому предшествовало (ваше состояние, действия).`;
-            mantra = `«Удача – наш союзник, но не хозяин. Мы благодарны ей, но не зависим от неё. Вместе мы и везучи, и трудолюбивы».`;
-        }
-        else {
-            harmonyType = 'близкий уровень удачи';
-            intro = `Ваше везение примерно одинаково. Вы синхронно переживаете «полосы» и редко спорите о том, кому больше повезло. Это помогает поддерживать друг друга в неудачах.`;
-            body = `Вы можете вместе радоваться успехам и не завидовать. Главное – не расслабляться и не полагаться только на удачу.`;
-            howToStrengthen = `Используйте совместные ритуалы «на удачу» – перед важным делом вместе делаете что-то символическое. Если одному не везёт, другой поддерживает: «Сегодня твоя очередь, завтра будет моя».`;
-            example = `Мама и сын перед экзаменами вместе загадывали желание. Сын сдал, мама – нет, но они не расстроились, а пошли гулять. «В следующий раз повезёт нам обоим», – сказал сын.`;
-            ritual = `Раз в месяц делайте что-то спонтанное, без плана (новое кафе, незнакомый маршрут). Наблюдайте, как часто это приносит приятные сюрпризы.`;
-            mantra = `«Удача любит смелых, но она любит и подготовленных. Мы доверяем потоку, но не забываем о вёслах. Вместе мы плывём быстрее».`;
-        }
-    }
-    
-    // ----- 8. ДОЛГ (ОТВЕТСТВЕННОСТЬ) -----
-    else if (name === 'Долг') {
-        if (pv <= 1 && cv <= 1) {
-            harmonyType = 'оба со слабым чувством долга';
-            intro = `Вы легко отказываетесь от обещаний, не любите быть «должными», живёте по принципу «как хочется». Это создаёт лёгкость в отношениях, но также и хаос.`;
-            body = `Важные дела могут не делаться, договорённости не выполняться. Вы можете опаздывать, не предупреждая. Ребёнок не доводит дела до конца. Важно не стыдить, а учиться держать слово.`;
-            howToStrengthen = `Начните с маленьких обязательств – пообещайте друг другу сделать одно дело и обязательно выполните. Ведите «список обещаний». Хвалите друг друга за выполненные обещания.`;
-            example = `Мама и сын часто забывали о договорённостях. Они ввели «вечерний чек-лист»: три дела, которые нужно сделать завтра. Через месяц они стали надёжнее.`;
-            ritual = `Каждую неделю давайте друг другу по одному маленькому обещанию (например, «я помою посуду вечером»). В конце недели обсуждайте, что получилось, а что нет – без критики.`;
-            mantra = `«Ответственность – не бремя, а уважение к себе и другим. Мы учимся держать слово, начиная с малого. Вместе мы становимся надёжнее».`;
-        }
-        else if (pv >= 4 && cv >= 4) {
-            harmonyType = 'оба с высоким чувством долга';
-            intro = `Вы оба очень ответственны, всегда держите слово, на вас можно положиться. Это создаёт доверие и надёжность. Вы не подводите друг друга.`;
-            body = `Но вы можете брать на себя слишком много, страдать от чувства вины, если не справляетесь, и требовать того же от ребёнка. Важно учиться говорить «нет».`;
-            howToStrengthen = `Разрешайте себе иногда не выполнять обещание, если это не критично. Не требуйте от ребёнка такой же ответственности – у него может быть другой предел. Хвалите его не только за «долг», но и за спонтанность.`;
-            example = `Папа и сын всегда всё делали вовремя. Но папа начал выгорать. Они ввели «день без обязательств» – можно не держать слово. Папа отдохнул, сын научился расслабляться.`;
-            ritual = `Раз в неделю устраивайте «день без должен» – делайте только то, что хочется, без обязательств.`;
-            mantra = `«Наша ответственность – наша сила, но мы умеем её дозировать. Мы уважаем свой труд и своё право на отдых. Вместе мы – баланс долга и свободы».`;
-        }
-        else {
-            harmonyType = 'близкий уровень долга';
-            intro = `Вы примерно одинаково ответственно подходите к обязательствам. Это помогает доверять друг другу и планировать совместные дела.`;
-            body = `Иногда вы можете синхронно перегружаться, беря на себя лишнее. Важно поддерживать друг друга и вовремя говорить «стоп».`;
-            howToStrengthen = `Договаривайтесь, что можно «сбросить» ответственность, если устали. Поддерживайте друг друга: «Я вижу, что ты перегружен, давай я возьму это на себя».`;
-            example = `Мама и дочь вместе готовились к празднику. Когда обе устали, они перенесли часть дел на следующий день. Праздник прошёл отлично, а нервы были целы.`;
-            ritual = `Каждый вечер спрашивайте: «Что из обещанного я сегодня не сделал?» и «Что я сделал сверх?». Без оценок, просто факты.`;
-            mantra = `«Мы отвечаем за свои слова, но не боимся просить о помощи. Вместе мы справляемся с любыми обязательствами».`;
-        }
-    }
-    
-    // ----- 9. ПАМЯТЬ -----
-    else if (name === 'Память') {
-        if (pv <= 1 && cv <= 1) {
-            harmonyType = 'оба с низкой памятью';
-            intro = `Вы легко забываете даты, имена, договорённости. Это создаёт взаимопонимание – вы не ругаете друг друга за забывчивость. Но есть риск упускать важное.`;
-            body = `Вы можете терять вещи, забывать о дедлайнах, путать планы. Важно не стыдить себя, а использовать внешние инструменты.`;
-            howToStrengthen = `Создайте внешнюю систему памяти: календари, напоминалки, стикеры. Повторяйте важную информацию несколько раз. Играйте в игры на память (мемори, «снежный ком»).`;
-            example = `Мама и сын постоянно забывали о встречах. Они повесили на холодильник доску с планами на неделю. Проблемы исчезли.`;
-            ritual = `Каждый вечер вместе вспоминайте три события дня (можно записывать). Это тренирует память и создаёт семейную традицию.`;
-            mantra = `«Память – не наша сильная сторона, но у нас есть внешние помощники. Мы учимся запоминать через игру и поддержку. Вместе мы ничего не забываем».`;
-        }
-        else if (pv >= 4 && cv >= 4) {
-            harmonyType = 'оба с высокой памятью';
-            intro = `Вы оба обладаете отличной памятью. Вы запоминаете быстро и надолго, помните множество деталей. Это даёт преимущество в учёбе и работе.`;
-            body = `Вы можете застревать в прошлом, помнить обиды годами, нагружать себя и ребёнка избыточной информацией. Важно учиться забывать и отпускать.`;
-            howToStrengthen = `Учитесь отпускать старые обиды – практикуйте прощение. Не требуйте от ребёнка такой же памяти – у него могут быть другие сильные стороны. Хвалите за понимание, а не только за запоминание.`;
-            example = `Папа и дочь помнили каждую ссору. Они ввели «вечер прощения» – говорили друг другу: «Я прощаю тебя за…». Отношения стали теплее.`;
-            ritual = `Раз в месяц устраивайте «вечер забывания» – вспоминайте только хорошее, а плохое оставляйте в прошлом. Учитесь отпускать.`;
-            mantra = `«Наша память – наше сокровище, но мы не хотим быть её рабами. Мы помним важное и отпускаем ненужное. Вместе мы – и память, и мудрость».`;
-        }
-        else {
-            harmonyType = 'близкий уровень памяти';
-            intro = `Ваши способности к запоминанию примерно одинаковы. Это помогает вам синхронизироваться – вы оба помните примерно одно и то же, редко спорите о фактах.`;
-            body = `Иногда вы можете вместе «застревать» на деталях или, наоборот, оба забывать важное. Важно использовать общие напоминалки.`;
-            howToStrengthen = `Ведите семейный календарь. Поддерживайте друг друга – если один забыл, другой мягко напоминает. Не критикуйте за забывчивость.`;
-            example = `Мама и сын вместе планировали отпуск. Они записывали все идеи в общий блокнот, чтобы не забыть. Отпуск удался.`;
-            ritual = `Раз в неделю играйте в «снежный ком»: первый называет слово, второй повторяет и добавляет своё, и так далее. Это весело и полезно.`;
-            mantra = `«Наша память – наша общая библиотека. Мы помогаем друг другу вспоминать и не судим за забывчивость. Вместе мы ничего не теряем».`;
-        }
-    }
-    
-    // ----- 10. ОБЩИЙ СЛУЧАЙ (для остальных ячеек: Семья, Привычки, Самооценка, Быт, Талант, Темперамент, Дух) -----
-    else {
-        if (pv <= 1 && cv <= 1) {
-            harmonyType = `оба со слабым проявлением качества «${name}»`;
-            intro = `У вас обоих это качество выражено слабо. Вы редко конфликтуете на этой почве, потому что живёте в одном ритме. Но будьте осторожны: ваша общая «слабость» может стать точкой уязвимости.`;
-            body = `Вы можете вместе упускать возможности, избегать решений, не замечать важные вещи. Ваша задача – не стыдиться, а развиваться сообща, маленькими шагами.`;
-            howToStrengthen = `Начните с одной маленькой цели, связанной с этим качеством. Поддерживайте друг друга, хвалите за каждый шаг. Не пытайтесь объять необъятное.`;
-            example = `У мамы и сына было слабо развито чувство стиля. Они вместе смотрели видео о моде, ходили по магазинам. Через полгода они стали одеваться лучше.`;
-            ritual = `Каждый день делайте одно маленькое действие, укрепляющее это качество. Отмечайте галочкой в календаре.`;
-            mantra = `«Мы не сильны в этой сфере, но мы учимся вместе. Маленькие шаги ведут к большим изменениям. Вместе мы справимся».`;
-        }
-        else if (pv >= 4 && cv >= 4) {
-            harmonyType = `оба с сильным проявлением качества «${name}»`;
-            intro = `У вас обоих это качество сильно развито. Вы отлично понимаете друг друга в этой сфере, но есть риск «перегрева».`;
-            body = `Вы можете соревноваться, кто лучше, или требовать друг от друга идеала. Важно направлять эту силу во внешние цели, а не друг на друга.`;
-            howToStrengthen = `Договоритесь о правилах: «когда я говорю "стоп" – мы прекращаем спорить». Направляйте энергию на совместные проекты.`;
-            example = `У папы и дочери было сильно развито чувство справедливости. Они вместе участвовали в волонтёрских проектах, и их сила пошла в мирное русло.`;
-            ritual = `Вместе ставьте амбициозную цель, связанную с этим качеством, и идите к ней. Празднуйте промежуточные победы.`;
-            mantra = `«Наша сила – наше общее достояние. Мы используем её для созидания, а не для борьбы. Вместе мы – непобедимая команда».`;
-        }
-        else {
-            harmonyType = `близкий уровень качества «${name}»`;
-            intro = `Ваши показатели по этому качеству близки. Вы интуитивно понимаете потребности друг друга в этой области и редко конфликтуете.`;
-            body = `Такая синхрония – это как общий язык, на котором вы говорите без слов. Используйте её для совместного роста.`;
-            howToStrengthen = `Делайте то, что у вас получается, и поддерживайте друг друга. Не сравнивайте себя с другими семьями.`;
-            example = `У мамы и сына было одинаковое чувство юмора. Они вместе смотрели комедии и смеялись до слёз. Это сближало их больше, чем любые разговоры.`;
-            ritual = `Раз в неделю уделяйте 15 минут обсуждению того, как вы можете вместе улучшить это качество. Без критики, только идеи.`;
-            mantra = `«Мы созвучны в этой сфере. Это наш мост, наша опора. Вместе мы развиваем то, что у нас уже есть».`;
-        }
-    }
-    
-    // ========== ИТОГОВЫЙ ВЫВОД ==========
-    return `<div style="margin-bottom:20px;padding:15px;background:rgba(76,175,80,0.1);border-radius:10px;border-left:4px solid #4caf50;">
-        <strong style="font-size:1.1rem;color:#4caf50;">🟢 ${name}:</strong> <strong>${pv} / ${cv}</strong> (${harmonyType})
-        <div style="margin:10px 0 0;">
-            <p><strong>✨ Что это значит для вас</strong><br>${intro}</p>
-            <p><strong>💎 Как это проявляется в жизни</strong><br>${body}</p>
-            <p><strong>🌱 Как укрепить эту гармонию</strong><br>${howToStrengthen}</p>
-            <div style="background:rgba(212,175,55,0.1);padding:10px;border-radius:8px;margin:10px 0;">
-                <p><strong>📖 Пример из практики</strong><br>${example}</p>
-            </div>
-            <div style="background:rgba(168,218,220,0.15);padding:10px;border-radius:8px;margin:10px 0;">
-                <p><strong>🕯️ Ритуал на сегодня</strong><br>${ritual}</p>
-            </div>
-            <div style="background:rgba(255,215,0,0.08);padding:10px;border-radius:8px;border-left:2px solid var(--gold);margin:10px 0;">
-                <p><strong>🌟 Что запомнить навсегда</strong><br>«${mantra}»</p>
-            </div>
-        </div>
-    </div>`;
-}
-
-// Форматирование напряжения
-function formatTensionZone(zone, parentMatrix, childMatrix) {
-    const name = zone.name;
-    const pv = zone.parentValue;
-    const cv = zone.childValue;
-    const diff = Math.abs(pv - cv);
-    
-    // Определяем тип напряжения
-    let typeLabel = '';
-    let typeDescription = '';
-    if (zone.type === 'PARENT_STRONG') typeLabel = 'родитель сильнее';
-    else if (zone.type === 'CHILD_STRONG') typeLabel = 'ребёнок сильнее';
-    else if (zone.type === 'BOTH_WEAK') typeLabel = 'обоим не хватает';
-    else if (zone.type === 'BOTH_EXCESS') typeLabel = 'перебор у обоих';
-    else typeLabel = 'умеренное расхождение';
-    
-    // Генерация уникального, объёмного текста в зависимости от ячейки
-    let fullText = '';
-    
-    if (name === 'Характер') {
-        fullText = `
-            <p>🧠 <strong>Почему эта зона напрягает вас обоих</strong><br>
-            Дорогие родители, характер — это не «я такой от рождения». Это ваша воля, способность отстаивать границы и при этом слышать другого. Когда у вас с ребёнком большая разница в волевых качествах (${pv} против ${cv}), вы постоянно говорите на разных языках. Вы — командир, который ждёт быстрых решений. Он — разведчик, которому нужно время на размышления. Или наоборот. Каждый вечер вы устаёте от борьбы, а он — от давления. Знаете это чувство «я уже 100 раз сказала, а он как будто не слышит»? Это оно.</p>
-            
-            <p>🎭 <strong>Как это выглядит в жизни</strong><br>
-            Вы заходите в комнату и видите разбросанные вещи. Вам хочется рявкнуть: «Немедленно убери!». А ребёнок замирает, смотрит в пол и молчит. Он не бунтует — он просто не знает, с чего начать. Или вы просите его выбрать кружок, а он неделю мучается, не может определиться. Вы теряете терпение, он закрывается. Замкнутый круг.</p>
-            
-            <p>⚠️ <strong>Главная ошибка, которую вы совершаете</strong><br>
-            Вы думаете: «Если я перестану давить, он совсем сядет на шею». Или: «Если я уступлю, он меня не уважает». Это ловушка. Давление не рождает волю — оно рождает либо бунт, либо апатию. А уступчивость без правил — это не уважение, а потеря ориентиров. Правда в том, что волевой стержень не передаётся через приказы. Он формируется через безопасные выборы и поддержку.</p>
-            
-            <p>💡 <strong>Что делать: пошагово</strong><br>
-            🔹 <strong>Сегодня:</strong> Дайте ребёнку выбор в трёх мелочах: «Ты будешь пить чай из красной или синей кружки?», «Какую футболку наденем — зелёную или серую?», «Мы сначала помоем посуду или вытрем пыль?». Выбор из двух вариантов — идеальный тренажёр для слабой воли. И обязательно скажите: «Ты сам решил — это здорово!»<br>
-            🔹 <strong>На этой неделе:</strong> Создайте «доску выбора» — на ней будут простые ежедневные решения, которые ребёнок принимает сам. Например: меню на завтрак, порядок домашних дел, последовательность сборов в школу. Ваша задача — не критиковать его выбор, даже если он не самый удачный. Иначе он поймёт: «выбор — это ловушка» и снова начнёт ждать ваших указаний.<br>
-            🔹 <strong>В ближайший месяц:</strong> Постепенно увеличивайте сложность выборов. От «какую рубашку» до «в какой кружок пойдём?». И главное — разрешите ему ошибаться. Если он выбрал слишком много кружков и устал — это его опыт, а не ваша ошибка. Не спасайте. Спросите: «Что ты понял? Как в следующий раз поступим?».</p>
-            
-            <p>📖 <strong>История из практики</strong><br>
-            Пришла ко мне мама 12-летнего Кирилла. Вечные скандалы из-за уроков. «Я говорю — садись делать математику, а он начинает ныть, отвлекаться, в итоге сидит до полуночи». Мы разобрали: у мамы — сильный характер (4 единицы), у Кирилла — слабый (1 единица). Вместо приказов она стала давать выбор: «Ты будешь делать математику сейчас или после ужина?», «Ты начнёшь с лёгких задач или с трудных?». Через две недели Кирилл стал сам садиться за уроки. Не потому что полюбил математику, а потому что перестал бояться, что его «задавят». Выбор вернул ему чувство контроля.</p>
-            
-            <p>🕯️ <strong>Ритуал на сегодня</strong><br>
-            Сядьте напротив друг друга. Положите на стол два предмета: например, камень и перо. Скажите: «Камень — это моя твёрдость. Перо — твоя гибкость. Мы разные, и это нормально. Давай договоримся: когда я говорю "стоп" — мы оба замолкаем на минуту и просто дышим». Сделайте это прямо сейчас. Вы увидите, как напряжение уходит.</p>
-            
-            <p>🌟 <strong>Что запомнить навсегда</strong><br>
-            «Характер — это не битва, а танец. Если вы оба настаиваете на своей партии — вы топчетесь на месте. Если один ведёт, а другой подчиняется — это не танец, а прогулка. Настоящая гармония — когда вы меняетесь ролями, слушаете музыку друг друга и вместе создаёте ритм, который никто не мог предвидеть».</p>
-        `;
-    }
-    else if (name === 'Энергия') {
-        fullText = `
-            <p>🔋 <strong>Почему эта зона напрягает</strong><br>
-            Энергия — это ваш общий бюджет сил. Если у вас её много, а у ребёнка мало, вы невольно начинаете считать его ленивым. А он чувствует себя вечно виноватым. Если наоборот — вы выдыхаетесь, а он полон сил — вы чувствуете себя «старой развалиной». Правда в том, что энергия не имеет ничего общего с силой воли или любовью к вам. Это просто биология. И пока вы не примете этот факт, вы будете раздражаться друг на друга.</p>
-            
-            <p>🏃 <strong>Как это выглядит в жизни</strong><br>
-            Вы возвращаетесь с работы и хотите активных выходных: парк, кино, гости. А ребёнок после школы падает на диван и говорит: «Я устал». Вы думаете: «Он просто ленится, надо его расшевелить». Начинаете уговаривать, потом ругаться. В итоге или едете, и ребёнок капризничает весь день, или остаётесь дома и вы злитесь. Знакомо?</p>
-            
-            <p>⚠️ <strong>Главная ошибка</strong><br>
-            Вы требуете от ребёнка вашего темпа. «Я же могу работать до ночи, значит и ты должен». Это как требовать от цыплёнка летать как орёл. Энергия не воспитывается — она даётся от природы. Её можно только беречь и грамотно распределять. Вторая ошибка — обесценивать его усталость. Фразы «Что ты устал? Ты же ничего не делал» бьют больнее, чем вы думаете. Он начинает стыдиться своего тела, а стыд — самый плохой мотиватор.</p>
-            
-            <p>💡 <strong>Что делать: пошагово</strong><br>
-            🔹 <strong>Сегодня:</strong> Спросите ребёнка: «По шкале от 1 до 10, сколько у тебя сейчас энергии?». Если меньше 5 — отмените все планы, кроме самых важных. Просто побудьте рядом. Если 7–10 — предложите активность, но не требуйте.<br>
-            🔹 <strong>На этой неделе:</strong> Заведите «энергетический дневник». Вместе отмечайте, в какое время суток у вас пик сил, а когда спад. Планируйте сложные дела на пик, а отдых — на спад. Вы удивитесь, насколько меньше станет конфликтов.<br>
-            🔹 <strong>В ближайший месяц:</strong> Введите «ленивые дни» — раз в неделю вы вообще ничего не планируете. Валяетесь, смотрите кино, едите, что захочется. Это не распущенность — это профилактика выгорания. Особенно важно, если вы оба с низкой энергией.</p>
-            
-            <p>📖 <strong>История из практики</strong><br>
-            У 8-летней Алисы было 0 двоек в матрице, а у мамы — 4. Алиса быстро уставала в школе, а мама требовала после уроков ещё и на кружки. Девочка начала болеть каждый месяц. Мы ввели простое правило: после школы — час полного покоя (лёжа, без телефона, без разговоров). Через месяц Алиса перестала болеть, а мама... сама полюбила этот час тишины и обнаружила, что тоже устаёт больше, чем думала.</p>
-            
-            <p>🧘 <strong>Ритуал на сегодня</strong><br>
-            Сядьте на пол, закройте глаза, положите руки на колени. 3 минуты просто дышите. Вдох — вы вдыхаете энергию. Выдох — вы отпускаете усталость. Делайте это вместе. Потом обнимитесь и скажите друг другу: «Мы разные, но мы команда».</p>
-            
-            <p>💎 <strong>Что запомнить навсегда</strong><br>
-            «Энергия — это не соревнование. Если у одного бензин на 10 литров, а у другого на 50, это не значит, что первый плохой. Просто у него бак меньше. Ваша задача — не перелить из одного бака в другой, а планировать маршрут, чтобы хватило обоим».</p>
-        `;
-    }
-    else if (name === 'Интерес') {
-        fullText = `
-            <p>📚 <strong>Почему эта зона напрягает</strong><br>
-            Интерес к познанию — это не про школьные оценки. Это про то, насколько человеку интересно узнавать новое вообще. Если вы любите читать, а ребёнок — нет, вы будете считать его «поверхностным». Если он любит, а вы — нет, вы будете чувствовать себя «недостаточно умным». Правда в том, что его мозг просто устроен иначе. Ему нужно учиться через движение, практику, видео, а не через учебники. И это нормально.</p>
-            
-            <p>📖 <strong>Как это выглядит в жизни</strong><br>
-            Вы дарите ребёнку энциклопедию, а он её не открывает. Вы предлагаете сходить в музей — он капризничает. Вы включаете научпоп — он уходит в телефон. Вы думаете: «Ему ничего не интересно, он пропащий». А он просто не может сидеть и слушать. Ему нужно делать: лепить, клеить, проводить опыты, смотреть короткие видео. Его интерес — это не отсутствие, а другой формат.</p>
-            
-            <p>⚠️ <strong>Главная ошибка</strong><br>
-            Вы обесцениваете его способы познания. «Компьютерные игры — это ерунда», «ТикТок — убивает мозг». Но если ему интересно — это уже отправная точка. Через игры можно учить языки, через видео — историю, через мемы — литературу. Вторая ошибка — сравнивать его с собой. «Я в твоём возрасте уже читал Дюма». Не надо. У вас были другие условия и другой мозг.</p>
-            
-            <p>💡 <strong>Что делать: пошагово</strong><br>
-            🔹 <strong>Сегодня:</strong> Посмотрите вместе 10-минутное видео на YouTube на тему, которая ему нравится (игры, животные, машины). После просмотра спросите: «Что ты узнал нового? Что было самым интересным?». Не экзамен — просто разговор.<br>
-            🔹 <strong>На этой неделе:</strong> Предложите ему самому найти короткое видео или статью и рассказать вам. Сделайте это игрой: «Ты сегодня — учитель, а я — ученик». Он почувствует себя экспертом, и интерес проснётся сам.<br>
-            🔹 <strong>В ближайший месяц:</strong> Создайте «копилку знаний» — коробку, куда он будет складывать интересные факты, картинки, вырезки. Раз в неделю открывайте её и вспоминайте, что узнали. Это превратит обучение в игру.</p>
-            
-            <p>📖 <strong>История из практики</strong><br>
-            Дима, 10 лет, ненавидел читать. Мама в отчаянии. Оказалось, у него 0 троек в матрице (интерес к познанию). Мы предложили: вместо книг — комиксы и аудиокниги. Через месяц Дима сам попросил купить ему «Гарри Поттера» — после того, как посмотрел фильм и захотел узнать больше. Не было насилия — было уважение к его темпу.</p>
-            
-            <p>🎲 <strong>Ритуал на сегодня</strong><br>
-            Возьмите лист бумаги и разделите его на две колонки: «Что я хочу узнать» и «Что хочет узнать ребёнок». Выпишите по три пункта. Найдите одну тему, которая пересекается. Изучите её вместе. Без оценок, без экзаменов — просто из любопытства.</p>
-            
-            <p>✨ <strong>Что запомнить навсегда</strong><br>
-            «Интерес не приходит по команде. Он приходит через радость, игру и уважение к тому, что человеку уже нравится. Если вы хотите, чтобы ребёнок полюбил учиться, перестаньте учить его учиться. Просто будьте рядом, когда он открывает что-то своё».</p>
-        `;
-    }
-    else if (name === 'Здоровье') {
-        fullText = `
-            <p>🩺 <strong>Почему эта зона напрягает</strong><br>
-            Здоровье — самая деликатная сфера. Когда у вас и у ребёнка большая разница в физической выносливости, вы невольно начинаете обвинять друг друга. Вы — «крепкий орешек», он — «вечно болеющий». Или наоборот. Вы считаете, что он «симулирует», а он считает, что вы «не понимаете». Правда в том, что организм — это не поле для битвы. Он просто устроен так, как устроен. И ваша задача — не переделывать его, а адаптироваться.</p>
-            
-            <p>🤒 <strong>Как это выглядит в жизни</strong><br>
-            Ребёнок жалуется на головную боль. Вы говорите: «Просто поспи, пройдёт». А через час он уже с температурой. Или вы сами болеете, а ребёнок требует активных игр. Вы чувствуете себя плохим родителем, он — обделённым. Каждый раз, когда кто-то заболевает, начинаются упрёки: «Ты плохо оделся», «Ты мало ешь», «Ты сидишь дома, вот и болеешь». Вместо поддержки — допрос.</p>
-            
-            <p>⚠️ <strong>Главная ошибка</strong><br>
-            Вы игнорируете первые сигналы. «Подумаешь, устал», «Температура невысокая — иди в школу». Вы боитесь, что ребёнок «привыкнет болеть». Но хроническое игнорирование ведёт к психосоматике. Ребёнок начинает болеть ещё чаще — теперь уже на нервной почве. Вторая ошибка — использовать здоровье как рычаг давления: «Будешь плохо есть — заболеешь», «Не наденешь шапку — попадёшь в больницу». Это создаёт тревожность, а не заботу.</p>
-            
-            <p>💡 <strong>Что делать: пошагово</strong><br>
-            🔹 <strong>Сегодня:</strong> Спросите ребёнка: «Что ты сейчас чувствуешь в теле?». Научите его называть ощущения: «У меня покалывает в боку», «У меня тяжесть в голове». Чем раньше он научится замечать сигналы, тем реже будет болеть.<br>
-            🔹 <strong>На этой неделе:</strong> Введите «золотой час» — время, когда вы просто лежите в тишине. Без телефонов, без разговоров. Это восстановление не только для ребёнка, но и для вас. Делайте это каждый день после школы.<br>
-            🔹 <strong>В ближайший месяц:</strong> Пройдите профилактический медосмотр. Не когда уже заболели, а когда здоровы. Узнайте реальные слабые места организма. И на основе этого стройте режим, а не на своих догадках.</p>
-            
-            <p>📖 <strong>История из практики</strong><br>
-            Папа жаловался, что 12-летний сын «вечно сопливит». Проверили — у ребёнка 0 четвёрок (слабое здоровье), у папы 4 (крепкое). Папа требовал, чтобы сын ходил на лыжах, как он сам. После трёх простуд подряд папа сдался. Мы ввели щадящий режим: лыжи заменили на прогулки, добавили витамины, наладили сон. Через два месяца сын перестал болеть, а папа… признал, что сам тоже устаёт и ему нужен отдых.</p>
-            
-            <p>🕯️ <strong>Ритуал на сегодня</strong><br>
-            Зажгите свечу. Сядьте напротив друг друга. Положите руки на сердце. Скажите: «Я желаю тебе здоровья. Не потому что ты болеешь — а потому что ты дорог. Мы будем беречь друг друга». Постойте так минуту. Потом выдохните и обнимитесь.</p>
-            
-            <p>🌟 <strong>Что запомнить навсегда</strong><br>
-            «Здоровье — это не награда за правильное поведение. Это данность, которую нужно принимать и беречь. Если ребёнок болеет чаще, чем вам хочется, это не его вина. Это его конституция. И ваша задача — не лечить его от слабости, а научить жить с ней в гармонии».</p>
-        `;
-    }
-    else {
-        // Общий шаблон для всех остальных ячеек (Логика, Труд, Удача, Долг, Память, Семья, Привычки, Самооценка, Быт, Талант, Темперамент, Дух)
-        fullText = `
-            <p>🧩 <strong>Почему эта зона напрягает</strong><br>
-            Сфера «${name}» — это та область, где ваши с ребёнком «операционные системы» не совпадают. Вы ждёте одного, а он выдаёт другое. Вы считаете, что «это же очевидно», а он искренне не понимает. Конфликт возникает не потому, что кто-то плохой. А потому, что вы говорите на разных языках. ${name} — это как быть носителем английского и китайского. Оба языка прекрасны, но без переводчика вы будете раздражаться.</p>
-            
-            <p>🎭 <strong>Как это выглядит в жизни</strong><br>
-            Возьмём ${name}. Вы просите ребёнка сделать что-то, а он делает по-своему. Вы говорите: «Почему не так, как я просил?». Он отвечает: «А я так понял». Вы кипите, он обижается. На следующий день история повторяется. Вы начинаете думать, что он делает назло. А он просто не может уловить ваш способ мышления. Это как если бы вы объясняли, как завязать шнурки, а он видел задачу совсем иначе.</p>
-            
-            <p>⚠️ <strong>Главная ошибка</strong><br>
-            Вы пытаетесь переделать ребёнка под себя. «Почему ты не можешь быть как я?», «Смотри, как надо». Вы не оставляете ему пространства для его собственного способа. Вторая ошибка — вы злитесь, а не объясняете. Фраза «Ну что тут непонятного?» — самая разрушительная. Если бы он понимал, он бы сделал. Он не делает — значит, действительно не понимает. Не упрямится, а именно не понимает.</p>
-            
-            <p>💡 <strong>Что делать: пошагово</strong><br>
-            🔹 <strong>Сегодня:</strong> Вместо того чтобы критиковать, спросите: «Как ты понял мою просьбу? Расскажи своими словами». Вы увидите, где возникло недопонимание. И объясните ещё раз, но уже на его языке.<br>
-            🔹 <strong>На этой неделе:</strong> Составьте вместе «карту различий». Напишите, как вы подходите к ${name}, и как к этому подходит ребёнок. Не оценивайте, просто констатируйте. Вы удивитесь, насколько вы разные — и это не плохо.<br>
-            🔹 <strong>В ближайший месяц:</strong> Выберите одну сферу, где разница максимальна, и договоритесь: «В этом вопросе я следую твоему способу, а в следующем — ты моему». По очереди. Это научит уважать различия.</p>
-            
-            <p>📖 <strong>История из практики</strong><br>
-            Мама с дочкой-подростком вечно ссорились из-за уборки. У мамы была высокая потребность в порядке (${pv}), у дочки — низкая (${cv}). Мама требовала идеальной чистоты, дочка считала это занудством. Мы предложили компромисс: дочка отвечает за порядок в своей комнате (как хочет), а мама — за общие зоны. Конфликт прекратился. Дочка даже стала иногда убирать общие зоны — без давления, а просто потому что видела пример мамы.</p>
-            
-            <p>🎨 <strong>Ритуал на сегодня</strong><br>
-            Возьмите два листа бумаги и фломастеры. Нарисуйте, как вы видите идеальный порядок в этой сфере. Покажите друг другу. Не критикуйте, просто посмотрите. Вы увидите, что у каждого своя красота. И это прекрасно.</p>
-            
-            <p>💎 <strong>Что запомнить навсегда</strong><br>
-            «Разные не значит плохие. Если бы вы были одинаковыми, один из вас был бы лишним. Ваши различия — не поле для битвы, а территория для открытий. Вместо того чтобы переделывать ребёнка, изучите его мир. И вы поймёте, что там тоже есть своя логика, своя красота и своя правда».</p>
-        `;
-    }
-    
-    return `<div style="margin-bottom:20px;padding:15px;background:rgba(244,67,54,0.1);border-radius:10px;border-left:4px solid #f44336;">
-        <strong style="font-size:1.1rem;color:#f44336;">🔴 ${name}:</strong> <strong>${pv} / ${cv}</strong> (${typeLabel})
-        <div style="margin:10px 0 0;">${fullText}</div>
-    </div>`;
-}
-// Форматирование роста
-function formatGrowthZone(zone, parentMatrix, childMatrix) {
-    const name = zone.name;
-    const pv = zone.parentValue;
-    const cv = zone.childValue;
-    const isParentStronger = pv > cv;
-    
-    let fullText = '';
-    
-    if (name === 'Характер') {
-        fullText = `
-            <p>🌱 <strong>Почему эта зона роста так важна именно сейчас</strong><br>
-            Дорогие родители, характер — это не статичная черта, а мышца. И сейчас, когда разница между вами особенно заметна, у вас есть уникальный шанс: либо укрепить волю ребёнка, либо, наоборот, научиться у него гибкости. ${isParentStronger ? 'Вы сильнее в этом качестве' : 'Ваш ребёнок сильнее в этом качестве'}. Это не навсегда — это просто текущая реальность. И её можно использовать как трамплин для роста.</p>
-            
-            <p>🎯 <strong>Как это проявляется в жизни</strong><br>
-            ${isParentStronger ? 
-                'Вы замечаете, что ребёнок часто сомневается, долго думает, боится сделать первый шаг. Вы хотите его «подтолкнуть», но он замирает. Ваша сила воли его не зажигает, а гасит. А он, в свою очередь, учит вас терпению. Каждый раз, когда вы ждёте его решения, вы тренируете свою выдержку. Это не слабость — это школа.' : 
-                'Вы видите, как ребёнок легко отстаивает своё мнение, спорит, не боится говорить «нет». А вам это даётся тяжелее. Вы восхищаетесь им, но иногда чувствуете себя неуверенно. И это нормально. Ребёнок — ваш личный коуч по смелости. Каждый его шаг — это урок для вас.'
-            }</p>
-            
-            <p>⚠️ <strong>Главная ошибка, которую вы совершаете</strong><br>
-            ${isParentStronger ? 
-                'Вы пытаетесь «продавить» его волю своей. «Делай как я», «Возьми себя в руки». Этим вы не укрепляете его характер — вы его подавляете. Он не становится сильнее, он просто учится притворяться или бунтовать. Вторая ошибка — вы не замечаете его маленьких побед. Он сам выбрал рубашку? Он сказал «нет» другу? Это миллиметры роста, но без вашего признания они не превратятся в сантиметры.' : 
-                'Вы боитесь его силы и начинаете его одёргивать. «Не спорь», «Ты ещё мал», «Я лучше знаю». Вы лишаете его возможности тренировать свой характер, а себя — возможности учиться. Вторая ошибка — вы не берёте с него пример. Вместо того чтобы спросить: «А как у тебя получается не бояться?», вы обесцениваете: «Повезло просто». Упущенный шанс.'
-            }</p>
-            
-            <p>💡 <strong>Что делать: пошагово</strong><br>
-            🔹 <strong>Сегодня:</strong> ${isParentStronger ? 
-                'Дайте ребёнку возможность принять одно решение без вашего участия. Не советуйте, не поправляйте. Просто скажите: «Я доверяю твоему выбору». После этого обязательно похвалите: «Ты сам справился — это здорово!».' : 
-                'Попросите ребёнка помочь вам принять решение. «Я сомневаюсь, как ты думаешь, что лучше?». Выслушайте и, если возможно, сделайте по его совету. Вы покажете, что уважаете его мнение, и сами научитесь смелости.'
-            }<br>
-            🔹 <strong>На этой неделе:</strong> ${isParentStronger ? 
-                'Составьте «лестницу решений»: от самых простых (выбор завтрака) до самых сложных (куда поехать в выходные). Каждый день поднимайтесь на одну ступеньку. Ваша задача — не решать за него, а быть рядом. Если он ошибётся — не спасайте, а обсуждайте: «Что ты узнал? Как в следующий раз сделаешь лучше?».' : 
-                'Замечайте, в каких ситуациях ребёнок проявляет волю, и записывайте. В конце недели скажите ему: «Ты меня вдохновляешь. Я учусь у тебя смелости». Это укрепит его самооценку и вашу связь.'
-            }<br>
-            🔹 <strong>В ближайший месяц:</strong> ${isParentStronger ? 
-                'Выберите одно дело, где вы обычно берёте инициативу на себя, и передайте её ребёнку. Например, пусть он сам организует семейный ужин или выберет маршрут прогулки. Наблюдайте, не вмешивайтесь. Вы увидите, как растёт его уверенность.' : 
-                'Вместе поставьте цель, где нужно проявить волю. Например, записаться на курс, который вы давно хотели, но боялись. Ребёнок будет вашим «тренером» — будет подбадривать, напоминать, радоваться вашим шагам. Так вы оба выиграете.'
-            }</p>
-            
-            <p>📖 <strong>История из практики</strong><br>
-            ${isParentStronger ? 
-                'Пришла мама с 9-летним Мишей. У мамы — 4 единицы характера, у Миши — 1. Мама жаловалась: «Он не может сказать «нет» в школе, его обижают». Мы начали с малого: дома Миша выбирал, что будет на ужин. Потом — какие фильмы смотреть. Потом — в какие игры играть с друзьями. Через три месяца Миша впервые отказался помочь однокласснику списать — и не почувствовал вины. Мама плакала от счастья. Она поняла: воля не передаётся через давление, а выращивается через маленькие победы.' : 
-                'Пришёл папа с 14-летним Димой. У папы — 1 единица характера, у Димы — 4. Папа жаловался: «Он со мной спорит постоянно, я чувствую себя дураком». Мы предложили папе не бороться, а учиться. Дима научил папу говорить «нет» навязчивым продавцам. Через месяц папа впервые отказался от ненужной страховки. Он сказал: «Сын, ты мой герой». Дима расцвёл, а их отношения перестали быть полем битвы.'
-            }</p>
-            
-            <p>🕯️ <strong>Ритуал на сегодня</strong><br>
-            Сядьте напротив друг друга. Возьмите по камешку. Скажите: «Этот камень — моя твёрдость. Я кладу его перед тобой, чтобы ты знал: я рядом, но не давлю». Положите камень. Потом скажите: «А теперь твой камень — это твоя смелость. Положи его передо мной, чтобы я помнил: ты можешь больше, чем я думаю». Сделайте это. Обнимитесь.</p>
-            
-            <p>🌟 <strong>Что запомнить навсегда</strong><br>
-            «Характер не воспитывается приказами. Он вырастает из маленьких «я сам», «я решил», «я смог». Ваша задача — не быть надзирателем, а быть садовником. Поливать, удобрять, но не выдёргивать росток, чтобы он рос быстрее».</p>
-        `;
-    }
-    else if (name === 'Энергия') {
-        fullText = `
-            <p>🔋 <strong>Почему эта зона роста так важна именно сейчас</strong><br>
-            Энергия — это ресурс, который нельзя накопить впрок, но можно научиться распределять. Сейчас, когда разница в уровне энергии очевидна, у вас есть шанс: либо научить ребёнка беречь свои силы, либо научиться у него лёгкости и спонтанности. ${isParentStronger ? 'У вас энергии больше' : 'У ребёнка энергии больше'}. Это не навсегда — это просто разные батарейки. И их можно заряжать друг от друга, если знать как.</p>
-            
-            <p>🏃 <strong>Как это проявляется в жизни</strong><br>
-            ${isParentStronger ? 
-                'Вы полны сил, а ребёнок быстро устаёт. Вы можете работать допоздна, а он после школы — на нуле. Вы хотите активных выходных, а он — лежать. Вы злитесь, он чувствует себя виноватым. Но правда в том, что он не ленится. Его организм просто устроен иначе. А вы — наоборот — можете научить его, как распределять силы, чтобы не выгорать.' : 
-                'Ребёнок — энерджайзер, а вы выдыхаетесь. Он хочет бегать, играть, гулять, а вы — лечь на диван. Вы чувствуете себя «плохим родителем», он — обделённым. Но правда в том, что его энергия — это не упрёк вам. Это дар. И вы можете научиться у него лёгкости, а он у вас — бережливости.'
-            }</p>
-            
-            <p>⚠️ <strong>Главная ошибка, которую вы совершаете</strong><br>
-            ${isParentStronger ? 
-                'Вы требуете от ребёнка вашего темпа. «Я же могу, значит и ты должен». Это как требовать от цыплёнка летать как орёл. Вы не понимаете, что его усталость — не слабость, а сигнал. Игнорируя его, вы загоняете его в болезнь. Вторая ошибка — вы не учите его отдыхать. Вы сами не умеете останавливаться, поэтому и ему не показываете пример.' : 
-                'Вы пытаетесь «затормозить» ребёнка. «Сядь», «Не бегай», «Успокойся». Вы боитесь его энергии, считаете её проблемой. Но его активность — это не гиперактивность, а его природа. Запрещая ему двигаться, вы не делаете его спокойнее — вы делаете его несчастным. Вторая ошибка — вы не используете его энергию для совместных дел.'
-            }</p>
-            
-            <p>💡 <strong>Что делать: пошагово</strong><br>
-            🔹 <strong>Сегодня:</strong> ${isParentStronger ? 
-                'Спросите ребёнка: «По шкале от 1 до 10, сколько у тебя сейчас энергии?». Если меньше 5 — отмените всё, кроме самого важного. Просто побудьте рядом. Если 7–10 — предложите активность, но не требуйте.' : 
-                'Спросите ребёнка: «Какую активность ты хочешь сейчас?». И сделайте это вместе. Даже если вы устали. Пятнадцать минут — и вы увидите, как его глаза загорятся.'
-            }<br>
-            🔹 <strong>На этой неделе:</strong> ${isParentStronger ? 
-                'Введите «энергетические перерывы». Каждые 45 минут — 5 минут тишины. Это и для вас, и для него. Вы научитесь замечать свою усталость, он — распределять силы.' : 
-                'Планируйте день так: час активных дел (с ребёнком) — час вашего отдыха. Пока он бегает во дворе, вы сидите на скамейке с книгой. Идеальный компромисс.'
-            }<br>
-            🔹 <strong>В ближайший месяц:</strong> ${isParentStronger ? 
-                'Введите «ленивые дни» — раз в неделю вы вообще ничего не планируете. Валяетесь, смотрите кино, едите, что захочется. Это профилактика выгорания для вас обоих.' : 
-                'Найдите активность, которая нравится вам обоим. Например, плавание, велосипед, походы. Там, где вы двигаетесь, но в своём темпе. Так вы будете вместе, и никто не будет чувствовать себя обузой.'
-            }</p>
-            
-            <p>📖 <strong>История из практики</strong><br>
-            ${isParentStronger ? 
-                'У 7-летней Ани было 0 двоек, у мамы — 4. Аня быстро уставала, мама требовала кружков. Девочка начала болеть каждый месяц. Мы ввели правило: после школы — час полного покоя. Через месяц Аня перестала болеть, а мама… сама полюбила этот час тишины и обнаружила, что тоже устаёт больше, чем думала.' : 
-                'У 10-летнего Димы было 4 двойки, у папы — 0. Папа жаловался: «Я не могу за ним угнаться, чувствую себя стариком». Мы предложили папе не догонять, а делегировать. Дима стал ответственным за активные игры с младшей сестрой, а папа — за спокойные вечерние ритуалы. Конфликты прекратились, а папа перестал корить себя за «медлительность».'
-            }</p>
-            
-            <p>🧘 <strong>Ритуал на сегодня</strong><br>
-            Сядьте на пол, закройте глаза, положите руки на колени. 3 минуты просто дышите. Вдох — вы вдыхаете энергию. Выдох — вы отпускаете усталость. Делайте это вместе. Потом обнимитесь и скажите: «Мы разные, но мы команда».</p>
-            
-            <p>💎 <strong>Что запомнить навсегда</strong><br>
-            «Энергия — это не соревнование. Если у одного бензин на 10 литров, а у другого на 50, это не значит, что первый плохой. Просто у него бак меньше. Ваша задача — не перелить из одного бака в другой, а планировать маршрут, чтобы хватило обоим».</p>
-        `;
-    }
-    else if (name === 'Интерес') {
-        fullText = `
-            <p>📚 <strong>Почему эта зона роста так важна именно сейчас</strong><br>
-            Интерес к познанию — это не про оценки в школе. Это про любопытство, которое остаётся на всю жизнь. Сейчас, когда разница в уровне интереса очевидна, у вас есть шанс: либо заразить ребёнка тягой к знаниям, либо самому открыть новые способы учиться. ${isParentStronger ? 'Вы любите узнавать новое' : 'Ваш ребёнок — природный исследователь'}. И это ваше общее богатство, если не бороться, а дополнять.</p>
-            
-            <p>📖 <strong>Как это проявляется в жизни</strong><br>
-            ${isParentStronger ? 
-                'Вы читаете, ходите на курсы, смотрите научпоп. А ребёнок — в телефоне. Вы считаете его «поверхностным», он вас — «занудой». Вы предлагаете пойти в музей — он капризничает. Вы включаете документалку — он уходит. Вы чувствуете, что он «не ценит знания». А он просто не может учиться через лекции. Ему нужно делать, пробовать, ошибаться.' : 
-                'Ребёнок постоянно что-то спрашивает, изучает, собирает, разбирает. А вы устали от его «почему?». Вы отмахиваетесь, говорите «потом», «не сейчас». Вы чувствуете себя «недостаточно умным» и раздражаетесь. А он просто хочет делиться с вами своим миром. И каждое ваше «отстань» — это упущенная возможность.'
-            }</p>
-            
-            <p>⚠️ <strong>Главная ошибка, которую вы совершаете</strong><br>
-            ${isParentStronger ? 
-                'Вы обесцениваете его способы познания. «Компьютерные игры — ерунда», «ТикТок — убивает мозг». Но если ему интересно — это уже отправная точка. Через игры можно учить языки, через видео — историю, через мемы — литературу. Вторая ошибка — вы сравниваете его с собой. «Я в твоём возрасте уже читал Дюма». Не надо. У вас были другие условия.' : 
-                'Вы не берёте с него пример. Вместо того чтобы спросить: «А что тебя так увлекло?», вы говорите: «Хватит сидеть в телефоне». Вы лишаете себя шанса узнать что-то новое. Вторая ошибка — вы не даёте ему ресурсов. Ему нужны книги, кружки, инструменты — а вы экономите.'
-            }</p>
-            
-            <p>💡 <strong>Что делать: пошагово</strong><br>
-            🔹 <strong>Сегодня:</strong> ${isParentStronger ? 
-                'Посмотрите вместе 10-минутное видео на тему, которая ему нравится (игры, животные, машины). После спросите: «Что ты узнал нового? Что было самым интересным?». Не экзамен — просто разговор.' : 
-                'Попросите ребёнка рассказать вам о том, что его увлекает. Не перебивайте, не оценивайте. Просто слушайте. Вы узнаете много нового.'
-            }<br>
-            🔹 <strong>На этой неделе:</strong> ${isParentStronger ? 
-                'Предложите ребёнку самому найти короткое видео или статью и рассказать вам. Сделайте это игрой: «Ты сегодня — учитель, а я — ученик». Он почувствует себя экспертом, и интерес проснётся сам.' : 
-                'Найдите вместе один факт или тему, которая интересна вам обоим. Изучите её. Это может быть что угодно — от космоса до рецепта пиццы. Главное — вместе.'
-            }<br>
-            🔹 <strong>В ближайший месяц:</strong> ${isParentStronger ? 
-                'Создайте «копилку знаний» — коробку, куда он будет складывать интересные факты, картинки, вырезки. Раз в неделю открывайте её и вспоминайте, что узнали. Это превратит обучение в игру.' : 
-                'Вместе запишитесь на короткий онлайн-курс или мастер-класс. Пусть ребёнок выбирает. Вы будете учиться вместе — на равных. Это укрепит вашу связь.'
-            }</p>
-            
-            <p>📖 <strong>История из практики</strong><br>
-            ${isParentStronger ? 
-                'Дима, 10 лет, ненавидел читать. Мама в отчаянии. Оказалось, у него 0 троек (интерес), у мамы 4. Мы предложили: вместо книг — комиксы и аудиокниги. Через месяц Дима сам попросил купить ему «Гарри Поттера» — после того, как посмотрел фильм и захотел узнать больше.' : 
-                'Катя, 12 лет, обожала астрономию, а папа считал это «ерундой». Папа работал водителем, звёзды его не интересовали. Мы предложили папе сходить с Катей в планетарий. Он согласился «для дочки». В итоге сам увлёкся — теперь они вместе смотрят видео о космосе и обсуждают чёрные дыры.'
-            }</p>
-            
-            <p>🎲 <strong>Ритуал на сегодня</strong><br>
-            Возьмите лист бумаги и разделите его на две колонки: «Что я хочу узнать» и «Что хочет узнать ребёнок». Выпишите по три пункта. Найдите одну тему, которая пересекается. Изучите её вместе. Без оценок, без экзаменов — просто из любопытства.</p>
-            
-            <p>✨ <strong>Что запомнить навсегда</strong><br>
-            «Интерес не приходит по команде. Он приходит через радость, игру и уважение к тому, что человеку уже нравится. Если вы хотите, чтобы ребёнок полюбил учиться, перестаньте учить его учиться. Просто будьте рядом, когда он открывает что-то своё».</p>
-        `;
-    }
-    else {
-        // Универсальный шаблон для остальных ячеек (Логика, Труд, Удача, Долг, Память, Семья, Привычки, Самооценка, Быт, Талант, Темперамент, Дух)
-        fullText = `
-            <p>🌿 <strong>Почему эта зона роста так важна именно сейчас</strong><br>
-            Дорогие родители, сфера «${name}» — это не просто набор цифр. Это живая область, где вы можете стать ближе или, наоборот, отдалиться. Сейчас, когда разница между вами заметна, у вас есть уникальный шанс: либо передать ребёнку свой опыт, либо научиться у него чему-то новому. ${isParentStronger ? 'Вы сильнее в этом качестве' : 'Ваш ребёнок сильнее в этом качестве'}. И это не проблема — это ресурс. Вопрос только в том, как вы им распорядитесь.</p>
-            
-            <p>🎭 <strong>Как это проявляется в жизни</strong><br>
-            ${isParentStronger ? 
-                'Вы замечаете, что ребёнок часто делает не так, как вы. Вы просите одно — он делает другое. Вы думаете: «Он меня не слышит». А он просто не может уловить ваш способ мышления. Вы злитесь, он обижается. И каждый день вы тратите энергию на борьбу, а не на созидание.' : 
-                'Вы видите, как ребёнок легко справляется с тем, что вам даётся с трудом. Вы восхищаетесь, но иногда завидуете. Вы боитесь, что он «вырастет и уйдёт», а вы останетесь один. На самом деле его сила — это ваш шанс. Он может научить вас, если вы позволите.'
-            }</p>
-            
-            <p>⚠️ <strong>Главная ошибка, которую вы совершаете</strong><br>
-            ${isParentStronger ? 
-                'Вы пытаетесь переделать ребёнка под себя. «Делай как я», «Смотри, как надо». Вы не оставляете ему пространства для его собственного способа. Вторая ошибка — вы не замечаете его маленьких успехов. Он сделал что-то по-своему — и это получилось? Похвалите. Иначе он перестанет стараться.' : 
-                'Вы боитесь его силы и начинаете его одёргивать. «Не умничай», «Ты ещё мал». Вы лишаете его возможности расти, а себя — учиться. Вторая ошибка — вы не берёте с него пример. Вместо того чтобы спросить: «А как у тебя получается?», вы обесцениваете: «Просто повезло». Упущенный шанс.'
-            }</p>
-            
-            <p>💡 <strong>Что делать: пошагово</strong><br>
-            🔹 <strong>Сегодня:</strong> ${isParentStronger ? 
-                'Дайте ребёнку возможность проявить себя в этой сфере. Попросите его сделать что-то по-своему. Не критикуйте, даже если результат не идеален. Скажите: «Ты старался, молодец. В следующий раз будет ещё лучше».' : 
-                'Попросите ребёнка научить вас чему-то в этой сфере. Будьте учеником, слушайте внимательно. Вы удивитесь, как много он знает.'
-            }<br>
-            🔹 <strong>На этой неделе:</strong> ${isParentStronger ? 
-                'Выберите одно дело, где вы обычно берёте инициативу на себя, и передайте её ребёнку. Наблюдайте, не вмешивайтесь. Вы увидите, как растёт его уверенность.' : 
-                'Замечайте, в каких ситуациях ребёнок проявляет своё сильное качество, и записывайте. В конце недели скажите ему: «Ты меня вдохновляешь. Я учусь у тебя». Это укрепит его самооценку.'
-            }<br>
-            🔹 <strong>В ближайший месяц:</strong> ${isParentStronger ? 
-                'Вместе поставьте цель, связанную с развитием этого качества. Например, если речь о логике — решать вместе головоломки. Если о труде — делать поделки. Двигайтесь маленькими шагами, празднуйте каждое достижение.' : 
-                'Вместе поставьте цель, где вы будете учиться у ребёнка. Например, если он силён в технологиях — пусть научит вас пользоваться новой программой. Если в творчестве — сделайте совместный проект. Вы станете командой.'
-            }</p>
-            
-            <p>📖 <strong>История из практики</strong><br>
-            ${isParentStronger ? 
-                'Мама жаловалась, что 10-летний сын «ничего не умеет» в сфере ${name}. Мы предложили маме не делать за него, а давать маленькие задания. Через месяц сын сам собрал стеллаж — мама плакала от гордости.' : 
-                'Папа говорил, что 12-летняя дочь «слишком умная» и с ней невозможно спорить в сфере ${name}. Мы предложили папе не спорить, а учиться. Дочь научила его пользоваться новым приложением. Папа сказал: «Я теперь знаю, кто в доме главный эксперт». Они посмеялись и стали ближе.'
-            }</p>
-            
-            <p>🕯️ <strong>Ритуал на сегодня</strong><br>
-            Сядьте напротив друг друга. Возьмите по листу бумаги. Напишите: «Одно, чему я могу научиться у тебя в сфере ${name}». Прочитайте друг другу. Обнимитесь.</p>
-            
-            <p>🌟 <strong>Что запомнить навсегда</strong><br>
-            «Сила не в том, чтобы быть одинаковыми. Сила в том, чтобы дополнять друг друга. Если вы сильнее — будьте наставником. Если слабее — будьте учеником. В любом случае вы — команда. А команда побеждает, когда каждый играет свою партию».</p>
-        `;
-    }
-    
-    return `<div style="margin-bottom:20px;padding:15px;background:rgba(33,150,243,0.1);border-radius:10px;border-left:4px solid #2196f3;">
-        <strong style="font-size:1.1rem;color:#2196f3;">🔵 ${name}:</strong> <strong>${pv} / ${cv}</strong>
-        <div style="margin:10px 0 0;">${fullText}</div>
-    </div>`;
-}
-
-// Родительские ловушки (объёмные тексты)
-function getParentTraps(parentMatrix, childMatrix, parentRole = 'mother') {
-    const p = parentMatrix.c;
-    const c = childMatrix.c;
-    const traps = [];
-    const role = parentRole === 'mother' ? 'мама' : (parentRole === 'father' ? 'папа' : 'родитель');
-    const child = 'ребёнок';
-
-    // --------------------------------------------------------------
-    // ЛОВУШКА 1: «Делай как я» (сильный характер родителя – слабый ребёнок)
-    // --------------------------------------------------------------
-    if (p[1] >= 5 && c[1] <= 1) {
-        traps.push({
-            title: "⚠️ Ловушка «Делай как я»",
-            text: `
-                <div style="font-size:0.95rem; line-height:1.6;">
-                    <p><strong>🧠 Почему эта ловушка возникает</strong><br>
-                    Дорогие родители, вы обладаете сильным, волевым характером (${p[1]} единиц). Вы привыкли быстро принимать решения, действовать напролом и не терпите неопределённости. А ваш ребёнок — мягкий, неконфликтный (${c[1]} единиц). Ему нужно время, чтобы обдумать даже простой выбор. Вы говорите: «Что тут думать?», «Бери и делай», «Я в твоём возрасте уже…». Искренне не понимая, почему он «тормозит». Эта ловушка возникает из лучших побуждений — вы хотите научить его быть решительным. Но вместо этого вы его парализуете.</p>
-                    
-                    <p><strong>🎭 Как это проявляется в жизни</strong><br>
-                    Вы заходите в комнату, видите разбросанные игрушки и командуете: «Немедленно убери!». Ребёнок замирает, смотрит в пол и не двигается. Вы повышаете голос — он начинает плакать или уходит в себя. Вечером вы чувствуете себя плохим родителем, а он засыпает с обидой. На следующий день всё повторяется. Или: вы просите его выбрать кружок. Он неделю мучается, не может определиться. Вы теряете терпение: «Ну что тут сложного? Давай быстрее!». Он выбирает то, что вы сказали, но потом ходит без желания и бросает. Вы злитесь на него за «неблагодарность», а он не понимает, чем провинился.</p>
-                    
-                    <p><strong>⚠️ Главная ошибка, которую вы совершаете</strong><br>
-                    Вы думаете: «Если я перестану давить, он совсем сядет на шею». Или: «Если я уступлю, он меня не уважает». Это ловушка. Давление не рождает волю — оно рождает либо бунт, либо апатию. А уступчивость без правил — это не уважение, а потеря ориентиров. Правда в том, что волевой стержень не передаётся через приказы. Он формируется через безопасные выборы и поддержку. Ваша сила воли не заразительна — она просто пугает. Ребёнок не становится смелее, когда вы кричите. Он становится только тревожнее.</p>
-                    
-                    <p><strong>💡 Что делать: пошаговая стратегия</strong><br>
-                    🔹 <strong>Сегодня:</strong> Дайте ребёнку выбор в трёх мелочах: «Ты будешь пить чай из красной или синей кружки?», «Какую футболку наденем — зелёную или серую?», «Мы сначала помоем посуду или вытрем пыль?». Выбор из двух вариантов — идеальный тренажёр для слабой воли. И обязательно скажите: «Ты сам решил — это здорово!»<br>
-                    🔹 <strong>На этой неделе:</strong> Создайте «доску выбора» — на ней будут простые ежедневные решения, которые ребёнок принимает сам. Например: меню на завтрак, порядок домашних дел, последовательность сборов в школу. Ваша задача — не критиковать его выбор, даже если он не самый удачный. Иначе он поймёт: «выбор — это ловушка» и снова начнёт ждать ваших указаний.<br>
-                    🔹 <strong>В ближайший месяц:</strong> Постепенно увеличивайте сложность выборов. От «какую рубашку» до «в какой кружок пойдём?». И главное — разрешите ему ошибаться. Если он выбрал слишком много кружков и устал — это его опыт, а не ваша ошибка. Не спасайте. Спросите: «Что ты понял? Как в следующий раз поступим?».</p>
-                    
-                    <p><strong>📖 История из практики</strong><br>
-                    Пришла ко мне мама 12-летнего Кирилла. Вечные скандалы из-за уроков. «Я говорю — садись делать математику, а он начинает ныть, отвлекаться, в итоге сидит до полуночи». Мы разобрали: у мамы — сильный характер (4 единицы), у Кирилла — слабый (1 единица). Вместо приказов она стала давать выбор: «Ты будешь делать математику сейчас или после ужина?», «Ты начнёшь с лёгких задач или с трудных?». Через две недели Кирилл стал сам садиться за уроки. Не потому что полюбил математику, а потому что перестал бояться, что его «задавят». Выбор вернул ему чувство контроля.</p>
-                    
-                    <p><strong>🕯️ Ритуал на сегодня</strong><br>
-                    Сядьте напротив друг друга. Положите на стол два предмета: например, камень и перо. Скажите: «Камень — это моя твёрдость. Перо — твоя гибкость. Мы разные, и это нормально. Давай договоримся: когда я говорю "стоп" — мы оба замолкаем на минуту и просто дышим». Сделайте это прямо сейчас. Вы увидите, как напряжение уходит.</p>
-                    
-                    <p><strong>🌟 Что запомнить навсегда</strong><br>
-                    «Характер — это не битва, а танец. Если вы оба настаиваете на своей партии — вы топчетесь на месте. Если один ведёт, а другой подчиняется — это не танец, а прогулка. Настоящая гармония — когда вы меняетесь ролями, слушаете музыку друг друга и вместе создаёте ритм, который никто не мог предвидеть».</p>
-                </div>
-            `
-        });
-    }
-
-    // --------------------------------------------------------------
-    // ЛОВУШКА 2: «Гиперзащита» (родитель гиперответственный – ребёнок безответственный)
-    // --------------------------------------------------------------
-    if (p[8] >= 5 && c[8] <= 1) {
-        traps.push({
-            title: "⚠️ Ловушка «Гиперзащита»",
-            text: `
-                <div style="font-size:0.95rem; line-height:1.6;">
-                    <p><strong>🧠 Почему эта ловушка возникает</strong><br>
-                    Дорогие родители, ваше чувство долга и ответственности зашкаливает (${p[8]} восьмёрок). Вы привыкли всё контролировать, перепроверять, доделывать. Вам кажется, что если вы не проконтролируете, всё развалится. А у ребёнка это качество почти отсутствует (${c[8]}). Он забывает обещания, не доводит дела до конца, его приходится постоянно дёргать. Вы искренне не понимаете, как можно быть таким «безответственным». Вы боитесь, что он вырастет неряхой и неудачником. И вы берёте всё на себя.</p>
-                    
-                    <p><strong>🎭 Как это проявляется в жизни</strong><br>
-                    Вы каждый вечер проверяете, собрал ли он рюкзак. Вы звоните учителям, чтобы уточнить домашнее задание. Вы напоминаете: «Ты выключил свет?», «Положи ключи на место», «Ты поел?». Вы решаете его проблемы: договариваетесь с друзьями, мирите, ищете забытые вещи. Вы чувствуете, что тащите на себе двоих. А ребёнок привыкает: «Мама/папа всё сделают». Он перестаёт даже пытаться. В итоге вы выгораете, обижаетесь: «Я для него всё, а он не ценит!». А он искренне не понимает, чем провинился — ведь вы всегда сами хотели всё контролировать.</p>
-                    
-                    <p><strong>⚠️ Главная ошибка, которую вы совершаете</strong><br>
-                    Вы путаете любовь с гиперопекой. Вам кажется, что «спасать» — это и есть забота. Но на самом деле вы лишаете ребёнка возможности учиться. Он не становится ответственным от того, что вы за него делаете. Он становится только более беспомощным. Вторая ошибка — вы не позволяете ему ошибаться. Вы боитесь его ошибок больше, чем он сам. Но именно через ошибки и формируется ответственность. Если вы будете вечно подстилать соломку, он никогда не научится падать и вставать.</p>
-                    
-                    <p><strong>💡 Что делать: пошаговая стратегия</strong><br>
-                    🔹 <strong>Сегодня:</strong> Передайте ребёнку одно маленькое дело, за которое он отвечает полностью. Например, полить цветы или покормить кота. Не напоминайте. Если забудет — не делайте за него. Пусть увидит последствия (цветы завяли, кот мяукает). Это не жестокость, это урок.<br>
-                    🔹 <strong>На этой неделе:</strong> Составьте список дел, за которые ребёнок отвечает сам. Начните с 2–3 пунктов: собрать рюкзак, убрать игрушки, заправить кровать. Не проверяйте каждый шаг — проверяйте результат в конце дня. Хвалите, если сделано. Не ругайте, если нет — просто спросите: «Что мы можем сделать, чтобы ты не забывал?». И пусть он сам предложит решение.<br>
-                    🔹 <strong>В ближайший месяц:</strong> Постепенно добавляйте новые обязанности. И главное — перестаньте спасать. Если он забыл дневник — пусть идёт без него и получает замечание. Если не сделал уроки — пусть объясняет учителю сам. Ваша задача — быть рядом, но не делать за него. Вы удивитесь, как быстро он научится ответственности, когда поймёт, что вы больше не подстраховываете.</p>
-                    
-                    <p><strong>📖 История из практики</strong><br>
-                    Мама 10-летнего Димы жаловалась: «Он ничего не делает без напоминаний. Я уже устала быть его будильником». Мы предложили: на неделю мама перестаёт напоминать про домашнее задание. Дима получил двойку. На родительском собрании мама не оправдывалась, а сказала: «Дима, это твоя ответственность». На следующей неделе Дима сам сел за уроки. Не потому что полюбил учёбу, а потому что понял: мама больше не будет тащить. Он научился планировать время за три недели.</p>
-                    
-                    <p><strong>🕯️ Ритуал на сегодня</strong><br>
-                    Возьмите лист бумаги. Напишите сверху: «Я отпускаю контроль над…» и перечислите 3 дела, которые вы будете делать за ребёнком, а с завтрашнего дня перестанете. Сожгите этот лист (безопасно). Скажите себе: «Я верю, что он справится».</p>
-                    
-                    <p><strong>🌟 Что запомнить навсегда</strong><br>
-                    «Ваша задача — не вырастить удобного ребёнка, который слушается и не доставляет хлопот. Ваша задача — вырастить самостоятельного взрослого. А для этого иногда нужно отпустить руль и позволить ему набить свои шишки».</p>
-                </div>
-            `
-        });
-    }
-
-    // --------------------------------------------------------------
-    // ЛОВУШКА 3: «Эмоциональная буря» (родитель с сильным темпераментом – ребёнок спокойный)
-    // --------------------------------------------------------------
-    if (parentMatrix.temp >= 5 && childMatrix.temp <= 1) {
-        traps.push({
-            title: "⚠️ Ловушка «Эмоциональная буря»",
-            text: `
-                <div style="font-size:0.95rem; line-height:1.6;">
-                    <p><strong>🧠 Почему эта ловушка возникает</strong><br>
-                    Дорогие родители, вы — человек с очень интенсивным темпераментом (${parentMatrix.temp} баллов). Вы быстро загораетесь, громко радуетесь и бурно злитесь. Ваши эмоции — как качели: от эйфории до гнева за пять минут. А ваш ребёнок — спокоен, невозмутим (${childMatrix.temp}). Его трудно рассмешить и трудно рассердить. Вы говорите: «Ну почему ты не радуешься?», «Что ты молчишь, как рыба?», «Вырази хоть как-то свои чувства!». Вы искренне не понимаете, как можно быть таким «бесчувственным». А он не «сухой» — он просто обрабатывает эмоции внутри, а не снаружи.</p>
-                    
-                    <p><strong>🎭 Как это проявляется в жизни</strong><br>
-                    Вы приходите с работы в плохом настроении. Ребёнок что-то уронил. Вы взрываетесь: «Вечно у тебя всё из рук валится!». Ребёнок замирает, опускает голову и молчит. Вы думаете: «Он меня игнорирует». А он просто испугался и не знает, что сказать. Или вы выиграли в лотерею — прыгаете от радости, обнимаете всех. А ребёнок просто улыбается и идёт дальше. Вы обижаетесь: «Я стараюсь разделить радость, а ему всё равно». На самом деле он рад, просто не умеет показывать это так, как вы. Он боится ваших вспышек, потому что они для него — ураган. И он закрывается, чтобы не пострадать.</p>
-                    
-                    <p><strong>⚠️ Главная ошибка, которую вы совершаете</strong><br>
-                    Вы требуете от ребёнка такой же интенсивности чувств. Но это как требовать от кактуса цвести как роза. У него другая природа. Ваша эмоциональность его не «заражает» — она его пугает. Он не становится от этого ярче, он становится только тревожнее. Вторая ошибка — вы не объясняете свои чувства. Вы просто кричите, а он не понимает, что происходит. Он думает, что это из-за него, и чувствует себя виноватым. А вина — самое разрушительное чувство для ребёнка.</p>
-                    
-                    <p><strong>💡 Что делать: пошаговая стратегия</strong><br>
-                    🔹 <strong>Сегодня:</strong> Учитесь паузе. Когда чувствуете, что эмоции зашкаливают, скажите: «Мне нужно 5 минут успокоиться, я потом продолжу». Выйдите в другую комнату, выпейте воды, подышите. Не кричите, не хлопайте дверью. Просто уйдите. Ребёнок поймёт: «мама/папа не злится на меня, им просто нужно отдохнуть».<br>
-                    🔹 <strong>На этой неделе:</strong> Объясняйте свои чувства словами. Не «Ты меня бесишь!», а «Я злюсь, потому что устал на работе, это не из-за тебя». Ребёнок перестанет бояться и начнёт понимать, что эмоции — это не опасно. Он даже сам начнёт называть свои чувства: «Мне грустно», «Я боюсь».<br>
-                    🔹 <strong>В ближайший месяц:</strong> Введите ритуал «эмоциональный дневник». Каждый вечер записывайте (или рисуйте) по три эмоции за день. У ребёнка это могут быть простые смайлики. Обсуждайте: «Почему ты был грустным?», «Что тебя разозлило?». Так вы оба научитесь лучше понимать себя и друг друга.</p>
-                    
-                    <p><strong>📖 История из практики</strong><br>
-                    Папа 9-летнего Миши был очень вспыльчив (темперамент 6), а Миша — спокоен (темперамент 1). Папа кричал, Миша молчал. Папа думал, что сын его «игнорирует», и злился ещё больше. Мы предложили папе фразу-якорь: «Я сейчас злюсь, но это не из-за тебя. Дай мне 5 минут». Папа попробовал. Через месяц Миша сам стал говорить: «Папа, я вижу, ты устал. Давай я сделаю чай». Папа расплакался. Они впервые за долгое время обнялись без скандала.</p>
-                    
-                    <p><strong>🕯️ Ритуал на сегодня</strong><br>
-                    Сядьте напротив друг друга. Положите руки на сердце. Скажите: «Мои эмоции — это моя ответственность, не твоя. Я люблю тебя, даже когда злюсь». Повторите три раза. Потом обнимитесь.</p>
-                    
-                    <p><strong>🌟 Что запомнить навсегда</strong><br>
-                    «Ваша бурная эмоциональность — это ваша особенность, а не норма для всех. Ребёнок не обязан реагировать так же ярко. Его спокойствие — не холодность, а другой способ проживать чувства. Уважайте его тишину, и он научится уважать ваш шторм».</p>
-                </div>
-            `
-        });
-    }
-
-    // --------------------------------------------------------------
-    // ЛОВУШКА 4: «Интеллектуальное давление» (родитель любит учиться – ребёнок нет)
-    // --------------------------------------------------------------
-    if (p[3] >= 4 && c[3] <= 1) {
-        traps.push({
-            title: "⚠️ Ловушка «Интеллектуальное давление»",
-            text: `
-                <div style="font-size:0.95rem; line-height:1.6;">
-                    <p><strong>🧠 Почему эта ловушка возникает</strong><br>
-                    Дорогие родители, вы обожаете учиться, читать, узнавать новое (${p[3]} троек). У вас всегда открыто несколько онлайн-курсов, на полке — десятки книг. А ваш ребёнок не проявляет интереса к учёбе (${c[3]}). Уроки делает через силу, читать не любит, на вопросы «что нового узнал?» отвечает «ничего». Вы говорите: «Как можно не любить читать?», «Вот я в твоём возрасте…», «Будешь учиться — станешь дворником». Вы искренне хотите его «заразить» любовью к знаниям, но получается только хуже.</p>
-                    
-                    <p><strong>🎭 Как это проявляется в жизни</strong><br>
-                    Вы дарите ребёнку энциклопедию, а он её не открывает. Вы предлагаете сходить в музей — он капризничает. Вы включаете научпоп — он уходит в телефон. Вы думаете: «Ему ничего не интересно, он пропащий». Вы начинаете заставлять: «Сядь и читай!». Он садится, но с ненавистью. Вы проверяете — он не запомнил ни слова. Вы злитесь, он плачет. Вы чувствуете себя неудачником, он — глупым. И каждый день вы отдаляетесь друг от друга.</p>
-                    
-                    <p><strong>⚠️ Главная ошибка, которую вы совершаете</strong><br>
-                    Вы пытаетесь учить его так, как учились сами. Но его мозг устроен иначе. Ему нужно учиться через практику, движение, эксперименты, а не через книги и лекции. Ваш метод «поглощения информации» для него — пытка. Вторая ошибка — вы обесцениваете его способы познания. «Компьютерные игры — ерунда», «ТикТок — убивает мозг». Но если ему интересно — это уже отправная точка. Через игры можно учить языки, через видео — историю, через мемы — литературу. Вы не даёте ему шанса полюбить учёбу, потому что навязываете свой формат.</p>
-                    
-                    <p><strong>💡 Что делать: пошаговая стратегия</strong><br>
-                    🔹 <strong>Сегодня:</strong> Посмотрите вместе 10-минутное видео на YouTube на тему, которая ему нравится (игры, животные, машины). После просмотра спросите: «Что ты узнал нового? Что было самым интересным?». Не экзамен — просто разговор.<br>
-                    🔹 <strong>На этой неделе:</strong> Предложите ребёнку самому найти короткое видео или статью и рассказать вам. Сделайте это игрой: «Ты сегодня — учитель, а я — ученик». Он почувствует себя экспертом, и интерес проснётся сам.<br>
-                    🔹 <strong>В ближайший месяц:</strong> Создайте «копилку знаний» — коробку, куда он будет складывать интересные факты, картинки, вырезки. Раз в неделю открывайте её и вспоминайте, что узнали. Это превратит обучение в игру.</p>
-                    
-                    <p><strong>📖 История из практики</strong><br>
-                    Дима, 10 лет, ненавидел читать. Мама в отчаянии. Оказалось, у него 0 троек (интерес), у мамы 4. Мы предложили: вместо книг — комиксы и аудиокниги. Через месяц Дима сам попросил купить ему «Гарри Поттера» — после того, как посмотрел фильм и захотел узнать больше. Не было насилия — было уважение к его темпу.</p>
-                    
-                    <p><strong>🎲 Ритуал на сегодня</strong><br>
-                    Возьмите лист бумаги и разделите его на две колонки: «Что я хочу узнать» и «Что хочет узнать ребёнок». Выпишите по три пункта. Найдите одну тему, которая пересекается. Изучите её вместе. Без оценок, без экзаменов — просто из любопытства.</p>
-                    
-                    <p><strong>✨ Что запомнить навсегда</strong><br>
-                    «Интерес не приходит по команде. Он приходит через радость, игру и уважение к тому, что человеку уже нравится. Если вы хотите, чтобы ребёнок полюбил учиться, перестаньте учить его учиться. Просто будьте рядом, когда он открывает что-то своё».</p>
-                </div>
-            `
-        });
-    }
-
-    // --------------------------------------------------------------
-    // ЛОВУШКА 5: «Разный темп жизни» (родитель энергичнее ребёнка)
-    // --------------------------------------------------------------
-    if (p[2] >= 4 && c[2] <= 1) {
-        traps.push({
-            title: "⚠️ Ловушка «Разный темп жизни»",
-            text: `
-                <div style="font-size:0.95rem; line-height:1.6;">
-                    <p><strong>🧠 Почему эта ловушка возникает</strong><br>
-                    Дорогие родители, вы полны сил и энергии (${p[2]} двоек). Вы можете работать до ночи, успевать тысячу дел. А ваш ребёнок быстро истощается (${c[2]}). После школы он еле доползает до дивана, на кружки ходит без энтузиазма. Вы говорите: «Соберись!», «Хватит ныть», «Посмотри на других детей — они и на спорт, и на музыку успевают». Вы искренне не понимаете, как можно «просто сидеть и ничего не делать». Вы думаете, что он ленится или не старается. Но правда в другом.</p>
-                    
-                    <p><strong>🎭 Как это проявляется в жизни</strong><br>
-                    Вы планируете насыщенный выходной: парк, кино, гости. Ребёнок уже к обеду говорит, что устал. Вы раздражаетесь: «Да ладно, потерпи!». Он идёт, но капризничает весь день. Вы злитесь, он плачет. Вечером вы чувствуете, что «отдых» вымотал всех. Или наоборот: вы хотите остаться дома, а ребёнок просится гулять. Вы говорите: «Я устал, давай завтра». Он обижается. Вы чувствуете вину. Каждый выходной превращается в битву.</p>
-                    
-                    <p><strong>⚠️ Главная ошибка, которую вы совершаете</strong><br>
-                    Вы требуете от ребёнка вашего темпа. «Я же могу, значит и ты должен». Это как требовать от цыплёнка летать как орёл. Его энергия — не лень, а физиология. Вы не замечаете его сигналов усталости и заставляете его работать на износ. Это ведёт к болезням, неврозам и хронической усталости. Вторая ошибка — вы не учите его отдыхать. Вы сами не умеете останавливаться, поэтому и ему не показываете пример. В итоге вы оба выгораете.</p>
-                    
-                    <p><strong>💡 Что делать: пошаговая стратегия</strong><br>
-                    🔹 <strong>Сегодня:</strong> Спросите ребёнка: «По шкале от 1 до 10, сколько у тебя сейчас энергии?». Если меньше 5 — отмените все планы, кроме самых важных. Просто побудьте рядом. Если 7–10 — предложите активность, но не требуйте.<br>
-                    🔹 <strong>На этой неделе:</strong> Заведите «энергетический дневник». Вместе отмечайте, в какое время суток у вас пик сил, а когда спад. Планируйте сложные дела на пик, а отдых — на спад. Вы удивитесь, насколько меньше станет конфликтов.<br>
-                    🔹 <strong>В ближайший месяц:</strong> Введите «ленивые дни» — раз в неделю вы вообще ничего не планируете. Валяетесь, смотрите кино, едите, что захочется. Это не распущенность — это профилактика выгорания. Особенно важно, если вы оба с низкой энергией.</p>
-                    
-                    <p><strong>📖 История из практики</strong><br>
-                    У 8-летней Алисы было 0 двоек, у мамы — 4. Алиса быстро уставала в школе, а мама требовала после уроков ещё и на кружки. Девочка начала болеть каждый месяц. Мы ввели правило: после школы — час полного покоя (лёжа, без телефона, без разговоров). Через месяц Алиса перестала болеть, а мама… сама полюбила этот час тишины и обнаружила, что тоже устаёт больше, чем думала.</p>
-                    
-                    <p><strong>🧘 Ритуал на сегодня</strong><br>
-                    Сядьте на пол, закройте глаза, положите руки на колени. 3 минуты просто дышите. Вдох — вы вдыхаете энергию. Выдох — вы отпускаете усталость. Делайте это вместе. Потом обнимитесь и скажите: «Мы разные, но мы команда».</p>
-                    
-                    <p><strong>💎 Что запомнить навсегда</strong><br>
-                    «Энергия — это не соревнование. Если у одного бензин на 10 литров, а у другого на 50, это не значит, что первый плохой. Просто у него бак меньше. Ваша задача — не перелить из одного бака в другой, а планировать маршрут, чтобы хватило обоим».</p>
-                </div>
-            `
-        });
-    }
-
-    // --------------------------------------------------------------
-    // ЛОВУШКА 6: «Логик vs Интуит» (родитель логичнее ребёнка)
-    // --------------------------------------------------------------
-    if (p[5] >= 4 && c[5] <= 1) {
-        traps.push({
-            title: "⚠️ Ловушка «Логик vs Интуит»",
-            text: `
-                <div style="font-size:0.95rem; line-height:1.6;">
-                    <p><strong>🧠 Почему эта ловушка возникает</strong><br>
-                    Дорогие родители, вы обладаете сильным логическим мышлением (${p[5]} пятёрок). Вы любите всё раскладывать по полочкам, строить планы, анализировать. А ваш ребёнок мыслит образами, чувствами, интуицией (${c[5]}). Вы говорите: «Ну как ты не понимаешь? Это же очевидно!», «Объясни свою логику», «Почему ты сделал не так, как я сказал?». Вы считаете его «непоследовательным», а он вас — «занудой». Вы искренне не понимаете, как можно не видеть «очевидных» вещей. А он искренне не понимает, о чём вы говорите.</p>
-                    
-                    <p><strong>🎭 Как это проявляется в жизни</strong><br>
-                    Вы просите ребёнка убрать в комнате. Он убирает, но не так, как вы хотели. Вы говорите: «Я же просила сложить книги по алфавиту!», а он: «Я их красиво поставил по цветам». Вы кипите, он обижается. Или вы объясняете ему задачу по математике. Вы говорите: «Смотри, это же просто: 2+2=4». Он не понимает. Вы повторяете, повышая голос. Он плачет. Вы чувствуете себя плохим учителем, он — глупым. Вы не можете до него достучаться, он не может до вас.</p>
-                    
-                    <p><strong>⚠️ Главная ошибка, которую вы совершаете</strong><br>
-                    Вы пытаетесь переделать ребёнка под свой тип мышления. Но его мозг устроен иначе. Он не станет логиком от того, что вы будете давить. Он станет только тревожнее и неувереннее. Вторая ошибка — вы не переводите свои мысли на его язык. Вы говорите на «английском», а он понимает «китайский». Вам нужен переводчик — образы, примеры, истории, аналогии. Без этого вы будете вечно разговаривать, как глухой с немым.</p>
-                    
-                    <p><strong>💡 Что делать: пошаговая стратегия</strong><br>
-                    🔹 <strong>Сегодня:</strong> Объясните ребёнку что-то через образ или историю. Вместо «2+2=4» скажите: «У тебя было 2 яблока, друг дал ещё 2. Сколько стало?». Вместо «уберись» скажи: «Давай представим, что комната — это лес, а игрушки — звери, которых нужно отвести в домики». Вы увидите, как загорятся его глаза.<br>
-                    🔹 <strong>На этой неделе:</strong> Попросите ребёнка объяснить вам что-то, в чём он силён (игры, мультики, хобби). Пусть он будет учителем. Вы поймёте его язык, а он почувствует себя экспертом.<br>
-                    🔹 <strong>В ближайший месяц:</strong> Введите «вечер аналогий». Каждый вечер придумывайте метафору к тому, что произошло за день. Например: «Сегодняшний день был как американские горки — сначала взлёт, потом падение». Ребёнок с удовольствием подхватит, и вы начнёте говорить на одном языке.</p>
-                    
-                    <p><strong>📖 История из практики</strong><br>
-                    Мама 9-летнего Артёма жаловалась, что он «не понимает математику». У мамы — 4 пятёрки (логика), у Артёма — 0. Мы предложили маме объяснять через конфеты: «Если у тебя 5 конфет, ты съел 2, сколько осталось?». Артём понял мгновенно. Через месяц он уже сам придумывал истории к задачам. Мама сказала: «Я думала, он безнадёжен, а он просто мыслит образами».</p>
-                    
-                    <p><strong>🎨 Ритуал на сегодня</strong><br>
-                    Возьмите два листа бумаги и фломастеры. Нарисуйте, как вы видите одну и ту же ситуацию (например, «ссора из-за игрушки»). Покажите друг другу. Вы увидите, как по-разному можно видеть одно и то же. И это прекрасно.</p>
-                    
-                    <p><strong>🌟 Что запомнить навсегда</strong><br>
-                    «Логика и интуиция — не враги, а партнёры. Вы видите мир через схемы, ребёнок — через краски. Вместе вы можете создать шедевр, который ни один из вас не создал бы в одиночку. Просто научитесь уважать чужую оптику».</p>
-                </div>
-            `
-        });
-    }
-
-    // --------------------------------------------------------------
-    // ЛОВУШКА 7: «Вечный должник» (родитель гиперответственный – ребёнок безответственный) – уже есть выше, это другая? Уже есть ловушка 2.
-    // Добавим ещё одну, если нужно, но лучше не дублировать. Оставим как есть.
-    // --------------------------------------------------------------
-
-    // --------------------------------------------------------------
-    // Если ни одна ловушка не подошла – универсальная рекомендация
-    // --------------------------------------------------------------
-    if (traps.length === 0) {
-        traps.push({
-            title: "⚠️ Общая рекомендация: будьте внимательны к различиям",
-            text: `
-                <div style="font-size:0.95rem; line-height:1.6;">
-                    <p><strong>🧠 О чём говорит этот результат</strong><br>
-                    Дорогие родители, в вашей паре нет ярко выраженных контрастов по основным качествам. Это хорошо — вы редко будете конфликтовать на почве характера, энергии или логики. Но даже в гармоничных отношениях есть подводные камни. Ловушки возникают не из-за больших различий, а из-за невнимательности к мелочам. Вы можете не замечать его усталость, потому что сами не устаёте так быстро. Вы можете ожидать от него такой же скорости понимания, как у вас. Вы можете не придавать значения его эмоциям, если сами не очень эмоциональны. И эти «незаметные» вещи постепенно создают дистанцию.</p>
-                    
-                    <p><strong>🎭 Как это проявляется в жизни</strong><br>
-                    Вы спокойны, ребёнок тоже. Вам кажется, что он всё понимает, потому что не спорит. Но возможно, он просто боится высказывать своё мнение. Вы думаете, что раз вы похожи, то он автоматически понимает вас без слов. А он ждёт, что вы спросите. Вы редко говорите о чувствах, потому что «и так всё хорошо». Но внутри у ребёнка может копиться обида или тревога. Вы не замечаете, потому что он не показывает. А потом — неожиданный взрыв из-за пустяка. Вы удивлены, он — в отчаянии.</p>
-                    
-                    <p><strong>⚠️ Главная ошибка, которую вы совершаете</strong><br>
-                    Вы думаете, что раз нет явных конфликтов, то всё в порядке. Но тишина не всегда означает гармонию. Иногда это означает, что ребёнок просто не умеет или боится говорить о своих переживаниях. Вы не задаёте вопросов, потому что вам кажется, что вы и так всё знаете. Это самая коварная ловушка — самоуспокоенность.</p>
-                    
-                    <p><strong>💡 Что делать: пошаговая стратегия</strong><br>
-                    🔹 <strong>Сегодня:</strong> Спросите ребёнка: «Что тебя тревожит? Что бы ты хотел изменить в наших отношениях?». Не отмахивайтесь, даже если ответ покажется несерьёзным. Выслушайте.<br>
-                    🔹 <strong>На этой неделе:</strong> Введите «семейный совет» раз в неделю. Садитесь и обсуждайте: что было хорошего, что не очень. Без обвинений, просто факты и чувства. Ребёнок научится говорить о себе, вы — слушать.<br>
-                    🔹 <strong>В ближайший месяц:</strong> Начните вести «дневник благодарности» — каждый день записывайте три вещи, за которые вы благодарны ребёнку. И просите его делать то же самое. Это укрепит вашу связь и поможет замечать хорошее, а не только проблемы.</p>
-                    
-                    <p><strong>📖 История из практики</strong><br>
-                    Мама 11-летней Алисы была уверена, что у них «идеальные отношения». Алиса — тихая, послушная, спокойная. Но в школе у неё начались истерики. Оказалось, дома она боялась говорить маме, что её обижают одноклассники. Мама не спрашивала, думала, что «и так всё видно». Алиса молчала, потому что не хотела расстраивать маму. Мы ввели правило: каждый вечер — 10 минут «секретов», где можно говорить о чём угодно, без осуждения. Через месяц Алиса рассказала о буллинге, мама помогла, истерики прекратились. Тишина оказалась не золотом, а сигналом.</p>
-                    
-                    <p><strong>🕯️ Ритуал на сегодня</strong><br>
-                    Сядьте напротив друг друга. Зажгите свечу. По очереди говорите: «Сегодня я благодарен тебе за…». Три пункта. Не смейтесь, не перебивайте. Просто слушайте. Потом задуйте свечу и обнимитесь.</p>
-                    
-                    <p><strong>🌟 Что запомнить навсегда</strong><br>
-                    «Гармония не в отсутствии проблем, а в умении их замечать, пока они маленькие. Самые опасные ловушки — те, что вы не видите. Поэтому не ленитесь спрашивать, слушать и смотреть. Ваш ребёнок — не ваша копия, даже если кажется очень похожим. Он — отдельная вселенная. Исследуйте её».</p>
-                </div>
-            `
-        });
-    }
-
-    return traps;
-}
-
-// Стиль обучения
-function getLearningStyle(childMatrix, parentMatrix) {
-    const c = childMatrix.c;
-    let style = "";
-    if (c[3] <= 1) style += "🔸 **Обучение через практику, а не через теорию.** Ему нужно делать руками, пробовать, ошибаться.\n";
-    else if (c[3] >= 3) style += "🔸 **Высокий интерес к познанию.** Ему нравится учиться, читать, исследовать.\n";
-    if (c[5] <= 1) style += "🔸 **Визуальные материалы.** Схемы, картинки, видео.\n";
-    else if (c[5] >= 3) style += "🔸 **Логический склад ума.** Любит анализировать, решать задачи.\n";
-    if (c[9] >= 3) style += "🔸 **Хорошая память.** Легко запоминает факты, даты.\n";
-    else if (c[9] <= 1) style += "🔸 **Слабая механическая память.** Нужны повторения, ассоциации, мнемотехники.\n";
-    if (c[6] >= 3) style += "🔸 **Усидчивость и трудолюбие.** Может долго заниматься одним делом.\n";
-    else if (c[6] <= 1) style += "🔸 **Быстрая утомляемость от рутины.** Короткие сессии (10–15 минут) работают лучше.\n";
-    if (parentMatrix.c[3] >= 4 && c[3] <= 1) {
-        style += `\n⚠️ **Важно:** Вы сами любите учиться, а ребёнку это даётся сложнее. Не сравнивайте его с собой в детстве. Ищите нестандартные подходы – игры, практику, наглядные примеры.\n`;
-    }
-    if (style === "") style = "🔸 У ребёнка средние способности к обучению. Ему подойдут комбинированные методы: теория + практика, чтение + обсуждение.";
-    return style.replace(/\n/g, '<br>');
-}
-
-// Эмоциональный язык
-function getEmotionalLanguage(childMatrix, parentMatrix) {
-    const c = childMatrix.c;
-    let lang = "";
-    if (c[2] >= 3) lang += "🔸 **Высокая чувствительность.** Ребёнок впитывает эмоции окружающих как губка.\n";
-    else if (c[2] <= 1) lang += "🔸 **Низкая энергия, быстрая утомляемость.** Он может казаться апатичным, но это не лень.\n";
-    if (c[1] <= 1) lang += "🔸 **Мягкий, легко подавляемый характер.** Ему нужна поддержка, чтобы научиться отстаивать себя.\n";
-    else if (c[1] >= 4) lang += "🔸 **Сильная воля.** Он упрям, может спорить. Важно не подавлять, а направлять.\n";
-    if (childMatrix.temp >= 4) lang += "🔸 **Интенсивные эмоции.** Переживает всё бурно. Учите выражать чувства экологично.\n";
-    else if (childMatrix.temp <= 1) lang += "🔸 **Спокойный, флегматичный темперамент.** Не требуйте бурных реакций.\n";
-    lang += "\n**Что ему нужно от вас:**\n🔸 Спокойное присутствие, а не немедленные решения.\n🔸 Тихое пространство для восстановления.\n🔸 Признание его чувств: «Я вижу, что тебе грустно».\n🔸 Объятия и тактильный контакт.\n";
-    if (parentMatrix.c[2] <= 1) {
-        lang += `\n⚠️ **Важно:** У вас самих невысокий запас энергии, поэтому вам может быть сложно понять его усталость. Не обесценивайте.\n`;
-    }
-    if (parentMatrix.temp >= 4 && childMatrix.temp <= 1) {
-        lang += `\n⚠️ **Важно:** Вы очень эмоциональны, а ребёнок – спокоен. Ваши бурные реакции могут его пугать. Учитесь выражать чувства мягче.\n`;
-    }
-    return lang.replace(/\n/g, '<br>');
-}
-
-// Возрастные рекомендации
-function getAgeRecommendations(period, parentMatrix, childMatrix, parentRole = 'mother') {
-    const p = parentMatrix.c;
-    const c = childMatrix.c;
-    const role = parentRole === 'mother' ? 'мама' : (parentRole === 'father' ? 'папа' : 'родитель');
-    const child = 'ребёнок';
-    
-    // ========== 1. БАЗОВАЯ ПРИВЯЗАННОСТЬ (0–3 года) ==========
-    if (period.code === 'attachment') {
-        return `
-            <div style="font-size:1rem; line-height:1.7;">
-                <p><strong>📅 Возраст 0–3 года: «Базовое доверие к миру»</strong><br>
-                Дорогие родители, этот возраст — фундамент всей дальнейшей жизни. Сейчас решается главный вопрос: «Мир безопасен или опасен?». И ваш ребёнок ищет ответ не в книгах и лекциях, а в ваших глазах, в вашем голосе, в ваших руках. В этом возрасте он не «манипулирует», когда плачет. Он не «капризничает», когда просится на ручки. Он просто проверяет: есть ли кто-то, кто придёт, когда страшно? Кто обнимет, когда грустно? Кто будет рядом, когда мир кажется слишком большим?</p>
-                
-                <p><strong>🎭 Как это проявляется в жизни</strong><br>
-                Вы слышите плач из детской. Вы устали, у вас куча дел, но вы идёте. Берёте на руки, укачиваете. Ребёнок успокаивается, засыпает. Вы кладёте его, через 20 минут – снова плач. Вы снова идёте. И так 10 раз за ночь. Вы на грани. Вам кажется, что он «специально». А он просто учится доверять. Каждый раз, когда вы приходите, он записывает в своей детской «базе данных»: «Когда я зову – приходят. Мир безопасен».</p>
-                
-                <p><strong>⚠️ Главная ошибка</strong><br>
-                Вы боитесь «приучить к рукам». Думаете: «Если буду носить, никогда не слезет». Это миф. Ребёнок, который получил достаточно телесного контакта в раннем возрасте, становится более самостоятельным позже. Потому что у него сформирована базовая безопасность. Он знает, что мама/папа рядом, и может исследовать мир без паники. Вторая ошибка – вы игнорируете его сигналы. «Пусть покричит, ничего страшного». Но для него это страшно. Крик – его единственный язык. Игнорируя его, вы учите его: «Мои потребности не важны».</p>
-                
-                <p><strong>💡 Что делать: пошагово</strong><br>
-                🔹 <strong>Сегодня:</strong> Устройте «день без отвлечений». Выключите телефон, забудьте про дела. Просто будьте с ребёнком. Носите, обнимайте, говорите с ним. Даже если он спит – будьте рядом.<br>
-                🔹 <strong>На этой неделе:</strong> Введите ритуал «кожа к коже» – 15–20 минут в день, когда вы сидите без одежды (или в лёгкой одежде), прижав ребёнка к груди. Это снижает стресс и у него, и у вас.<br>
-                🔹 <strong>В ближайший месяц:</strong> Создайте «предсказуемую среду». Режим кормления, сна, прогулок – даже если вам кажется, что он не понимает, он понимает. Предсказуемость снижает тревогу.</p>
-                
-                <div style="background: rgba(212,175,55,0.1); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                    <p><strong>📖 История из практики</strong><br>
-                    Ко мне пришла мама с 8-месячным малышом. Он постоянно плакал, плохо спал. Мама была на грани. Мы предложили: не бояться носить на руках, ввести слинг, спать рядом. Через две недели малыш стал спокойнее, а мама… поняла, что он не «тиран», а просто нуждался в ней. Через год она сказала: «Сейчас он сам отползает играть, но всегда знает, что я рядом. Спасибо, что разрешили мне его «не испортить»».</p>
-                </div>
-                
-                <div style="background: rgba(168, 218, 220, 0.15); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                    <p><strong>🕯️ Ритуал на сегодня</strong><br>
-                    Перед сном зажгите свечу. Положите руку на животик ребёнка. Шепчите: «Ты в безопасности. Я рядом. Я люблю тебя». Делайте это, пока не почувствуете, что он расслабился. Потом задуйте свечу.</p>
-                </div>
-                
-                <div style="background: rgba(255, 215, 0, 0.08); padding: 15px; border-radius: 12px; border-left: 4px solid var(--gold); margin: 15px 0;">
-                    <p><strong>🌟 Что запомнить навсегда</strong><br>
-                    «Доверие к миру не воспитывается строгостью. Оно выстраивается через тысячи возвращений, когда ребёнок плачет. Каждый раз, когда вы приходите, вы говорите ему: «Ты важен. Ты в безопасности». Это фундамент, на котором он построит всю свою жизнь».</p>
-                </div>
-            </div>
-        `;
-    }
-    
-    // ========== 2. СОЦИАЛИЗАЦИЯ (4–6 лет) ==========
-    if (period.code === 'social') {
-        return `
-            <div style="font-size:1rem; line-height:1.7;">
-                <p><strong>📅 Возраст 4–6 лет: «Я сам и мы вместе»</strong><br>
-                Дорогие родители, этот возраст — время великого противоречия. С одной стороны, ребёнок кричит: «Я сам!». С другой – он ещё не умеет договариваться, делиться, ждать. Он учится быть в коллективе, но его эгоцентризм зашкаливает. Ваша задача – не сломать его «я», а научить жить с другими. Это как учить ёжика не колоться – сложно, но возможно.</p>
-                
-                <p><strong>🎭 Как это проявляется в жизни</strong><br>
-                Вы идёте в гости. Ребёнок не даёт свои игрушки другим, кричит, толкается. Вы краснеете от стыда. Вы говорите: «Нужно делиться!». Он ещё сильнее сжимает игрушку. Вы чувствуете, что он «неблагодарный», «жадный». А он просто не понимает: почему я должен отдавать то, что мне дорого? Ему 4 года, его мозг ещё не способен на эмпатию в полной мере. Он учится.</p>
-                
-                <p><strong>⚠️ Главная ошибка</strong><br>
-                Вы заставляете делиться силой. «Отдай сейчас же!». Этим вы не учите щедрости, вы учите страху: «мои границы не важны». Ребёнок не становится добрее, он становится тревожнее. Вторая ошибка – вы наказываете его за драки, не разбираясь. «Не дерись!». А он, может быть, защищал себя. Важно сначала понять, что произошло, потом учить альтернативам.</p>
-                
-                <p><strong>💡 Что делать: пошагово</strong><br>
-                🔹 <strong>Сегодня:</strong> Прежде чем идти в гости, договоритесь: «Мы берём с собой игрушки, которыми ты готов поделиться. А самые любимые оставим дома». Это уважает его право на собственность.<br>
-                🔹 <strong>На этой неделе:</strong> Играйте в ролевые игры, где нужно договариваться. «Давай по очереди катать машинку». Используйте таймер: «Ты катаешь 2 минуты, потом – друг». Это превращает конфликт в игру.<br>
-                🔹 <strong>В ближайший месяц:</strong> Создайте «доску достижений»: наклейки за то, что поделился, помирился, сказал «спасибо». Не за оценки, а за социальные навыки.</p>
-                
-                <div style="background: rgba(212,175,55,0.1); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                    <p><strong>📖 История из практики</strong><br>
-                    Мама 5-летнего Миши жаловалась: «Он жадный, никто с ним не дружит». Мы предложили: перед прогулкой Миша выбирает 3 игрушки, которыми готов делиться. Остальные остаются дома. Через месяц Миша сам предлагал друзьям свои игрушки. Не потому что стал «менее жадным», а потому что понял: делиться – это безопасно, его любимые вещи никто не тронет.</p>
-                </div>
-                
-                <div style="background: rgba(168, 218, 220, 0.15); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                    <p><strong>🕯️ Ритуал на сегодня</strong><br>
-                        Сядьте в круг. Возьмите мяч. Передавайте его друг другу со словами: «Я даю тебе…». Называйте то, чем готовы поделиться (вниманием, временем, игрушкой). Ребёнок увидит, что делиться – это не терять, а получать радость.</p>
-                </div>
-                
-                <div style="background: rgba(255, 215, 0, 0.08); padding: 15px; border-radius: 12px; border-left: 4px solid var(--gold); margin: 15px 0;">
-                    <p><strong>🌟 Что запомнить навсегда</strong><br>
-                    «Щедрость не воспитывается приказами. Она вырастает из чувства безопасности. Если ребёнок знает, что его границы уважают, он легче открывается другим. Сначала защити его право на «моё», и тогда он научится говорить «наше»».</p>
-                </div>
-            </div>
-        `;
-    }
-    
-    // ========== 3. ОБУЧЕНИЕ (7–12 лет) — самый подробный блок ==========
-    if (period.code === 'learning') {
-        // Персонализация под конкретные показатели
-        let energyAdvice = '';
-        if (p[2] >= 4 && c[2] <= 1) {
-            energyAdvice = `<p><strong>⚡ Важный нюанс с энергией:</strong> Вы полны сил, а ребёнок быстро устаёт. После школы ему нужен час полного покоя. Не сажайте его сразу за уроки. Дайте отдохнуть, перекусить, побыть в тишине. Иначе он будет учиться через «не могу», и это отобьёт желание надолго.</p>`;
-        } else if (p[2] <= 1 && c[2] >= 4) {
-            energyAdvice = `<p><strong>⚡ Важный нюанс с энергией:</strong> Ребёнок полон сил, а вы быстро выдыхаетесь. Не пытайтесь «догнать» его темп. Лучше используйте его энергию для активного обучения: пусть учит стихи в движении, решает задачи на ходу. А для себя выделите время на восстановление.</p>`;
-        }
-        
-        let interestAdvice = '';
-        if (p[3] >= 4 && c[3] <= 1) {
-            interestAdvice = `<p><strong>📚 Важный нюанс с интересом к учёбе:</strong> Вы любите учиться, а ребёнку это даётся сложнее. Не сравнивайте его с собой. Ищите его «крючок» – через игры, видео, практику. И никогда не говорите: «Я в твоём возрасте…». Это убивает мотивацию.</p>`;
-        } else if (p[3] <= 1 && c[3] >= 4) {
-            interestAdvice = `<p><strong>📚 Важный нюанс с интересом к учёбе:</strong> Ребёнок – прирождённый исследователь, а вы относитесь к учёбе прохладнее. Не тормозите его. Давайте книги, кружки, поддержку. И не бойтесь, что он «перегрузится» – он сам знает свой предел.</p>`;
-        }
-        
-        let characterAdvice = '';
-        if (p[1] >= 4 && c[1] <= 1) {
-            characterAdvice = `<p><strong>💪 Важный нюанс с характером:</strong> Вы сильная воля, ребёнок – мягкий. Не давите на него в учёбе. Давайте выбор: «Ты будешь делать математику сейчас или после ужина?». И обязательно хвалите за каждое самостоятельное решение. Он не станет «ленивым», если вы не будете решать за него.</p>`;
-        } else if (p[1] <= 1 && c[1] >= 4) {
-            characterAdvice = `<p><strong>💪 Важный нюанс с характером:</strong> Ребёнок упрям и своеволен, а вы мягче. Не пытайтесь сломать его волю – направляйте. Объясняйте, почему важно учиться, а не заставляйте. И признавайте его успехи, даже маленькие.</p>`;
-        }
-        
-        return `
-            <div style="font-size:1rem; line-height:1.7;">
-                <p><strong>📅 Возраст 7–12 лет: «Школа как новый мир»</strong><br>
-                Дорогие родители, этот возраст – один из самых важных для формирования отношения к знаниям на всю жизнь. Сейчас ребёнок не просто учится читать и считать. Он учится учиться. Он формирует свою учебную идентичность: «я способный», «я тупой», «мне интересно», «ненавижу школу». И эти ярлыки он возьмёт с собой во взрослую жизнь. Ваша задача – не сделать из него отличника. Ваша задача – сохранить его любопытство и веру в себя.</p>
-                
-                <p><strong>🎭 Как это проявляется в жизни</strong><br>
-                Ребёнок приносит двойку. Вы злитесь: «Почему не подготовился?», «Ты не стараешься!». Он опускает голову. На следующий день – снова двойка. Вы идёте к учителю, нанимаете репетитора, заставляете сидеть за уроками до ночи. А он всё больше ненавидит школу. И себя. И вас. Знакомая картина? А ведь причина часто не в лени. Может, ему трудно запоминать? Может, он кинестетик, и ему нужно учиться через движение? Может, он просто устаёт?</p>
-                
-                <p><strong>⚠️ Главная ошибка</strong><br>
-                Вы оцениваете ребёнка через оценки. «Ты – двоечник», «Ты – троечник». Но оценка – это не он. Это всего лишь отражение того, как он усвоил конкретную тему в конкретный момент. Когда вы вешаете ярлык, он начинает в него верить. «Я глупый, зачем стараться?». Вторая ошибка – вы наказываете за ошибки. «Не выучил – гулять не пойдёшь». Но ошибка – это не преступление. Это информация: здесь пробел, нужно подтянуть. Наказание за ошибку учит скрывать, врать, бояться.</p>
-                
-                <p><strong>💡 Что делать: пошаговая стратегия на 7–12 лет</strong><br>
-                🔹 <strong>Сегодня:</strong> Спросите ребёнка: «Что тебе сегодня было трудно? Что легко?». Не оценивайте, просто слушайте. Завтра спросите то же самое. Сделайте это ритуалом. Вы увидите, где реальные проблемы, а где просто лень.<br>
-                🔹 <strong>На этой неделе:</strong> Вместе составьте расписание. Учитывайте его энергетические пики. Если он «сова» – не заставляйте делать уроки с утра. Если «жаворонок» – не мучайте вечером. И обязательно включите время на отдых.<br>
-                🔹 <strong>В ближайший месяц:</strong> Найдите один предмет, который ему нравится. И углубитесь. Купите книгу, найдите видео, сходите в музей. Пусть он почувствует, что учёба – это не только «надо», но и «интересно». А потом переносите это чувство на другие предметы.</p>
-                
-                ${energyAdvice}
-                ${interestAdvice}
-                ${characterAdvice}
-                
-                <div style="background: rgba(212,175,55,0.1); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                    <p><strong>📖 История из практики</strong><br>
-                    Мама 9-летнего Димы жаловалась: «Он не хочет учиться, одни двойки». Проверили – у Димы 0 троек (интерес к познанию), у мамы 4. Мы предложили: забыть про оценки на месяц. Каждый день – 20 минут занятий тем, что интересно Диме (конструкторы, комиксы). Через месяц он сам попросил купить ему книгу по истории. Мама сказала: «Я перестала давить, и он расцвёл». Не потому что он «исправился», а потому что учёба перестала быть наказанием.</p>
-                </div>
-                
-                <div style="background: rgba(168, 218, 220, 0.15); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                    <p><strong>🕯️ Ритуал на сегодня</strong><br>
-                    Возьмите лист бумаги. Напишите: «Мой ребёнок – это не его оценки. Я люблю его не за пятёрки». Повесьте на видное место. Каждый раз, когда захотите поругать за двойку, посмотрите на эту фразу.</p>
-                </div>
-                
-                <div style="background: rgba(255, 215, 0, 0.08); padding: 15px; border-radius: 12px; border-left: 4px solid var(--gold); margin: 15px 0;">
-                    <p><strong>🌟 Что запомнить навсегда</strong><br>
-                    «Учёба – это марафон, а не спринт. Ошибки – не провалы, а подсказки. Ваша задача – не заставлять, а поддерживать. Если ребёнок будет знать, что вы на его стороне, он научится всему, даже если не сразу. И запомнит не формулы, а вашу веру в него».</p>
-                </div>
-            </div>
-        `;
-    }
-    
-    // ========== 4. СЕПАРАЦИЯ (13–17 лет) ==========
-    if (period.code === 'separation') {
-        return `
-            <div style="font-size:1rem; line-height:1.7;">
-                <p><strong>📅 Возраст 13–17 лет: «Я не ребёнок, но ещё не взрослый»</strong><br>
-                Дорогие родители, добро пожаловать в подростковый возраст. Ваш ребёнок сейчас переживает второе рождение. Он отчаянно хочет быть взрослым, но внутри ещё ребёнок. Он бунтует, чтобы отделиться, но панически боится, что вы его бросите. Он проверяет границы, потому что они ему нужны. Ваша задача – выдержать этот шторм, не разбившись о скалы. И помните: если подросток не бунтует – это тревожный знак. Значит, он либо сломлен, либо не доверяет.</p>
-                
-                <p><strong>🎭 Как это проявляется в жизни</strong><br>
-                Вы говорите: «Надень шапку, холодно». Он: «Отстань!». Вы: «Сделай уроки». Он: «Не хочу!». Каждый день – битва. Вы чувствуете, что теряете контроль. Он чувствует, что его не слышат. Вы кричите, он хлопает дверью. Вы плачете, он уходит в наушники. Это нормально. Так проходит сепарация. Но можно сделать её менее болезненной.</p>
-                
-                <p><strong>⚠️ Главная ошибка</strong><br>
-                Вы пытаетесь подавить бунт силой. «Будешь делать, что я сказал, пока живёшь под моей крышей». Это не работает. Он найдёт способ бунтовать ещё сильнее – уйдёт в плохую компанию, начнёт врать, убегать. Вторая ошибка – вы отстраняетесь. «Ну и делай что хочешь». Он чувствует себя брошенным и теряет опору. Нужна золотая середина: твёрдые границы в важном, свобода – в остальном.</p>
-                
-                <p><strong>💡 Что делать: пошаговая стратегия</strong><br>
-                🔹 <strong>Сегодня:</strong> Скажите ему: «Я знаю, тебе нужно пространство. Я уважаю это. Но давай договоримся о правилах, которые важны для твоей безопасности. Остальное – ты решаешь сам».<br>
-                🔹 <strong>На этой неделе:</strong> Введите «семейный совет». Раз в неделю садитесь и обсуждаете правила. Он имеет право голоса. Вы вместе ищете компромисс. Это учит его ответственности, а вас – отпускать.<br>
-                🔹 <strong>В ближайший месяц:</strong> Дайте ему карманные деньги с правом самостоятельной траты. Без отчёта. Пусть ошибается. Ошибка – лучший учитель.</p>
-                
-                <div style="background: rgba(212,175,55,0.1); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                    <p><strong>📖 История из практики</strong><br>
-                    Папа 14-летнего Димы жаловался: «Он меня не слышит, делает всё назло». Мы предложили: перестать контролировать мелочи (какую музыку слушать, как одеваться). И оставить контроль только за действительно важным (безопасность, учёба). Через месяц Дима сам стал подходить к папе за советом. Не потому что «исправился», а потому что перестал бороться за свободу – он её получил.</p>
-                </div>
-                
-                <div style="background: rgba(168, 218, 220, 0.15); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                    <p><strong>🕯️ Ритуал на сегодня</strong><br>
-                    Напишите на листе две колонки: «Что я контролирую» и «Что я отпускаю». Перечитайте. Отпустите то, что не смертельно. Повесьте на видное место. Это поможет вам не срываться на пустяках.</p>
-                </div>
-                
-                <div style="background: rgba(255, 215, 0, 0.08); padding: 15px; border-radius: 12px; border-left: 4px solid var(--gold); margin: 15px 0;">
-                    <p><strong>🌟 Что запомнить навсегда</strong><br>
-                    «Подростковый бунт – не война против вас. Это война за свою территорию. Не сражайтесь с ним – станьте его тылом. Пусть знает: вы здесь, вы любите, вы не бросите. Даже когда он хлопает дверью, даже когда говорит «ненавижу». Он всё равно вернётся. И ваша задача – быть открытым для этого возвращения».</p>
-                </div>
-            </div>
-        `;
-    }
-    
-    // ========== 5. ОТДЕЛЕНИЕ (18–25 лет) ==========
-    if (period.code === 'leaving') {
-        return `
-            <div style="font-size:1rem; line-height:1.7;">
-                <p><strong>📅 Возраст 18–25 лет: «Крылья или корни?»</strong><br>
-                Дорогие родители, ваш ребёнок уже взрослый. Он может голосовать, жениться, брать кредиты. Но внутри он всё ещё нуждается в вашей поддержке. Сейчас решается главный вопрос: «Я самостоятельный или всё ещё ребёнок?». И ваша задача – не мешать ему отделиться, но и не бросать. Это как учить ходить: вы уже не держите за руку, но стоите рядом, на случай если упадёт.</p>
-                
-                <p><strong>🎭 Как это проявляется в жизни</strong><br>
-                Он уехал учиться в другой город. Вы звоните каждый день, спрашиваете, поел ли, выспался ли. Он раздражается, говорит, что вы его контролируете. Вы обижаетесь. Или наоборот: он не звонит, не отвечает на сообщения. Вы сходите с ума от тревоги. Вы хотите приехать, проверить. Он злится. Вы чувствуете, что теряете связь.</p>
-                
-                <p><strong>⚠️ Главная ошибка</strong><br>
-                Вы продолжаете решать за него. «Я оплачу, я выберу, я решу». Он не учится быть взрослым. Или вы полностью отстраняетесь. «Ты взрослый, разбирайся сам». Он чувствует себя брошенным. Нужна золотая середина: поддержка, но не опека; совет, но не решение.</p>
-                
-                <p><strong>💡 Что делать: пошагово</strong><br>
-                🔹 <strong>Сегодня:</strong> Спросите: «В чём ты хочешь моей поддержки? А в чём – нет?». Уважайте его ответ. Даже если вам кажется, что он ошибается.<br>
-                🔹 <strong>На этой неделе:</strong> Перестаньте давать непрошеные советы. Если он просит – помогите. Если нет – молчите. Это трудно, но необходимо.<br>
-                🔹 <strong>В ближайший месяц:</strong> Договоритесь о частоте звонков. Не каждый день, а, например, раз в три дня. И не нарушайте. Он будет знать, что вы рядом, но не лезете в душу.</p>
-                
-                <div style="background: rgba(212,175,55,0.1); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                    <p><strong>📖 История из практики</strong><br>
-                    Мама 19-летней Ани звонила по 5 раз на дню. Аня перестала отвечать. Мама приехала без предупреждения – застала беспорядок и начала убираться. Аня взорвалась. Мы предложили: мама звонит раз в три дня, не приезжает без приглашения. Через месяц Аня сама позвонила маме за советом. Мама сказала: «Я научилась доверять ей, и она научилась доверять мне».</p>
-                </div>
-                
-                <div style="background: rgba(168, 218, 220, 0.15); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                    <p><strong>🕯️ Ритуал на сегодня</strong><br>
-                        Напишите письмо взрослому ребёнку. Без претензий. Просто: «Я люблю тебя. Я верю в тебя. Я рядом, если нужна помощь». Не отправляйте. Просто сожгите. Этот ритуал поможет вам отпустить.</p>
-                </div>
-                
-                <div style="background: rgba(255, 215, 0, 0.08); padding: 15px; border-radius: 12px; border-left: 4px solid var(--gold); margin: 15px 0;">
-                    <p><strong>🌟 Что запомнить навсегда</strong><br>
-                    «Отпустить – не значит бросить. Это значит дать возможность лететь. Вы построили гнездо, научили летать. Теперь ваша очередь – смотреть в небо и гордиться. А когда ветер устанет, он всегда вернётся отдохнуть».</p>
-                </div>
-            </div>
-        `;
-    }
-    
-    // ========== 6. ВЗРОСЛЫЕ ДЕТИ (26+) ==========
-    return `
-        <div style="font-size:1rem; line-height:1.7;">
-            <p><strong>📅 Возраст 26+: «Друзья, а не родители и дети»</strong><br>
-            Дорогие родители, ваш ребёнок уже давно взрослый. У него своя семья, работа, свои трудности и радости. Ваша роль сейчас – не наставник, не контролёр, а друг. Тот, с кем можно посоветоваться, но кто не лезет без спроса. Тот, кто принимает выбор, даже если не согласен. Это самый трудный этап – научиться быть рядом, но не вмешиваться.</p>
-            
-            <p><strong>🎭 Как это проявляется в жизни</strong><br>
-            Он принимает решение, которое вам не нравится. Вы говорите: «Я же предупреждал». Он обижается. Вы чувствуете, что вас не ценят. Он чувствует, что его не уважают. Вы можете потерять связь, если не перестроитесь.</p>
-            
-            <p><strong>⚠️ Главная ошибка</strong><br>
-            Вы продолжаете его опекать. «Ты неправильно воспитываешь детей», «Ты зря купил эту машину». Вы забываете, что он – не продолжение вас, а отдельная личность. Вторая ошибка – вы отстраняетесь. «Раз ты такой умный, сам и справляйся». Он чувствует себя одиноким.</p>
-            
-            <p><strong>💡 Что делать: пошагово</strong><br>
-            🔹 <strong>Сегодня:</strong> Скажите ему: «Я горжусь тобой. Ты справляешься. Я рядом, если нужна помощь». Без «но».<br>
-            🔹 <strong>На этой неделе:</strong> Спросите: «Как ты хочешь, чтобы я участвовал в твоей жизни?». Уважайте ответ.<br>
-            🔹 <strong>В ближайший месяц:</strong> Начните строить свои планы, не связанные с ним. Ваша жизнь не должна вращаться вокруг детей. Это поможет вам отпустить и ему – не чувствовать вины.</p>
-            
-            <div style="background: rgba(212,175,55,0.1); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                <p><strong>📖 История из практики</strong><br>
-                Мама 30-летней дочери постоянно критиковала её выбор мужа. Дочь перестала общаться. Мы предложили маме три месяца не давать советов, только слушать и поддерживать. Через три месяца дочь сама пришла за советом. Сказала: «Мама, ты стала моим другом». Мама расплакалась.</p>
-            </div>
-            
-            <div style="background: rgba(168, 218, 220, 0.15); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                <p><strong>🕯️ Ритуал на сегодня</strong><br>
-                Напишите список: «Что я могу дать взрослому ребёнку» (время, поддержку, принятие) и «От чего я отказываюсь» (контроль, критику, советы без спроса). Повесьте на видное место.</p>
-            </div>
-            
-            <div style="background: rgba(255, 215, 0, 0.08); padding: 15px; border-radius: 12px; border-left: 4px solid var(--gold); margin: 15px 0;">
-                <p><strong>🌟 Что запомнить навсегда</strong><br>
-                «Вырастить ребёнка – это не сделать его своей копией. Это отпустить его в свободное плавание. И если вы сможете стать ему другом, а не судьёй, вы не потеряете его, а обретёте союзника. На всю жизнь».</p>
-            </div>
-        </div>
-    `;
-}
-
-// Общий портрет
-function getGeneralPortrait(parentMatrix, childMatrix, parentName, childName, parentRole = 'mother') {
-    const p = parentMatrix.c;
-    const c = childMatrix.c;
-    const role = parentRole === 'mother' ? 'мама' : (parentRole === 'father' ? 'папа' : 'родитель');
-    const safeParentName = escapeHTML(parentName || role);
-    const safeChildName = escapeHTML(childName || 'ребёнок');
-    const pName = safeParentName;
-    const cName = safeChildName;
-
-    // ========== 1. ХАРАКТЕР ==========
-    let characterText = '';
-    if (p[1] >= 4 && c[1] <= 1) {
-        characterText = `Вы, ${pName}, обладаете сильным, волевым характером (${p[1]} единиц). Вы привыкли быстро принимать решения, действовать напролом и не терпите неопределённости. ${cName} же, напротив, имеет очень мягкий, неконфликтный характер (${c[1]} единиц). Ему или ей нужно время, чтобы обдумать решение, и любое давление вызывает ступор. Эта разница – главный источник как вашей силы, так и ваших конфликтов. С одной стороны, вы можете быть для ребёнка надёжной опорой и защитой. С другой – вы рискуете неосознанно подавлять его волю, требуя от него решительности, которой у него просто нет. Ваша задача – научиться замедляться рядом с ребёнком, давать ему право на свой темп и не путать его мягкость со слабостью.`;
-    } 
-    else if (p[1] <= 1 && c[1] >= 4) {
-        characterText = `Удивительно, но именно ${cName} обладает более сильным, волевым характером (${c[1]} единиц), чем вы (${p[1]} единиц). Вы, ${pName}, скорее дипломат, склонный к компромиссам и избеганию конфликтов. А ваш ребёнок – прирождённый лидер, который знает, чего хочет, и умеет этого добиваться. Это может быть непросто – особенно когда его воля идёт вразрез с вашей. Но в этом и заключается ваш потенциал роста. Ребёнок может научить вас уверенности, умению отстаивать свои границы. А вы можете научить его эмпатии, умению слышать других и искать компромиссы. Главное – не пытаться сломать его волю, а направить её в нужное русло.`;
-    }
-    else if (p[1] >= 4 && c[1] >= 4) {
-        characterText = `Вы оба – люди с сильными, волевыми характерами (у вас ${p[1]} единиц, у ребёнка ${c[1]}). Это значит, что в вашей семье часто будут сталкиваться две непререкаемые позиции. Вы оба привыкли быть правыми, и уступать не любите. С одной стороны, это даёт вам огромную энергию для достижения целей. С другой – постоянная борьба за власть может истощить ваши отношения. Ваша задача – не подавлять друг друга, а научиться договариваться. Разделите зоны ответственности, где каждый будет главным. И помните: сила не в том, чтобы всегда быть правым, а в том, чтобы вовремя остановиться и услышать другого.`;
-    }
-    else {
-        characterText = `У вас обоих мягкий, неконфликтный характер (у вас ${p[1]} единиц, у ребёнка ${c[1]}). Вы редко ссоритесь, легко уступаете друг другу. Это создаёт в доме атмосферу тепла и принятия. Но есть и обратная сторона: вам обоим может быть трудно принимать решения, отстаивать свои границы, проявлять инициативу. Вы можете «плыть по течению», упуская важные возможности. Ваша задача – учиться проявлять волю вместе. Начните с малого: каждый день принимайте одно маленькое решение быстро, без долгих обсуждений. Поддерживайте друг друга, когда кто-то проявляет инициативу. И помните: мягкость – не слабость, а особая сила, которая позволяет вам быть чуткими друг к другу.`;
-    }
-
-    // ========== 2. ЭНЕРГИЯ ==========
-    let energyText = '';
-    if (p[2] >= 4 && c[2] <= 1) {
-        energyText = `Вы, ${pName}, обладаете высоким запасом жизненной энергии (${p[2]} двоек). Вы можете работать допоздна, успевать много дел, редко чувствуете усталость. ${cName} же, напротив, быстро истощается (${c[2]} двоек). Вы можете не понимать его «вялости», раздражаться, требовать большей активности. Это серьёзная зона напряжения. Важно осознать: ребёнок не ленится, он просто устроен иначе. Его ресурс ограничен, и если вы будете давить, он может заболеть или замкнуться. Научитесь замедляться рядом с ним, планировать дела с учётом его усталости, давать время на восстановление.`;
-    }
-    else if (p[2] <= 1 && c[2] >= 4) {
-        energyText = `Удивительно, но ${cName} обладает гораздо более высоким запасом энергии (${c[2]} двоек), чем вы (${p[2]} двоек). Он готов бегать, играть, познавать мир, а вы быстро выдыхаетесь. Вы можете чувствовать себя «плохим родителем», неспособным дать ребёнку всё, что ему нужно. Это не так. Ваша задача – не пытаться «догнать» ребёнка, а научиться распределять силы. Делегируйте активные игры другим (друзьям, папе, бабушке), а с собой создавайте спокойные, восстанавливающие ритуалы. И не стесняйтесь говорить ребёнку: «Я устал, давай отдохнём вместе». Это учит его эмпатии.`;
-    }
-    else if (p[2] >= 4 && c[2] >= 4) {
-        energyText = `Вы оба – «энерджайзеры» (у вас ${p[2]} двоек, у ребёнка ${c[2]}). Вы можете вместе путешествовать, заниматься спортом, не замечать усталости. Это даёт вам огромные возможности для активного отдыха и совместных проектов. Но есть риск «перегрева» – вы можете не замечать, когда пора остановиться, подстёгивая друг друга к ещё большей активности. Введите обязательные «часы покоя», когда никто ничего не делает. Учитесь замечать первые признаки усталости – у себя и у ребёнка.`;
-    }
-    else {
-        energyText = `У вас обоих средний, достаточный запас энергии (у вас ${p[2]} двоек, у ребёнка ${c[2]}). Вы способны справляться с повседневными задачами, но не рвётесь к сверхдостижениям. Это даёт вам стабильный, предсказуемый ритм жизни. Главное – не завидовать более активным семьям и не требовать от себя и ребёнка «олимпийских» рекордов. Ваш ритм – нормальный. Просто иногда устраивайте «дни приключений», чтобы встряхнуться.`;
-    }
-
-    // ========== 3. СЕМЕЙНЫЕ ЦЕННОСТИ (если есть значимая разница) ==========
-    let familyText = '';
-    if (parentMatrix.family >= 4 && childMatrix.family <= 1) {
-        familyText = `<p><strong>🏠 Семейные ценности:</strong> Для вас, ${pName}, семья – это главная ценность (${parentMatrix.family} в строке «Семья»). Вы много общаетесь с родственниками, соблюдаете традиции, ждёте такого же отношения от ребёнка. Но ${cName} стремится к автономии, не понимает, зачем нужны «эти тётушки-дяди». Вы можете обижаться, считать ребёнка «чёрствым», а он чувствовать давление. Ваша задача – не давить чувством долга, а объяснять ценность семьи через тепло и принятие. Ищите компромисс: часть праздников проводите с роднёй, часть – только вы. И уважайте право ребёнка на личное пространство.</p>`;
-    }
-    else if (parentMatrix.family <= 1 && childMatrix.family >= 4) {
-        familyText = `<p><strong>🏠 Семейные ценности:</strong> Для ${cName} семья очень важна (${childMatrix.family} в строке «Семья»). Он хочет знать историю рода, общаться с бабушками, соблюдать традиции. Вы же более свободны и не придаёте этому значения. Ребёнок может страдать от вашей отстранённости, чувствовать себя «ненужным». Важно не обесценивать его потребность в принадлежности. Создайте несколько простых семейных ритуалов – например, совместный ужин по воскресеньям или просмотр старых фото. Это укрепит вашу связь, не требуя от вас больших жертв.</p>`;
-    }
-
-    // ========== 4. ЦЕЛЕУСТРЕМЛЁННОСТЬ (если есть значимая разница) ==========
-    let goalText = '';
-    if (parentMatrix.goal >= 4 && childMatrix.goal <= 1) {
-        goalText = `<p><strong>🎯 Цели и достижения:</strong> Вы, ${pName}, привыкли ставить цели и достигать их (${parentMatrix.goal} в строке «Цель»). Вы знаете, чего хотите, и идёте к этому. ${cName} же часто не знает, чего хочет, легко отвлекается, бросает начатое. Вы можете давить, требовать «результатов», но это только усилит сопротивление. Ваша задача – не навязывать свои амбиции, а помогать ребёнку найти его собственную цель. Начните с малого: планируйте вместе выходной, пусть он выберет, куда пойти. Хвалите за маленькие достижения. И помните: его путь может быть длиннее вашего, но это не значит, что он хуже.</p>`;
-    }
-    else if (parentMatrix.goal <= 1 && childMatrix.goal >= 4) {
-        goalText = `<p><strong>🎯 Цели и достижения:</strong> Удивительно, но именно ${cName} обладает высокой целеустремлённостью (${childMatrix.goal} в строке «Цель»). Он знает, чего хочет, и упорно идёт к цели. Вы же часто сомневаетесь, откладываете, не доводите дела до конца. Ребёнок может критиковать вас за «медлительность», а вы – чувствовать себя неполноценным. Не позволяйте ему вас обесценивать, но и не завидуйте. Лучше учитесь у него – спросите, как ему удаётся не сдаваться. И поддерживайте его амбиции, даже если они кажутся вам слишком смелыми.</p>`;
-    }
-
-    // ========== 5. ОБЩИЙ ВЫВОД (связка) ==========
-    let conclusion = '';
-    if (p[1] >= 4 && c[1] <= 1) {
-        conclusion = `${pName} и ${cName}, ваши отношения – это встреча сильной воли и мягкой души. Ваш главный вызов – не подавить мягкость ребёнка своей силой. Ваш главный дар – вы можете стать для него надёжной опорой и защитой, если научитесь делать это без давления. Помните: сила не в том, чтобы быть всегда правым, а в том, чтобы быть рядом, когда это нужно.`;
-    }
-    else if (p[1] <= 1 && c[1] >= 4) {
-        conclusion = `${pName} и ${cName}, ваши отношения – это встреча мягкости и сильного характера. Ребёнок – прирождённый лидер, вы – дипломат. Ваш вызов – не позволить ему доминировать, но и не впадать в гиперопеку. Ваш дар – вы учите его эмпатии и уважению к другим, а он вас – решительности и умению отстаивать свои границы. Вместе вы – идеальная команда, если научитесь слышать друг друга.`;
-    }
-    else if (p[1] >= 4 && c[1] >= 4) {
-        conclusion = `${pName} и ${cName}, вы оба – сильные, волевые люди. Ваши отношения могут быть как полем битвы, так и мощным союзом. Всё зависит от того, научитесь ли вы договариваться. Разделите зоны ответственности, не соревнуйтесь, а сотрудничайте. И помните: иногда уступить – это не слабость, а мудрость.`;
-    }
-    else {
-        conclusion = `${pName} и ${cName}, вы оба – мягкие, неконфликтные люди. Ваши отношения полны тепла и принятия, но иногда вам не хватает решительности. Учитесь проявлять волю вместе, поддерживайте друг друга в начинаниях. И помните: ваша мягкость – это не слабость, а особая сила, которая позволяет вам быть чуткими друг к другу.`;
-    }
-
-    // ========== ФИНАЛЬНЫЙ ТЕКСТ (живая консультация) ==========
-    return `
-        <div style="font-size: 1.05rem; line-height: 1.7;">
-            <p><strong>✨ ${pName} и ${cName} – </strong>${characterText}</p>
-            <p><strong>⚡ Энергия и ритм жизни: </strong>${energyText}</p>
-            ${familyText ? familyText : ''}
-            ${goalText ? goalText : ''}
-            <p><strong>💎 Главное, что стоит запомнить: </strong>${conclusion}</p>
-            
-            <div style="background: rgba(212,175,55,0.1); padding: 20px; border-radius: 12px; margin: 20px 0;">
-                <p style="font-weight: bold; margin-bottom: 10px;">📖 История из практики</p>
-                <p>${generateStoryExample(p, c, pName, cName)}</p>
-            </div>
-            
-            <div style="background: rgba(168, 218, 220, 0.15); padding: 20px; border-radius: 12px; margin: 20px 0;">
-                <p style="font-weight: bold; margin-bottom: 10px;">🕯️ Ритуал на сегодня</p>
-                <p>${generateRitual(p, c)}</p>
-            </div>
-            
-            <div style="background: rgba(255, 215, 0, 0.08); padding: 20px; border-radius: 12px; border-left: 4px solid var(--gold); margin: 20px 0;">
-                <p style="font-weight: bold; margin-bottom: 10px;">🌟 Что запомнить навсегда</p>
-                <p>«${generateMantra(p, c)}»</p>
-            </div>
-            
-            <p style="margin-top: 20px; font-style: italic; border-top: 1px solid rgba(212,175,55,0.3); padding-top: 15px;">
-                Этот портрет – лишь первый шаг к пониманию вашей уникальной связи. Дальнейшие разделы отчёта помогут вам увидеть конкретные зоны гармонии, напряжения и роста. Используйте эти знания, чтобы сделать ваши отношения ещё более осознанными и счастливыми.
-            </p>
-        </div>
-    `;
-}
-
-// Вспомогательная функция для генерации живой истории (в зависимости от типа различий)
-function generateStoryExample(p, c, pName, cName) {
-    if (p[1] >= 4 && c[1] <= 1) {
-        return `Пришла ко мне мама 12-летнего Кирилла. Вечные скандалы из-за уроков. «Я говорю — садись делать математику, а он начинает ныть, отвлекаться, в итоге сидит до полуночи». Мы разобрали: у мамы — сильный характер (4 единицы), у Кирилла — слабый (1 единица). Вместо приказов она стала давать выбор: «Ты будешь делать математику сейчас или после ужина?», «Ты начнёшь с лёгких задач или с трудных?». Через две недели Кирилл стал сам садиться за уроки. Не потому что полюбил математику, а потому что перестал бояться, что его «задавят». Выбор вернул ему чувство контроля.`;
-    }
-    else if (p[1] <= 1 && c[1] >= 4) {
-        return `Пришёл папа с 14-летним Димой. У папы — 1 единица характера, у Димы — 4. Папа жаловался: «Он со мной спорит постоянно, я чувствую себя дураком». Мы предложили папе не бороться, а учиться. Дима научил папу говорить «нет» навязчивым продавцам. Через месяц папа впервые отказался от ненужной страховки. Он сказал: «Сын, ты мой герой». Дима расцвёл, а их отношения перестали быть полем битвы.`;
-    }
-    else if (p[2] >= 4 && c[2] <= 1) {
-        return `У 8-летней Алисы было 0 двоек, у мамы — 4. Алиса быстро уставала в школе, а мама требовала после уроков ещё и на кружки. Девочка начала болеть каждый месяц. Мы ввели правило: после школы — час полного покоя (лёжа, без телефона, без разговоров). Через месяц Алиса перестала болеть, а мама… сама полюбила этот час тишины и обнаружила, что тоже устаёт больше, чем думала.`;
-    }
-    else if (p[2] <= 1 && c[2] >= 4) {
-        return `У 10-летнего Димы было 4 двойки, у папы — 0. Папа жаловался: «Я не могу за ним угнаться, чувствую себя стариком». Мы предложили папе не догонять, а делегировать. Дима стал ответственным за активные игры с младшей сестрой, а папа — за спокойные вечерние ритуалы. Конфликты прекратились, а папа перестал корить себя за «медлительность».`;
-    }
-    else if (p[3] >= 4 && c[3] <= 1) {
-        return `Дима, 10 лет, ненавидел читать. Мама в отчаянии. Оказалось, у него 0 троек (интерес), у мамы 4. Мы предложили: вместо книг — комиксы и аудиокниги. Через месяц Дима сам попросил купить ему «Гарри Поттера» — после того, как посмотрел фильм и захотел узнать больше. Не было насилия — было уважение к его темпу.`;
-    }
-    else {
-        return `Одна мама долго не могла понять, почему её 9-летний сын «не слышит» её просьб. Оказалось, у неё была высокая логика (4 пятёрки), а у сына — 0. Она объясняла всё схемами и алгоритмами, а ему нужны были образы. Когда она стала использовать метафоры и истории, сын начал понимать с полуслова. Однажды он сказал: «Мама, теперь ты говоришь на моём языке». И они оба заплакали от счастья.`;
-    }
-}
-
-// Вспомогательная функция для ритуала
-function generateRitual(p, c) {
-    if (p[1] >= 4 && c[1] <= 1) {
-        return `Сядьте напротив друг друга. Положите на стол два предмета: например, камень и перо. Скажите: «Камень — это моя твёрдость. Перо — твоя гибкость. Мы разные, и это нормально. Давай договоримся: когда я говорю "стоп" — мы оба замолкаем на минуту и просто дышим». Сделайте это прямо сейчас. Вы увидите, как напряжение уходит.`;
-    }
-    else if (p[2] >= 4 && c[2] <= 1) {
-        return `Сядьте на пол, закройте глаза, положите руки на колени. 3 минуты просто дышите. Вдох — вы вдыхаете энергию. Выдох — вы отпускаете усталость. Делайте это вместе. Потом обнимитесь и скажите: «Мы разные, но мы команда».`;
-    }
-    else if (p[3] >= 4 && c[3] <= 1) {
-        return `Возьмите лист бумаги и разделите его на две колонки: «Что я хочу узнать» и «Что хочет узнать ребёнок». Выпишите по три пункта. Найдите одну тему, которая пересекается. Изучите её вместе. Без оценок, без экзаменов — просто из любопытства.`;
-    }
-    else {
-        return `Зажгите свечу. Сядьте напротив друг друга. По очереди говорите: «Сегодня я благодарен тебе за…». Три пункта. Не смейтесь, не перебивайте. Просто слушайте. Потом задуйте свечу и обнимитесь.`;
-    }
-}
-
-// Вспомогательная функция для мантры
-function generateMantra(p, c) {
-    if (p[1] >= 4 && c[1] <= 1) {
-        return `«Сила не в том, чтобы всегда быть правым, а в том, чтобы быть рядом, когда это нужно. Твоя мягкость — не слабость, а мост к моему сердцу. Я учусь у тебя терпению, ты у меня — уверенности. Вместе мы — команда»`;
-    }
-    else if (p[1] <= 1 && c[1] >= 4) {
-        return `«Я учу тебя эмпатии, ты меня — смелости. Мы не конкуренты, а союзники. Твоя сила — не угроза, а дар. И я принимаю его с благодарностью»`;
-    }
-    else if (p[2] >= 4 && c[2] <= 1) {
-        return `«Энергия — не соревнование. У каждого свой бак. Моя задача — не перелить твой в мой, а спланировать маршрут, чтобы хватило обоим. Я уважаю твою усталость, ты — мою активность»`;
-    }
-    else {
-        return `«Мы не обязаны быть одинаковыми, чтобы любить друг друга. Наши различия — не поле для битвы, а территория для открытий. Я выбираю видеть в тебе не проблему, а возможность. И каждый день я учусь быть лучше рядом с тобой»`;
-    }
-}
-
-// Рендер мини-матрицы
- const getS = (n) => {
-        let s = "";
-        for(let k = 0; k < matrix.c[n]; k++) s += n;
-        return s || "—";
-    };
-    // Функция получения цвета для ячейки
-    function renderMatrixCard(matrix, name, title) {
-    const getS = (n) => {
-        let s = "";
-        for(let k = 0; k < matrix.c[n]; k++) s += n;
-        return s || "—";
-    };
-    return `
-    <div class="matrix-card" style="background: rgba(255,255,255,0.05); border-radius: 16px; padding: 15px; margin-bottom: 20px;">
-<h4 style="text-align:center; margin:0 0 15px 0;">${title}: ${escapeHTML(name)}</h4>
-<div class="matrix-grid" style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; max-width:300px; margin:0 auto;">
-            <div class="matrix-cell"><span class="cell-title">Характер</span><span class="cell-value">${getS(1)}</span></div>
-            <div class="matrix-cell"><span class="cell-title">Здоровье</span><span class="cell-value">${getS(4)}</span></div>
-            <div class="matrix-cell"><span class="cell-title">Удача</span><span class="cell-value">${getS(7)}</span></div>
-            <div class="matrix-cell summary"><span class="cell-title">Цель</span><span class="cell-value">${matrix.goal}</span></div>
-            <div class="matrix-cell"><span class="cell-title">Энергия</span><span class="cell-value">${getS(2)}</span></div>
-            <div class="matrix-cell"><span class="cell-title">Логика</span><span class="cell-value">${getS(5)}</span></div>
-            <div class="matrix-cell"><span class="cell-title">Долг</span><span class="cell-value">${getS(8)}</span></div>
-            <div class="matrix-cell summary"><span class="cell-title">Семья</span><span class="cell-value">${matrix.family}</span></div>
-            <div class="matrix-cell"><span class="cell-title">Интерес</span><span class="cell-value">${getS(3)}</span></div>
-            <div class="matrix-cell"><span class="cell-title">Труд</span><span class="cell-value">${getS(6)}</span></div>
-            <div class="matrix-cell"><span class="cell-title">Память</span><span class="cell-value">${getS(9)}</span></div>
-            <div class="matrix-cell summary"><span class="cell-title">Привычки</span><span class="cell-value">${matrix.habits}</span></div>
-            <div class="matrix-cell summary"><span class="cell-title">Самооценка</span><span class="cell-value">${matrix.self}</span></div>
-            <div class="matrix-cell summary"><span class="cell-title">Быт</span><span class="cell-value">${matrix.life}</span></div>
-            <div class="matrix-cell summary"><span class="cell-title">Талант</span><span class="cell-value">${matrix.talent}</span></div>
-            <div class="matrix-cell summary"><span class="cell-title">Дух</span><span class="cell-value">${matrix.spirit}</span></div>
-            <div class="matrix-cell temp"><span class="cell-title">Темперамент</span><span class="cell-value">${matrix.temp}</span></div>
-        </div>
-    </div>
-    `;
-}
-
-
-// ГЛАВНАЯ ФУНКЦИЯ КАЛЬКУЛЯТОРА
+/* ============================================
+   РОДИТЕЛЬ-РЕБЁНОК – ЛЕНИВАЯ ЗАГРУЗКА
+   ============================================ */
 async function calculateParentChild() {
-    if (!premiumAccess) {
-        openUnlockPaymentModal();
-        return;
-    }
-    const canProceed = await useCalculation();
-    if (!canProceed) return;
-
-    const parentName = document.getElementById('parentName').value.trim() || 'Родитель';
-    const parentDate = document.getElementById('parentDate').value;
-    const childName = document.getElementById('childName').value.trim() || 'Ребёнок';
-    const childDate = document.getElementById('childDate').value;
-    const parentRole = document.getElementById('parentRole').value;
-
-    if (!parentDate || !childDate) {
-        alert('Пожалуйста, введите даты рождения родителя и ребёнка!');
-        return;
-    }
-
-    document.getElementById('result-parent-child').style.display = 'none';
-    document.getElementById('loader-parent-child').style.display = 'flex';
-    startMagicAnimation('magic-numbers-parent-child');
-
-    setTimeout(() => {
-        const parentMatrix = calculateMatrixData(parentDate);
-        const childMatrix = calculateMatrixData(childDate);
-
-        const indicators = getIndicatorsList(parentMatrix, childMatrix);
-        const classified = classifyIndicators(indicators);
-
-        const topHarmony = getTopHarmony(classified);
-        const topTension = getTopTension(classified);
-        const topGrowth = getTopGrowth(classified);
-
-        const childAge = calculateAge(childDate);
-        const agePeriod = getAgePeriod(childAge);
-        const ageRecommendations = getAgeRecommendations(agePeriod, parentMatrix, childMatrix, parentRole);
-
-        const parentTraps = getParentTraps(parentMatrix, childMatrix, parentRole);
-        const conflictScenarios = getConflictScenarios(parentMatrix, childMatrix, parentRole);
-        const learningStyle = getLearningStyle(childMatrix, parentMatrix);
-        const emotionalLanguage = getEmotionalLanguage(childMatrix, parentMatrix);
-
-        let html = `
-<div class="comparison-matrices" style="display:flex;flex-wrap:wrap;gap:20px;justify-content:center;margin-bottom:30px;">
-    ${renderMatrixCard(parentMatrix, parentName, 'Родитель')}
-    ${renderMatrixCard(childMatrix, childName, 'Ребёнок')}
-</div>
-<div class="report-block">
-    <h3>📖 Общий портрет отношений</h3>
-    <p>${getGeneralPortrait(parentMatrix, childMatrix, parentName, childName, parentRole)}</p>
-</div>
-<div class="report-block">
-    <h3>🟢 Зоны гармонии (Топ-3)</h3>
-    ${topHarmony.map(z => formatHarmonyZone(z, parentMatrix, childMatrix)).join('')}
-</div>
-<div class="report-block">
-    <h3>🔴 Зоны напряжения (Топ-3)</h3>
-    ${topTension.map(z => formatTensionZone(z, parentMatrix, childMatrix)).join('')}
-</div>
-<div class="report-block">
-    <h3>🔵 Зоны роста (Топ-3)</h3>
-    ${topGrowth.map(z => formatGrowthZone(z, parentMatrix, childMatrix)).join('')}
-</div>
-<div class="report-block">
-    <h3>⚠️ Родительские ловушки</h3>
-    ${parentTraps.map(trap => `<div style="margin-bottom:15px;"><strong>${trap.title}</strong><br>${trap.text}</div>`).join('')}
-</div>
-<div class="report-block">
-    <h3>📅 Возрастные рекомендации (${agePeriod.name})</h3>
-    ${ageRecommendations}
-</div>
-<div class="report-block">
-    <h3>⚡ Конфликтные сценарии</h3>
-    ${conflictScenarios.map(sc => `<div style="margin-bottom:15px;"><strong>${sc.title}</strong><br>${sc.text}</div>`).join('')}
-</div>
-<div class="report-block">
-    <h3>📚 Стиль обучения ребёнка</h3>
-    ${learningStyle}
-</div>
-<div class="report-block">
-    <h3>💛 Эмоциональный язык ребёнка</h3>
-    ${emotionalLanguage}
-</div>
-<button class="btn-gold" onclick="downloadSectionPDF('parentchild')" style="margin-top:20px;width:100%;">
-    <i class="fa-solid fa-file-pdf"></i> Скачать отчёт (PDF)
-</button>
-        `;
-
-        document.getElementById('result-parent-child').innerHTML = html;
-        document.getElementById('loader-parent-child').style.display = 'none';
-        document.getElementById('result-parent-child').style.display = 'block';
-        stopMagicAnimation('magic-numbers-parent-child');
-    }, 1500);
-}
-
-// ============================================================
-// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ КАЛЬКУЛЯТОРА «РОДИТЕЛЬ-РЕБЁНОК»
-// ============================================================
-
-function getConflictScenarios(parentMatrix, childMatrix, parentRole = 'mother') {
-    const p = parentMatrix.c;
-    const c = childMatrix.c;
-    const scenarios = [];
-    const role = parentRole === 'mother' ? 'мама' : (parentRole === 'father' ? 'папа' : 'родитель');
-
-    // ========== СЦЕНАРИЙ 1: «Кто здесь главный?» (сильный характер у обоих) ==========
-    if (p[1] >= 4 && c[1] >= 4) {
-        scenarios.push({
-            title: "⚡ Сценарий «Кто здесь главный?»",
-            text: `
-                <div style="font-size:0.95rem; line-height:1.6;">
-                    <p><strong>🧠 Почему этот сценарий возникает</strong><br>
-                    Дорогие родители, вы оба – люди с сильными, волевыми характерами. У вас ${p[1]} единиц, у ребёнка ${c[1]}. Вы оба привыкли быть правыми, отстаивать свою точку зрения и не любите, когда кто-то командует. Любой спор, даже о том, в каком порядке мыть посуду, превращается в битву за власть. Вы говорите: «Потому что я так сказал(а)!». Ребёнок: «А я так хочу!». Вы чувствуете, что теряете авторитет, он – что его не уважают. Это как два быка на одном пастбище: либо они разнесут всё вокруг, либо научатся делить территорию.</p>
-                    
-                    <p><strong>🎭 Как это проявляется в жизни</strong><br>
-                    Вы просите ребёнка убрать в комнате. Он: «Сначала досмотрю мультик». Вы: «Нет, сейчас». Он: «Ты вечно командуешь!». Вы: «Я – ${role}, я лучше знаю!». Он хлопает дверью, вы кричите. В итоге комната не убрана, настроение испорчено, вы оба обижены. И так каждый день. Вы чувствуете, что дом превратился в поле боя, а ребёнок – в противника. А ведь он не враг. Он просто тоже хочет, чтобы его мнение учитывали.</p>
-                    
-                    <p><strong>⚠️ Главная ошибка, которую вы совершаете</strong><br>
-                    Вы путаете уважение с подчинением. Вам кажется, что если ребёнок не слушается с первого слова, значит, он вас не уважает. Но уважение – это не «делай, что я сказал». Это «я слышу тебя, ты слышишь меня, мы договариваемся». Вторая ошибка – вы не разделяете зоны ответственности. Вы пытаетесь контролировать всё, включая то, что ребёнок вполне может решать сам. Это вызывает бунт. Третья ошибка – вы не умеете уступать. Вам кажется, что уступить = проиграть. Но в семейных отношениях уступить – это не проигрыш, а инвестиция в мир.</p>
-                    
-                    <p><strong>💡 Что делать: пошаговая стратегия</strong><br>
-                    🔹 <strong>Сегодня:</strong> Выберите одну сферу, где вы обычно спорите, и договоритесь: «В этом вопросе решаешь ты, в следующем – я». Например, порядок уборки – по вашему плану, а выбор фильма – по его. Это снизит градус борьбы.<br>
-                    🔹 <strong>На этой неделе:</strong> Введите «правило двух минут»: прежде чем сказать «нет», выслушайте аргументы ребёнка в течение двух минут. Вы удивитесь, как часто его доводы оказываются разумными. И он почувствует, что его мнение важно.<br>
-                    🔹 <strong>В ближайший месяц:</strong> Разделите зоны ответственности официально: «Ты отвечаешь за порядок в своей комнате, я – за ужин. Ты выбираешь одежду, я – меню». И не лезьте на чужую территорию. Это снизит количество конфликтов на 80%.</p>
-                    
-                    <div style="background: rgba(212,175,55,0.1); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                        <p><strong>📖 История из практики</strong><br>
-                        Ко мне пришла мама с 12-летним сыном. Каждый вечер – битва за уроки. Мама говорила: «Садись сейчас!», сын: «Потом». Мы предложили: мама даёт выбор: «Ты садишься за уроки сейчас и заканчиваешь к 8, или через час и заканчиваешь к 9. Решаешь ты». Сын выбрал через час. И… сел сам, без напоминаний. Мама сказала: «Оказывается, он не против уроков, он против приказов».</p>
-                    </div>
-                    
-                    <div style="background: rgba(168, 218, 220, 0.15); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                        <p><strong>🕯️ Ритуал на сегодня</strong><br>
-                        Сядьте напротив друг друга. Положите на стол два камня. Скажите: «Этот камень – моя твёрдость. Этот – твоя. Мы оба сильные, и это здорово. Давай договоримся: когда мы спорим, мы не кричим, а говорим по очереди. И тот, кто уступает сегодня, завтра получает право выбора». Положите камни друг на друга – символ союза.</p>
-                    </div>
-                    
-                    <div style="background: rgba(255, 215, 0, 0.08); padding: 15px; border-radius: 12px; border-left: 4px solid var(--gold); margin: 15px 0;">
-                        <p><strong>🌟 Что запомнить навсегда</strong><br>
-                        «Сила не в том, чтобы всегда быть правым. Сила в том, чтобы уметь договариваться. Вы оба – лидеры. Не воюйте за власть – разделите её. И тогда ваша энергия станет не разрушительной, а созидательной».</p>
-                    </div>
-                </div>
-            `
-        });
-    }
-    
-    // ========== СЦЕНАРИЙ 2: «Почему ты не можешь просто решить?» (родитель сильный, ребёнок слабый) ==========
-    else if (p[1] >= 4 && c[1] <= 1) {
-        scenarios.push({
-            title: "⚡ Сценарий «Почему ты не можешь просто решить?»",
-            text: `
-                <div style="font-size:0.95rem; line-height:1.6;">
-                    <p><strong>🧠 Почему этот сценарий возникает</strong><br>
-                    Дорогие родители, вы – человек с сильной волей (${p[1]} единиц). Вы привыкли быстро принимать решения, действовать без промедления. А ваш ребёнок – мягкий, неконфликтный (${c[1]}). Он долго думает, сомневается, боится ошибиться. Вы говорите: «Ну что тут думать?», «Бери и делай!», «В твоём возрасте я уже всё решал сам». Вы искренне не понимаете, почему он «тормозит». А он замирает ещё больше. Вы давите – он закрывается. Замкнутый круг.</p>
-                    
-                    <p><strong>🎭 Как это проявляется в жизни</strong><br>
-                    Вы стоите перед полкой с соками. Ребёнок не может выбрать уже пять минут. Вы теряете терпение: «Давай быстрее, мы опаздываем!». Он хватает первый попавшийся, вы идёте на кассу. Всю дорогу он молчит, вы думаете, что он обиделся. А он просто не успел понять, чего хотел. Или вы спрашиваете: «В какой кружок хочешь пойти?». Он неделю мучается, не может определиться. Вы злитесь: «Тогда я решу за тебя». Он идёт, куда вы сказали, но без желания, потом бросает. Вы думаете: «Неблагодарный». А он просто не мог выбрать.</p>
-                    
-                    <p><strong>⚠️ Главная ошибка, которую вы совершаете</strong><br>
-                    Вы думаете, что он «ленится» или «не старается». Но правда в том, что его мозг устроен иначе. Ему нужно больше времени на обработку информации. Ваше давление не ускоряет его, а парализует. Вторая ошибка – вы не даёте ему права на ошибку. Вы требуете идеального выбора сразу. А выбор – это навык, который тренируется. Если вы будете вечно решать за него, он никогда не научится.</p>
-                    
-                    <p><strong>💡 Что делать: пошаговая стратегия</strong><br>
-                    🔹 <strong>Сегодня:</strong> Сузьте поле выбора до двух вариантов. Не «что будем делать?», а «мы идём в парк или в кино?». Два варианта – идеальный тренажёр для слабой воли.<br>
-                    🔹 <strong>На этой неделе:</strong> Давайте время на обдумывание. «Подумай, я подойду через 5 минут». Не торопите, не давите. И когда он выберет, обязательно скажите: «Ты сам решил – это здорово!»<br>
-                    🔹 <strong>В ближайший месяц:</strong> Постепенно увеличивайте сложность выбора. От «какую футболку?» до «в какой кружок пойдём?». И главное – разрешите ему ошибаться. Если он выбрал не тот кружок и бросил – это его опыт, а не ваша ошибка. Спросите: «Что ты понял? Как в следующий раз поступим?»</p>
-                    
-                    <div style="background: rgba(212,175,55,0.1); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                        <p><strong>📖 История из практики</strong><br>
-                        Мама 10-летнего Кирилла жаловалась: «Он не может выбрать даже завтрак, я уже устала решать за него». Мы предложили: каждое утро – выбор из двух вариантов: «Кашу или омлет?». Через две недели Кирилл стал выбирать быстрее. Через месяц он уже сам предлагал: «А можно блины?». Мама сказала: «Оказывается, ему просто нужно было время, а не давление».</p>
-                    </div>
-                    
-                    <div style="background: rgba(168, 218, 220, 0.15); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                        <p><strong>🕯️ Ритуал на сегодня</strong><br>
-                        Напишите на листе три простых выбора: «Что надеть», «Что съесть на полдник», «Какую книгу почитать». Отдайте лист ребёнку. Пусть он отметит. И скажите: «Ты сегодня сам(а) решил(а) – я горжусь».</p>
-                    </div>
-                    
-                    <div style="background: rgba(255, 215, 0, 0.08); padding: 15px; border-radius: 12px; border-left: 4px solid var(--gold); margin: 15px 0;">
-                        <p><strong>🌟 Что запомнить навсегда</strong><br>
-                        «Воля не передаётся через приказы. Она выращивается через маленькие выборы. Ваша задача – не решать за ребёнка, а создавать пространство, где он может решать сам. И помнить: его медлительность – не лень, а другой темп. Уважайте его, и он научится уважать себя».</p>
-                    </div>
-                </div>
-            `
-        });
-    }
-    
-    // ========== СЦЕНАРИЙ 3: «Ты меня не слышишь» (логика родителя vs эмоции ребёнка) ==========
-    if (p[5] >= 4 && c[2] >= 4) {
-        scenarios.push({
-            title: "⚡ Сценарий «Ты меня не слышишь»",
-            text: `
-                <div style="font-size:0.95rem; line-height:1.6;">
-                    <p><strong>🧠 Почему этот сценарий возникает</strong><br>
-                    Дорогие родители, вы – человек логики (${p[5]} пятёрок). Вы привыкли оперировать фактами, аргументами, причинно-следственными связями. Когда возникает проблема, вы сразу предлагаете решение: «Давай сделаем так, потому что это эффективно». А у ребёнка высокая энергия и чувствительность (${c[2]} двоек) – он живёт эмоциями. Ему сначала нужно, чтобы вы признали его чувства, выслушали, поняли. А вы «рубите с плеча» логическими доводами. Ребёнок кричит: «Ты меня не слышишь!», а вы не понимаете, в чём дело – вы же всё сказали.</p>
-                    
-                    <p><strong>🎭 Как это проявляется в жизни</strong><br>
-                    Ребёнок приходит из школы расстроенный. Вы: «Что случилось?». Он: «Меня никто не любит!». Вы: «Это неправда, вот тебя любят мама, папа, бабушка. Давай подумаем, как наладить отношения с одноклассниками». Он: «Ты меня не понимаешь!» и уходит в комнату. Вы чувствуете, что он нелогичен. А он просто хотел, чтобы вы сказали: «Мне жаль, что тебе больно. Обними меня».</p>
-                    
-                    <p><strong>⚠️ Главная ошибка, которую вы совершаете</strong><br>
-                    Вы пропускаете этап «признание эмоций» и сразу переходите к решениям. Для вас эмоции – это помеха, которую нужно отбросить. Для ребёнка – это главное. Вторая ошибка – вы обесцениваете его чувства. «Не бери в голову», «Это ерунда». Для него это не ерунда. Это его мир. Когда вы обесцениваете его чувства, он чувствует себя невидимым.</p>
-                    
-                    <p><strong>💡 Что делать: пошаговая стратегия</strong><br>
-                    🔹 <strong>Сегодня:</strong> Когда ребёнок расстроен, скажите: «Я вижу, тебе грустно / обидно / страшно». Просто назовите его чувство. Не добавляйте «но» или «потому что». Просто признайте. Это снизит напряжение на 50%<br>
-                    🔹 <strong>На этой неделе:</strong> Практикуйте активное слушание. Не перебивайте, не советуйте, не оценивайте. Просто повторяйте его слова: «То есть ты обиделся, потому что…». Он почувствует, что его слышат, и успокоится.<br>
-                    🔹 <strong>В ближайший месяц:</strong> Введите «эмоциональный час» – раз в неделю вы говорите только о чувствах. Без анализа, без решений. Просто: «Что ты чувствовал сегодня? А я чувствовал…». Это сблизит вас и научит ребёнка понимать себя.</p>
-                    
-                    <div style="background: rgba(212,175,55,0.1); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                        <p><strong>📖 История из практики</strong><br>
-                        Папа 9-летней Ани жаловался: «Она приходит из школы и плачет, а когда я спрашиваю, в чём дело, отвечает: «Ты всё равно не поймёшь». Мы предложили: вместо вопросов и советов папа просто обнимал дочку и говорил: «Я вижу, тебе грустно». Через неделю Аня сама начала рассказывать, что её обижают. Папа не давал советов – просто слушал. Через месяц они стали лучшими друзьями.</p>
-                    </div>
-                    
-                    <div style="background: rgba(168, 218, 220, 0.15); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                        <p><strong>🕯️ Ритуал на сегодня</strong><br>
-                        Сядьте напротив друг друга. Положите руки на сердце. По очереди называйте чувства, которые вы испытываете прямо сейчас. Без оценок, просто факты. «Я чувствую усталость», «Я чувствую любопытство». Не комментируйте, не оценивайте. Просто слушайте.</p>
-                    </div>
-                    
-                    <div style="background: rgba(255, 215, 0, 0.08); padding: 15px; border-radius: 12px; border-left: 4px solid var(--gold); margin: 15px 0;">
-                        <p><strong>🌟 Что запомнить навсегда</strong><br>
-                        «Прежде чем предлагать решение, признай чувство. Логика без эмпатии – это холодный скальпель. А эмпатия без логики – это хаос. Вместе они – настоящая сила. Сначала обними, потом разбирайся. И ты увидишь, как исчезнут самые сложные конфликты».</p>
-                    </div>
-                </div>
-            `
-        });
-    }
-    
-    // ========== СЦЕНАРИЙ 4: «Ты вечно устаёшь!» (разная энергия) ==========
-    if (p[2] >= 4 && c[2] <= 1) {
-        scenarios.push({
-            title: "⚡ Сценарий «Ты вечно устаёшь!»",
-            text: `
-                <div style="font-size:0.95rem; line-height:1.6;">
-                    <p><strong>🧠 Почему этот сценарий возникает</strong><br>
-                    Дорогие родители, вы полны сил и энергии (${p[2]} двоек), а ваш ребёнок быстро истощается (${c[2]}). Вы можете работать до ночи, успевать тысячу дел. А он после школы еле стоит на ногах. Вы говорите: «Соберись!», «Хватит ныть», «Посмотри на других детей – они и на спорт, и на музыку успевают». Вы искренне не понимаете, как можно «просто сидеть и ничего не делать». Вы думаете, что он ленится или не старается. Но правда в другом.</p>
-                    
-                    <p><strong>🎭 Как это проявляется в жизни</strong><br>
-                    Вы планируете насыщенный выходной: парк, кино, гости. Ребёнок уже к обеду говорит, что устал. Вы раздражаетесь: «Да ладно, потерпи!». Он идёт, но капризничает весь день. Вы злитесь, он плачет. Вечером вы чувствуете, что «отдых» вымотал всех. Или вы хотите остаться дома, а ребёнок просится гулять. Вы говорите: «Я устал, давай завтра». Он обижается. Вы чувствуете вину. Каждый выходной превращается в битву.</p>
-                    
-                    <p><strong>⚠️ Главная ошибка, которую вы совершаете</strong><br>
-                    Вы требуете от ребёнка вашего темпа. «Я же могу, значит и ты должен». Это как требовать от цыплёнка летать как орёл. Его энергия – не лень, а физиология. Вы не замечаете его сигналов усталости и заставляете его работать на износ. Это ведёт к болезням, неврозам и хронической усталости. Вторая ошибка – вы не учите его отдыхать. Вы сами не умеете останавливаться, поэтому и ему не показываете пример. В итоге вы оба выгораете.</p>
-                    
-                    <p><strong>💡 Что делать: пошаговая стратегия</strong><br>
-                    🔹 <strong>Сегодня:</strong> Спросите ребёнка: «По шкале от 1 до 10, сколько у тебя сейчас энергии?». Если меньше 5 – отмените все планы, кроме самых важных. Просто побудьте рядом. Если 7–10 – предложите активность, но не требуйте.<br>
-                    🔹 <strong>На этой неделе:</strong> Заведите «энергетический дневник». Вместе отмечайте, в какое время суток у вас пик сил, а когда спад. Планируйте сложные дела на пик, а отдых – на спад. Вы удивитесь, насколько меньше станет конфликтов.<br>
-                    🔹 <strong>В ближайший месяц:</strong> Введите «ленивые дни» – раз в неделю вы вообще ничего не планируете. Валяетесь, смотрите кино, едите, что захочется. Это не распущенность – это профилактика выгорания.</p>
-                    
-                    <div style="background: rgba(212,175,55,0.1); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                        <p><strong>📖 История из практики</strong><br>
-                        У 8-летней Алисы было 0 двоек, у мамы – 4. Алиса быстро уставала в школе, а мама требовала после уроков ещё и на кружки. Девочка начала болеть каждый месяц. Мы ввели правило: после школы – час полного покоя (лёжа, без телефона, без разговоров). Через месяц Алиса перестала болеть, а мама… сама полюбила этот час тишины и обнаружила, что тоже устаёт больше, чем думала.</p>
-                    </div>
-                    
-                    <div style="background: rgba(168, 218, 220, 0.15); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                        <p><strong>🕯️ Ритуал на сегодня</strong><br>
-                        Сядьте на пол, закройте глаза, положите руки на колени. 3 минуты просто дышите. Вдох – вы вдыхаете энергию. Выдох – вы отпускаете усталость. Делайте это вместе. Потом обнимитесь и скажите: «Мы разные, но мы команда».</p>
-                    </div>
-                    
-                    <div style="background: rgba(255, 215, 0, 0.08); padding: 15px; border-radius: 12px; border-left: 4px solid var(--gold); margin: 15px 0;">
-                        <p><strong>🌟 Что запомнить навсегда</strong><br>
-                        «Энергия – не соревнование. Если у одного бензин на 10 литров, а у другого на 50, это не значит, что первый плохой. Просто у него бак меньше. Ваша задача – не перелить из одного бака в другой, а планировать маршрут, чтобы хватило обоим».</p>
-                    </div>
-                </div>
-            `
-        });
-    }
-    
-    // ========== СЦЕНАРИЙ 5: «Ничего не трогай, я сам» (родитель перфекционист, ребёнок боится ошибок) ==========
-    if (p[4] >= 4 && c[4] <= 1) {
-        scenarios.push({
-            title: "⚡ Сценарий «Ничего не трогай, я сам»",
-            text: `
-                <div style="font-size:0.95rem; line-height:1.6;">
-                    <p><strong>🧠 Почему этот сценарий возникает</strong><br>
-                    Дорогие родители, вы человек с высокими требованиями к порядку, здоровью, чистоте (${p[4]} четвёрок). Вы привыкли всё делать идеально. А ребёнок не проявляет интереса к порядку (${c[4]}). Он делает всё кое-как, разбрасывает вещи. Вы начинаете переделывать за ним, комментировать: «Вечно у тебя всё из рук валится», «Лучше я сам(а)». Ребёнок перестаёт даже пытаться что-то делать – зачем, если вы всё равно переделаете и раскритикуете? Замкнутый круг.</p>
-                    
-                    <p><strong>🎭 Как это проявляется в жизни</strong><br>
-                    Вы просите ребёнка помыть посуду. Он моет, но не очень хорошо. Вы вздыхаете, перемываете и говорите: «Вечно у тебя как попало». Ребёнок обижается. В следующий раз он уже не хочет мыть – «всё равно мама/папа недовольны». Вы злитесь на него за «лень». А он просто боится ошибиться. Или вы просите убрать в комнате. Он убирает, но вы находите пыль под кроватью. Вы ругаетесь. Он чувствует себя неудачником. В итоге вы убираете сами, он играет. И вы выгораете.</p>
-                    
-                    <p><strong>⚠️ Главная ошибка, которую вы совершаете</strong><br>
-                    Вы требуете идеального результата с первого раза. Но навыки формируются через ошибки. Если вы будете наказывать за неидеальность, ребёнок перестанет пробовать. Вторая ошибка – вы делаете за него. Этим вы лишаете его возможности научиться. «Лучше я сделаю сама, чем потом переделывать» – это путь к тому, что ребёнок вырастет несамостоятельным.</p>
-                    
-                    <p><strong>💡 Что делать: пошаговая стратегия</strong><br>
-                    🔹 <strong>Сегодня:</strong> Дайте ребёнку одно маленькое дело, которое он сделает сам, без вашего контроля. Например, вытереть пыль или полить цветы. И не переделывайте, даже если сделал неидеально. Скажите: «Спасибо, ты мне очень помог(ла)!».<br>
-                    🔹 <strong>На этой неделе:</strong> Введите «зону неидеальности» – место, где ребёнок может делать что угодно, и вы не критикуете. Например, его комната. Пусть там будет творческий беспорядок.<br>
-                    🔹 <strong>В ближайший месяц:</strong> Учитесь вместе. Не «делай как я», а «давай я покажу, а ты попробуешь». И если получилось хуже – похвалите за старание, а потом предложите: «А давай попробуем ещё раз вместе?»</p>
-                    
-                    <div style="background: rgba(212,175,55,0.1); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                        <p><strong>📖 История из практики</strong><br>
-                        Мама 10-летнего Димы жаловалась: «Он ничего не делает по дому, я уже устала». Мы предложили: перестать критиковать и переделывать. Дима помыл посуду – мама сказала «спасибо», даже если остались разводы. Через месяц Дима сам вызвался помыть посуду, потому что знал: его похвалят, а не отругают. Мама сказала: «Я поняла: неидеально, но сделано – лучше, чем идеально, но не сделано».</p>
-                    </div>
-                    
-                    <div style="background: rgba(168, 218, 220, 0.15); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                        <p><strong>🕯️ Ритуал на сегодня</strong><br>
-                        Возьмите лист бумаги. Напишите: «Я разрешаю себе не быть идеальным. Я разрешаю ребёнку ошибаться». Повесьте на видное место. И каждый раз, когда захотите переделать, посмотрите на эту фразу.</p>
-                    </div>
-                    
-                    <div style="background: rgba(255, 215, 0, 0.08); padding: 15px; border-radius: 12px; border-left: 4px solid var(--gold); margin: 15px 0;">
-                        <p><strong>🌟 Что запомнить навсегда</strong><br>
-                        «Сделано на троечку и с любовью лучше, чем сделано на пятёрку и с ненавистью. Ваша задача – не вырастить идеального исполнителя, а вырастить человека, который не боится пробовать. И для этого иногда нужно закрыть глаза на пыль под кроватью».</p>
-                    </div>
-                </div>
-            `
-        });
-    }
-    
-    // ========== УНИВЕРСАЛЬНЫЙ СЦЕНАРИЙ (если ни один не подошёл) ==========
-    if (scenarios.length === 0) {
-        scenarios.push({
-            title: "⚡ Общий сценарий «Мы говорим на разных языках»",
-            text: `
-                <div style="font-size:0.95rem; line-height:1.6;">
-                    <p><strong>🧠 Почему этот сценарий возникает</strong><br>
-                    Дорогие родители, у вас и ребёнка нет ярко выраженных противоречий по основным линиям. И это замечательно! Вы редко ссоритесь на почве характера, энергии или логики. Но конфликты всё равно возникают – просто потому, что вы разные люди. У вас разный жизненный опыт, разные темпераменты, разные текущие состояния. И иногда вы не понимаете друг друга не потому, что кто-то «плохой», а потому, что не проговариваете свои ожидания.</p>
-                    
-                    <p><strong>🎭 Как это проявляется в жизни</strong><br>
-                    Вы просите ребёнка убрать в комнате. Он говорит «хорошо», но не делает. Вы злитесь, он удивляется. Выясняется, что он понял «убери» как «сложи игрушки в коробку», а вы имели в виду «пропылесось и вытри пыль». Вы говорили на разных языках. Или вы спрашиваете: «Как дела в школе?». Он: «Нормально». Вы: «Что значит нормально?». Он: «Ну нормально». Вы обижаетесь, что он скрытный. А он просто не знает, что именно вы хотите услышать.</p>
-                    
-                    <p><strong>⚠️ Главная ошибка, которую вы совершаете</strong><br>
-                    Вы думаете, что раз вы похожи, то он автоматически понимает вас без слов. Это не так. Даже близкие люди нуждаются в ясных объяснениях. Вторая ошибка – вы не спрашиваете, а додумываете. «Он молчит, значит, злится». А он просто устал. Вы придумываете проблему, которой нет, и обижаетесь на неё.</p>
-                    
-                    <p><strong>💡 Что делать: пошаговая стратегия</strong><br>
-                    🔹 <strong>Сегодня:</strong> Вместо того чтобы додумывать, спросите прямо: «Что ты сейчас чувствуешь?», «Как ты понял мою просьбу?». Вы удивитесь, как часто ваши догадки ошибочны.<br>
-                    🔹 <strong>На этой неделе:</strong> Введите «семейный совет» раз в неделю. Садитесь и обсуждайте: что было хорошего, что не очень. Без обвинений, просто факты и чувства. Ребёнок научится говорить о себе, вы – слушать.<br>
-                    🔹 <strong>В ближайший месяц:</strong> Начните вести «дневник благодарности» – каждый день записывайте три вещи, за которые вы благодарны ребёнку. И просите его делать то же самое. Это укрепит вашу связь и поможет замечать хорошее, а не только проблемы.</p>
-                    
-                    <div style="background: rgba(212,175,55,0.1); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                        <p><strong>📖 История из практики</strong><br>
-                        Мама 11-летней Алисы была уверена, что у них «идеальные отношения». Алиса – тихая, послушная, спокойная. Но в школе у неё начались истерики. Оказалось, дома она боялась говорить маме, что её обижают одноклассники. Мама не спрашивала, думала, что «и так всё видно». Алиса молчала, потому что не хотела расстраивать маму. Мы ввели правило: каждый вечер – 10 минут «секретов», где можно говорить о чём угодно, без осуждения. Через месяц Алиса рассказала о буллинге, мама помогла, истерики прекратились. Тишина оказалась не золотом, а сигналом.</p>
-                    </div>
-                    
-                    <div style="background: rgba(168, 218, 220, 0.15); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                        <p><strong>🕯️ Ритуал на сегодня</strong><br>
-                        Сядьте напротив друг друга. Зажгите свечу. По очереди говорите: «Сегодня я благодарен тебе за…». Три пункта. Не смейтесь, не перебивайте. Просто слушайте. Потом задуйте свечу и обнимитесь.</p>
-                    </div>
-                    
-                    <div style="background: rgba(255, 215, 0, 0.08); padding: 15px; border-radius: 12px; border-left: 4px solid var(--gold); margin: 15px 0;">
-                        <p><strong>🌟 Что запомнить навсегда</strong><br>
-                        «Гармония не в отсутствии проблем, а в умении их замечать, пока они маленькие. Самые опасные ловушки – те, что вы не видите. Поэтому не ленитесь спрашивать, слушать и смотреть. Ваш ребёнок – не ваша копия, даже если кажется очень похожим. Он – отдельная вселенная. Исследуйте её».</p>
-                    </div>
-                </div>
-            `
-        });
-    }
-    
-    return scenarios;
-}
-
-function getLearningStyle(childMatrix, parentMatrix) {
-    const c = childMatrix.c;
-    const p = parentMatrix.c;
-    
-    // ========== 1. АНАЛИЗ ТИПА ОБУЧЕНИЯ ПО ЯЧЕЙКЕ 3 (ИНТЕРЕС) ==========
-    let learningType = '';
-    let typeDescription = '';
-    let strengths = [];
-    let challenges = [];
-    let parentAdvice = '';
-    let storyExample = '';
-    let ritual = '';
-    
-    if (c[3] <= 1) {
-        learningType = 'практик-кинестетик («через руки»)';
-        typeDescription = `Ваш ребёнок – прирождённый практик. Дорогие родители, поймите главное: он не ленивый и не глупый. Его мозг просто устроен иначе. Ему трудно учиться через книги и лекции, зато он отлично усваивает информацию через движение, прикосновения, эксперименты. Он должен делать, чтобы понять. «Посиди и почитай» – для него пытка. «Давай соберём модель, проведём опыт, нарисуем схему» – вот его стихия.`;
-        strengths = [
-            `🔸 Высокая вовлечённость в практические занятия – он может часами что-то мастерить, конструировать, экспериментировать.`,
-            `🔸 Отличная моторная память – запоминает через действие, а не через зубрёжку.`,
-            `🔸 Способность учиться через ошибки – для него «сломать и починить» лучше, чем прочитать инструкцию.`
-        ];
-        challenges = [
-            `🔸 Трудности с чтением и письмом – усидеть за партой для него подвиг.`,
-            `🔸 Неусидчивость при пассивном обучении – начинает вертеться, отвлекаться, мешать другим.`,
-            `🔸 Быстрая потеря интереса к теории – если нет практики, он «выключается».`
-        ];
-        storyExample = `К нам пришла мама с 9-летним Артёмом. «Он не может выучить стихи, ненавидит чтение, на уроках вертится», – жаловалась она. Проверили матрицу – у Артёма 0 троек (интерес к познанию). Мы предложили: учить стихи через движение – придумывать жесты к каждой строчке. Артём выучил стих за 15 минут. Мама сказала: «Я думала, он безнадёжен, а он просто учится по-другому». Через месяц Артём сам попросил записать его в кружок робототехники. Теперь он с удовольствием ходит на занятия и даже начал лучше читать – потому что нужно читать инструкции к конструкторам.`;
-        ritual = `Сегодня выберите любой школьный материал (правило по русскому, формулу по математике, стих). Придумайте к нему движение, жест, танец. Пусть ребёнок сам предложит. Выучите вместе, двигаясь. Он запомнит в 10 раз быстрее, чем при зубрёжке.`;
-        if (p[3] >= 4) {
-            parentAdvice = `Вы сами любите учиться классически (читать, слушать лекции), поэтому вам особенно трудно принять его способ. Не сравнивайте его с собой! То, что легко вам – подвиг для него. Переключитесь с книг на видео, опыты, моделирование. Ваша фраза «Я в твоём возрасте уже читал…» убивает его мотивацию. Лучше скажите: «Ты умеешь делать то, что я не умею – собирать модели. Давай я помогу тебе с теорией, а ты мне – с практикой».`;
-        } else if (p[3] <= 1) {
-            parentAdvice = `Вы сами не очень любите учиться классически, поэтому вам может быть легче понять ребёнка. Но будьте осторожны: не позволяйте ему совсем забросить учёбу. Ваша задача – найти мостик. Например, вместо чтения параграфа – посмотрите короткое видео, вместо письменного упражнения – нарисуйте схему. Вы вместе можете превратить учёбу в игру.`;
-        }
-    } 
-    else if (c[3] >= 3) {
-        learningType = 'теоретик-исследователь («через голову»)';
-        typeDescription = `Ваш ребёнок – природный исследователь. Дорогие родители, он не «ботаник» и не «заучка». Ему просто нравится понимать суть вещей. Он любит копаться в информации, задавать вопросы, читать. Ему недостаточно знать, что «так надо». Он хочет знать «почему». Он с удовольствием будет изучать энциклопедии, смотреть научно-популярные фильмы, спорить о причинах и следствиях.`;
-        strengths = [
-            `🔸 Глубокая любознательность – его не надо заставлять учиться, он сам тянется к знаниям.`,
-            `🔸 Способность к самостоятельному обучению – может разобраться в сложной теме без помощи.`,
-            `🔸 Аналитический склад ума – видит закономерности, строит теории, любит логические задачи.`
-        ];
-        challenges = [
-            `🔸 Склонность перегружать себя информацией – может засиживаться до ночи, забывая про отдых.`,
-            `🔸 Трудности с практическим применением – знает всё, но не всегда умеет делать руками.`,
-            `🔸 Разочарование, если тема неинтересна – тогда он может полностью «отключиться».`
-        ];
-        storyExample = `Папа 11-летней Алисы жаловался, что она «зациклена на книгах, не выходит из комнаты». У Алисы 4 тройки. Мы предложили: не ограничивать, а направлять – купить энциклопедии, записать в научный клуб, давать сложные задачи. Через год Алиса выиграла олимпиаду по биологии. Папа сказал: «Я понял, что её «зацикленность» – это талант, а не проблема». Но было и сложно: Алиса часто засиживалась до двух ночи. Мы ввели правило «компьютер выключается в 10 вечера». Сначала она злилась, потом привыкла и стала успевать больше.`;
-        ritual = `Вместе посмотрите 15-минутное научно-популярное видео на тему, которая его интересует (космос, динозавры, физика). После обсудите: «Что тебя удивило? Что хочешь узнать ещё? Что ты думаешь об этом?». Не экзамен, а разговор. Поддержите его любопытство.`;
-        if (p[3] <= 1) {
-            parentAdvice = `Вы сами не очень любите учиться, поэтому вам может быть сложно поддерживать его интерес. Не гасите его любопытство фразами «хватит сидеть за книгами», «иди погуляй». Давайте ему ресурсы: книги, доступ в интернет, кружки. Он сможет стать экспертом в своей области, если вы создадите среду. А вы можете научиться у нему – пусть он расскажет вам о том, что узнал. Это сблизит вас.`;
-        } else if (p[3] >= 4) {
-            parentAdvice = `Вы оба любите учиться, и это прекрасно! Но будьте осторожны: вы можете начать соревноваться, кто больше знает, или перегружать друг друга. Договоритесь: «Мы – команда, а не конкуренты». И обязательно введите дни без учёбы, когда вы просто отдыхаете.`;
-        }
-    } 
-    else {
-        learningType = 'смешанный тип («через баланс»)';
-        typeDescription = `У вашего ребёнка средний интерес к познанию. Дорогие родители, это не плохо и не хорошо. Он может учиться и через практику, и через теорию, но нуждается в поддержке и структуре. Его стиль зависит от предмета, настроения и усталости. Сегодня ему может нравиться читать, завтра – мастерить. Ваша задача – не загонять его в рамки, а наблюдать и подстраиваться.`;
-        strengths = [
-            `🔸 Гибкость, способность адаптироваться к разным форматам обучения.`,
-            `🔸 Умеренная нагрузка не вызывает стресса – он не выгорает.`,
-            `🔸 Хорошо работает в группе, может быть и лидером, и ведомым.`
-        ];
-        challenges = [
-            `🔸 Отсутствие ярко выраженной мотивации – может «плыть по течению».`,
-            `🔸 Нуждается во внешнем стимуле – сам редко проявляет инициативу.`,
-            `🔸 Риск потерять интерес, если обучение становится однообразным.`
-        ];
-        storyExample = `Одна мама долго не могла понять, почему её 10-летний сын «то учится хорошо, то плохо». Оказалось, у него смешанный стиль. Мы предложили чередовать: день – практика (опыты, поделки), день – теория (чтение, задачи). Через месяц успеваемость выровнялась, а сын сказал: «Мама, ты наконец-то меня поняла». Главное – не требовать от него постоянства. Сегодня он может быть «теоретиком», завтра – «практиком». Дайте ему свободу.`;
-        ritual = `Возьмите лист бумаги. Напишите три темы, которые ребёнок хочет изучить (или должен изучить по школе). Выберите одну. Сегодня найдите по ней короткое видео (теория) и практическое задание (опыт, рисунок, поделку). Сделайте и то, и другое. Обсудите, что понравилось больше – теория или практика. В следующий раз начните с того, что ему больше отозвалось.`;
-        if (p[3] >= 4) {
-            parentAdvice = `Вы сами очень любите учиться, поэтому вам может казаться, что ребёнок «не старается». Это не так. Ему просто нужен другой темп и другой формат. Не давите, не сравнивайте. Давайте выбор: «Сегодня мы можем почитать или сделать опыт. Что выберешь?». Он будет учиться охотнее, когда почувствует, что его мнение важно.`;
-        } else if (p[3] <= 1) {
-            parentAdvice = `Вы сами не очень любите учиться, поэтому вы можете неосознанно тормозить ребёнка. «Зачем тебе эта физика?» – такие фразы убивают его интерес. Постарайтесь поддержать его любопытство, даже если вам это не близко. Спросите: «Расскажи, что ты узнал? Мне правда интересно». Ваше внимание – лучшая мотивация.`;
-        }
-    }
-    
-    // ========== 2. АНАЛИЗ ПАМЯТИ (ЦИФРА 9) ==========
-    let memoryAdvice = '';
-    let memoryExample = '';
-    if (c[9] >= 3) {
-        memoryAdvice = `У ребёнка отличная механическая память. Он легко запоминает даты, правила, стихи, формулы. Это прекрасно, но есть и ловушка: он может запоминать, не понимая. Поэтому ваша задача – не просто давать информацию, а проверять понимание. «Ты запомнил, что 2+2=4. А почему? Объясни». Используйте его память как фундамент, но стройте на нём понимание.`;
-        memoryExample = `Мама 8-летнего Димы хвасталась, что он знает таблицу умножения. Но когда я спросил: «Почему 3×4=12?», он не смог объяснить. Он просто запомнил. Мы начали играть в «объяснялки»: «Расскажи мне, как ты это понял». Через месяц Дима не только знал таблицу, но и мог решать задачи.`;
-    } else if (c[9] <= 1) {
-        memoryAdvice = `У ребёнка слабая механическая память. Дорогие родители, перестаньте ругать его за забывчивость! Он не назло забывает. Его мозг просто не держит информацию без ассоциаций, образов, повторений. Ваша задача – не требовать «выучить», а помочь «понять и связать». Вместо «выучи стих» разбейте на 4 строчки, нарисуйте картинку к каждой, придумайте историю. Вместо «запомни правило» – придумайте смешную фразу-ассоциацию. Мнемотехники – его лучшие друзья.`;
-        memoryExample = `Папа 10-летней Ани жаловался: «Она учит стих час, а наутро ничего не помнит». Мы предложили: разбить стих на четверостишия, к каждому – рисунок. Аня нарисовала смешных персонажей. Через 20 минут она рассказывала стих без запинки. Папа сказал: «Я думал, она неспособна, а ей просто нужны картинки».`;
-    }
-    
-    // ========== 3. АНАЛИЗ ЛОГИКИ (ЦИФРА 5) – КАК ОБРАБАТЫВАЕТ ИНФОРМАЦИЮ ==========
-    let logicAdvice = '';
-    let logicExample = '';
-    if (c[5] >= 3) {
-        logicAdvice = `Ребёнок – аналитик. Он любит раскладывать всё по полочкам, строить причинно-следственные связи, доказывать. Ему нравится, когда объясняют последовательно, логично, с аргументами. «Потому что я так сказал» – для него не аргумент. Используйте схемы, таблицы, алгоритмы. Он сам будет выстраивать структуру знаний. Но будьте осторожны: он может зацикливаться на деталях и терять общую картину. Учите его видеть лес, а не только деревья.`;
-        logicExample = `12-летний Миша спорил с учителем по истории, потому что «в учебнике написано одно, а в интернете другое». Вместо того чтобы ругать его, мы предложили ему написать мини-исследование. Миша с энтузиазмом взялся, изучил источники и пришёл к выводу, что оба варианта имеют право на существование. Его аналитический ум направили в правильное русло, и он стал лучшим в классе по истории.`;
-    } else if (c[5] <= 1) {
-        logicAdvice = `Ребёнок – интуит. Ему сложно следовать строгой логике, зато он хорошо чувствует образы, метафоры, контекст. Он может не объяснить, почему он так думает, но его догадки часто оказываются верными. Объясняйте через истории, примеры, аналогии. Не требуйте пошаговых отчётов, спрашивайте общее впечатление. Его способ – видеть целое раньше частей. Уважайте это.`;
-        logicExample = `Мама 9-летней Сони жаловалась, что она не может решать задачи по математике. Оказалось, Соня – интуит. Мы предложили объяснять через образы: «Представь, что яблоки – это друзья, а груши – это враги. Сколько друзей останется, если двое уйдут?». Соня поняла мгновенно. Она не любила формулы, но обожала истории. Через месяц она уже сама придумывала сюжеты к задачам.`;
-    }
-    
-    // ========== 4. АНАЛИЗ УСИДЧИВОСТИ (ЦИФРА 6) ==========
-    let workAdvice = '';
-    let workExample = '';
-    if (c[6] >= 3) {
-        workAdvice = `Ребёнок усидчив, может долго заниматься одним делом. Это прекрасно для глубокого изучения, но есть риск перегрузки. Он сам не остановится – остановите вы. Следите за признаками усталости (трёт глаза, зевает, становится раздражительным). Вводите обязательные перерывы каждые 45–50 минут. И обязательно – смена деятельности. Учёба чередуется с физкультурой, творчеством, прогулкой.`;
-        workExample = `11-летний Дима мог сидеть за уроками 4 часа подряд. Мама радовалась, пока Дима не начал жаловаться на головные боли. Мы ввели таймер: 45 минут учёбы – 15 минут активного отдыха. Через месяц головные боли прошли, а продуктивность выросла. Мама сказала: «Я думала, чем больше, тем лучше. Оказывается, важнее – как, а не сколько».`;
-    } else if (c[6] <= 1) {
-        workAdvice = `Ребёнок быстро устаёт от однообразия. Ему нужны короткие, интенсивные сессии (15–20 минут) с частыми перерывами. Не заставляйте сидеть за уроками часами – это неэффективно и вредно. Разбивайте материал на маленькие кусочки и меняйте деятельность каждые 15 минут. 15 минут читаем – 5 минут прыгаем – 15 минут пишем – 5 минут рисуем. Это не баловство, а необходимость.`;
-        workExample = `Мама 8-летнего Коли жаловалась, что он «не может усидеть на месте». Мы предложили метод «помодоро» для детей: 15 минут учёбы, 5 минут активной игры. Коля начал делать уроки с удовольствием. Мама сказала: «Оказывается, он не гиперактивный, просто ему нужен другой режим». Через месяц он сам стал засекать время.`;
-    }
-    
-    // ========== 5. ДОПОЛНИТЕЛЬНЫЙ СОВЕТ ПО ТЕМПЕРАМЕНТУ (ЕСЛИ ЕСТЬ ВЛИЯНИЕ) ==========
-    let tempAdvice = '';
-    if (childMatrix.temp >= 4) {
-        tempAdvice = `У ребёнка горячий темперамент. Он быстро загорается и быстро остывает. В учёбе это проявляется как «вспышки интереса». Сегодня он готов учить до ночи, завтра – не может смотреть на книги. Не ругайте его за «неровность». Используйте периоды подъёма для сложных тем, а спады – для отдыха и повторения. Главное – не давить в период спада, иначе он возненавидит учёбу.`;
-    } else if (childMatrix.temp <= 1) {
-        tempAdvice = `У ребёнка спокойный, флегматичный темперамент. Он учится ровно, но медленно. Его сложно «растормошить», но и сложно выбить из колеи. Не требуйте от него быстрых ответов, не подгоняйте. Давайте время на обдумывание. Он не «тормоз», он просто вдумчивый. Такой стиль даёт глубину знаний, хотя и не даёт скорости.`;
-    }
-    
-    // ========== 6. ИТОГОВАЯ ЖИВАЯ КОНСУЛЬТАЦИЯ ==========
-    let fullText = `
-        <div style="font-size:1rem; line-height:1.7;">
-            <p><strong>🧠 Стиль обучения вашего ребёнка: ${learningType}</strong><br>
-            ${typeDescription}</p>
-            
-            <p><strong>✨ Сильные стороны</strong><br>${strengths.join('<br>')}</p>
-            
-            <p><strong>⚠️ Зоны развития</strong><br>${challenges.join('<br>')}</p>
-            
-            <div style="background: rgba(168, 218, 220, 0.15); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                <p><strong>📖 Как это влияет на память</strong><br>${memoryAdvice}<br><br><em>Пример: ${memoryExample}</em></p>
-            </div>
-            
-            <div style="background: rgba(168, 218, 220, 0.15); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                <p><strong>🧩 Как он обрабатывает информацию</strong><br>${logicAdvice}<br><br><em>Пример: ${logicExample}</em></p>
-            </div>
-            
-            <div style="background: rgba(168, 218, 220, 0.15); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                <p><strong>⏰ Режим и усидчивость</strong><br>${workAdvice}<br><br><em>Пример: ${workExample}</em></p>
-            </div>
-            
-            ${tempAdvice ? `<div style="background: rgba(168, 218, 220, 0.15); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                <p><strong>🌡️ Влияние темперамента</strong><br>${tempAdvice}</p>
-            </div>` : ''}
-            
-            <div style="background: rgba(212,175,55,0.1); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                <p><strong>📖 История из практики</strong><br>${storyExample}</p>
-            </div>
-            
-            <div style="background: rgba(255, 215, 0, 0.08); padding: 15px; border-radius: 12px; border-left: 4px solid var(--gold); margin: 15px 0;">
-                <p><strong>🕯️ Ритуал на сегодня</strong><br>${ritual}</p>
-            </div>
-            
-            <div style="background: rgba(76, 175, 80, 0.1); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                <p><strong>🌟 Что запомнить навсегда</strong><br>
-                «У каждого ребёнка свой ключик к знаниям. Ваша задача – не переделать его под систему, а подобрать систему под него. Один учится через уши, другой – через руки, третий – через глаза. Уважайте его способ – и он полюбит учиться на всю жизнь. А если вы будете насиловать его природу, он возненавидит и учёбу, и себя».</p>
-            </div>
-        </div>
-    `;
-    
-    // Добавляем персонализированный совет для родителя, если есть
-    if (parentAdvice) {
-        fullText += `
-            <div style="background: rgba(255, 107, 107, 0.1); padding: 15px; border-radius: 12px; margin-top: 15px;">
-                <p><strong>💡 Важный совет для вас, родители</strong><br>${parentAdvice}</p>
-            </div>
-        `;
-    }
-    
-    return fullText;
-}
-
-function getEmotionalLanguage(childMatrix, parentMatrix) {
-    const c = childMatrix.c;
-    const p = parentMatrix.c;
-    
-    // ========== 1. БАЗОВАЯ ЧУВСТВИТЕЛЬНОСТЬ (ЭНЕРГИЯ – ЦИФРА 2) ==========
-    let sensitivityType = '';
-    let sensitivityDesc = '';
-    let sensitivityAdvice = '';
-    let sensitivityStory = '';
-    
-    if (c[2] >= 3) {
-        sensitivityType = 'высокая чувствительность («эмоциональная губка»)';
-        sensitivityDesc = `Ваш ребёнок – «эмоциональная губка». Он впитывает настроение окружающих, даже если вы ничего не говорите. Вы улыбаетесь – он радуется. Вы напряжены – он становится тревожным. Вы злитесь – он пугается или замыкается. Это не слабость, это его суперсила. Он чувствует мир тоньше, чем большинство людей. Но у этой суперсилы есть цена: он быстро перегружается, особенно в шумных местах, при конфликтах, в больших компаниях.`;
-        sensitivityAdvice = `Как помочь: после школы, садика, гостей – дайте ему час тишины. Без телефона, без разговоров, без дел. Просто полежать, посмотреть в окно, послушать тихую музыку. Ему нужно «выгрузить» чужие эмоции, которые он набрал за день. Не заставляйте его общаться, когда он устал. Его «хочу побыть один» – не отвержение вас, а забота о себе.`;
-        sensitivityStory = `Мама 7-летней Алисы жаловалась, что дочка «капризничает» после школы. Оказалось, у Алисы 3 двойки (высокая энергия чувствительности). Мы предложили: после школы – час полного покоя. Через две недели Алиса перестала капризничать. Мама сказала: «Я думала, она просто вредничает. Оказывается, ей нужно тихое время, чтобы перезагрузиться».`;
-    } else if (c[2] <= 1) {
-        sensitivityType = 'низкая энергия, быстрая утомляемость';
-        sensitivityDesc = `У ребёнка небольшой запас жизненной энергии. Он быстро устаёт, может казаться апатичным, вялым. Это не лень и не депрессия. Просто его «батарейка» маленькая. Он не может долго находиться в шумной среде, долго общаться, долго учиться. Ему нужно часто отдыхать. Важно не путать его усталость с нежеланием что-то делать. Он хочет, но не может.`;
-        sensitivityAdvice = `Соблюдайте режим: ложиться спать в одно время, есть, гулять. После любых нагрузок – обязательный отдых. Не требуйте от него активности, когда он устал. Лучше скажите: «Я вижу, ты устал. Давай отдохнём, а потом доделаем». И никогда не говорите: «Что ты устал? Ты же ничего не делал!». Для него это звучит как «ты плохой, ты слабый».`;
-        sensitivityStory = `Папа 9-летнего Димы считал его «лентяем». У Димы было 0 двоек (энергия на нуле). Мы объяснили: его ресурс ограничен, как у телефона с маленькой батарейкой. Ввели правило: после школы – 30 минут тишины, потом лёгкие дела. Дима перестал «лениться» – просто потому, что его перестали заставлять работать на износ. Папа сказал: «Я не знал, что усталость бывает не только от физической работы».`;
+    if (window._parentChildLoaded) {
+        await window._realCalculateParentChild();
     } else {
-        sensitivityType = 'средняя чувствительность и энергия';
-        sensitivityDesc = `У ребёнка средний запас энергии и чувствительности. Он может выдерживать обычную нагрузку, но тоже нуждается в отдыхе. Не перегружайте его кружками и секциями. Следите за признаками усталости: капризы, зевота, рассеянность. Лучше профилактически давать отдых, чем потом лечить перегруз.`;
-        sensitivityAdvice = `Создайте ритуал «тихого часа» после школы – 20–30 минут без гаджетов, без разговоров. Это поможет ему переключиться и восстановиться. И не стесняйтесь сами отдыхать рядом – вы покажете пример.`;
-        sensitivityStory = `Мама 10-летнего Миши заметила, что он стал раздражительным. Оказалось, у него средняя энергия, а нагрузка была слишком высокой. Убрали один кружок, добавили час отдыха. Миша стал спокойнее. «Я просто не понимал, почему я злюсь. Оказывается, я уставал», – сказал он.`;
+        const script = document.createElement('script');
+        script.src = 'js/parent-child.js';
+        script.onload = async function() {
+            await window._realCalculateParentChild();
+        };
+        document.head.appendChild(script);
     }
-    
-    // ========== 2. ХАРАКТЕР (ЦИФРА 1) – КАК РЕАГИРУЕТ НА СТРЕСС ==========
-    let characterType = '';
-    let characterDesc = '';
-    let characterAdvice = '';
-    let characterStory = '';
-    
-    if (c[1] >= 4) {
-        characterType = 'сильная воля, склонность к сопротивлению';
-        characterDesc = `У ребёнка сильный, волевой характер. В стрессовой ситуации он не сдаётся, а бунтует. Он может спорить, грубить, хлопать дверью. Это не значит, что он вас не любит. Это значит, что он пытается защитить свои границы. Его девиз: «Не сломают». Но за этой броней часто скрывается ранимость. Он боится показать слабость.`;
-        characterAdvice = `Не давите на него в конфликте. Не пытайтесь «сломать» его волю. Дайте время остыть. Скажите: «Я вижу, ты злишься. Давай поговорим через 10 минут». И обязательно вернитесь к разговору, когда оба успокоятся. Ему важно знать, что конфликт не разрушил вашу связь.`;
-        characterStory = `Папа 12-летнего Димы жаловался, что сын «огрызается». У Димы 4 единицы характера. Мы предложили папе не вступать в перепалку, а говорить: «Я слышу, что ты злишься. Давай обсудим это, когда ты успокоишься». Дима начал уходить в свою комнату, а через 10 минут выходил и спокойно разговаривал. Папа сказал: «Оказывается, ему нужно просто время, чтобы остыть, а не наказание».`;
-    } else if (c[1] <= 1) {
-        characterType = 'мягкий характер, склонность замыкаться';
-        characterDesc = `У ребёнка мягкий, неконфликтный характер. В стрессовой ситуации он не бунтует, а замыкается. Он может замолчать, уйти в себя, не отвечать на вопросы. Это не игнорирование, это защита. Ему страшно, он не знает, как выразить свои чувства, и просто «выключается». Не давите на него в такие моменты.`;
-        characterAdvice = `Скажите тихо: «Я вижу, тебе сейчас трудно говорить. Я рядом, когда захочешь». Не требуйте немедленного ответа. Дайте ему время и безопасное пространство. И никогда не кричите на него – для мягкого ребёнка крик равносилен удару.`;
-        characterStory = `Мама 9-летней Ани жаловалась, что дочка «уходит в себя» после ссор. У Ани 1 единица характера. Мы предложили маме не требовать немедленного разговора, а просто обнять и сказать: «Я люблю тебя. Когда будешь готова – поговорим». Через полчаса Аня сама подошла и рассказала, что её обидели в школе. Мама сказала: «Я поняла, что её молчание – не обида на меня, а защита».`;
-    } else {
-        characterType = 'умеренная воля, может и бунтовать, и замыкаться';
-        characterDesc = `У ребёнка средний волевой стержень. В стрессовой ситуации он может и вспылить, и замолчать – зависит от обстоятельств и усталости. Важно не навешивать ярлыки («ты всегда грубишь», «ты вечно молчишь»), а каждый раз разбираться, что именно произошло.`;
-        characterAdvice = `В конфликте задавайте открытые вопросы: «Что ты сейчас чувствуешь?», «Что тебя расстроило?». Не оценивайте, просто слушайте. И после конфликта обязательно возвращайтесь к тёплым отношениям – обнимите, скажите, что любите.`;
-        characterStory = `Мама 11-летнего Миши заметила, что он то огрызается, то молчит. Оказалось, это зависело от усталости. Ввели правило: после школы – отдых, потом разговоры. Конфликтов стало меньше. «Я не понимал, почему я злюсь. Оказывается, я просто уставал», – сказал Миша.`;
-    }
-    
-    // ========== 3. ТЕМПЕРАМЕНТ (ВЛИЯНИЕ НА ЭМОЦИИ) ==========
-    let tempAdvice = '';
-    let tempStory = '';
-    if (childMatrix.temp >= 4) {
-        tempAdvice = `У ребёнка горячий, холерический темперамент. Он переживает эмоции очень интенсивно – радость, гнев, страх, восторг. Всё на пределе. Он может закатить истерику из-за пустяка, а через 5 минут уже смеяться. Не считайте это «плохим характером». Это его природа. Ваша задача – не подавлять, а учить выражать эмоции экологично. «Можно топать ногами, но нельзя бить». И обязательно давайте ему физическую разрядку – спорт, активные игры.`;
-        tempStory = `Папа 8-летнего Коли жаловался, что сын «взрывается». У Коли темперамент 5. Мы предложили папе не кричать в ответ, а сказать: «Я вижу, ты очень зол. Давай побьём подушку или попрыгаем». Коля попрыгал, успокоился и через 5 минут уже обнимал папу. «Я понял, что его гнев – это просто энергия, которой нужен выход», – сказал папа.`;
-    } else if (childMatrix.temp <= 1) {
-        tempAdvice = `У ребёнка спокойный, флегматичный темперамент. Он редко показывает эмоции бурно. Вы можете не понять, рад он или огорчён. Это не значит, что он «бесчувственный». Просто он проживает эмоции внутри. Не требуйте от него бурных проявлений. Его тихая улыбка или лёгкое пожатие плеча – это его способ говорить «я люблю», «мне грустно». Учитесь читать его невербальные сигналы. И никогда не говорите: «Что ты молчишь как рыба?». Для него это больно.`;
-        tempStory = `Мама 10-летней Сони жаловалась, что дочь «не проявляет эмоции». У Сони темперамент 1. Мы предложили маме не требовать слов, а спрашивать: «Ты сейчас рада? Покажи жестом». Соня стала кивать или качать головой. Мама научилась понимать её без слов. «Оказывается, она очень чувствительная, просто не кричит об этом», – сказала мама.`;
-    } else {
-        tempAdvice = `У ребёнка умеренный темперамент. Он может и бурно выражать эмоции, и быть спокойным. Учитесь замечать, когда он на пределе, а когда просто устал. И не требуйте от него быть «ровным» всегда – это невозможно.`;
-        tempStory = `Мама 9-летнего Димы заметила, что он то весёлый, то грустный. Оказалось, это зависело от усталости. Ввели правило: после школы – отдых, потом общение. Настроение выровнялось. «Я понял, что когда я устаю, я становлюсь злым. Теперь я отдыхаю, и всё нормально», – сказал Дима.`;
-    }
-    
-    // ========== 4. САМООЦЕНКА И ВЛИЯНИЕ РОДИТЕЛЯ ==========
-    let parentInfluence = '';
-    let selfEsteemNote = '';
-    
-    if (p[2] <= 1) {
-        parentInfluence = `У вас самих невысокий запас энергии. Вам может быть сложно понять его усталость, потому что вы устаёте по-другому. Не обесценивайте его состояние фразами «Что ты устал? Я больше работаю». Его усталость реальна, даже если вам кажется, что он «ничего не делал». Вместо сравнения скажите: «Я понимаю, ты устал. Давай отдохнём вместе». Это снизит напряжение и укрепит доверие.`;
-    } else if (p[2] >= 4) {
-        parentInfluence = `У вас высокий запас энергии, и вам может быть трудно понять, почему он быстро выдыхается. Не требуйте от него вашего темпа. Ваш ресурс – не норма, а исключение. Снизьте ожидания, давайте ему больше времени на отдых. И не говорите: «Я же могу, значит и ты должен». Это не мотивирует, а унижает.`;
-    }
-    
-    if (parentMatrix.temp >= 4 && childMatrix.temp <= 1) {
-        parentInfluence += ` Вы очень эмоциональны, а ребёнок – спокоен. Ваши бурные реакции могут его пугать. Он не понимает, почему вы кричите, и замыкается. Учитесь выражать чувства мягче. Если вы злитесь, скажите: «Я злюсь, но это не из-за тебя. Мне нужно 5 минут успокоиться». Ребёнок перестанет бояться и начнёт вам доверять.`;
-    } else if (parentMatrix.temp <= 1 && childMatrix.temp >= 4) {
-        parentInfluence += ` Вы спокойны, а ребёнок – эмоциональный. Вам может казаться, что он «истерит» из-за пустяков. Но для него это не пустяк. Не обесценивайте его чувства фразами «не бери в голову», «это ерунда». Признайте его эмоцию: «Я вижу, ты очень злишься. Расскажи, что случилось». Это поможет ему успокоиться.`;
-    }
-    
-    if (c[2] >= 3 && c[1] <= 1 && childMatrix.temp >= 4) {
-        selfEsteemNote = `Комбинация высокой чувствительности, мягкого характера и горячего темперамента – очень сложная. Ребёнок остро всё переживает, но не умеет защищаться, а эмоции выплёскивает бурно. Ему особенно нужна ваша поддержка и безопасное пространство. Не наказывайте за «истерики», учите безопасно выплёскивать гнев (бить подушку, рвать бумагу, кричать в лесу). И обязательно хвалите за попытки справиться.`;
-    } else if (c[2] <= 1 && c[1] >= 4 && childMatrix.temp <= 1) {
-        selfEsteemNote = `Комбинация низкой энергии, сильного характера и спокойного темперамента. Ребёнок быстро устаёт, но не показывает этого, потому что стесняется «слабости». Он может довести себя до изнеможения. Ваша задача – замечать его усталость раньше, чем он сам. И мягко предлагать отдых: «Я вижу, ты устал. Давай отдохнём, а потом продолжим».`;
-    }
-    
-    // ========== 5. ИТОГОВАЯ ЖИВАЯ КОНСУЛЬТАЦИЯ ==========
-    let fullText = `
-        <div style="font-size:1rem; line-height:1.7;">
-            <p><strong>💛 Эмоциональный язык ребёнка: ${sensitivityType}</strong><br>
-            ${sensitivityDesc}</p>
-            
-            <p><strong>Как помочь ребёнку с его чувствительностью:</strong><br>
-            ${sensitivityAdvice}</p>
-            
-            <div style="background: rgba(212,175,55,0.1); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                <p><strong>📖 Пример: ${sensitivityStory}</strong></p>
-            </div>
-            
-            <p><strong>🎭 Как он реагирует на стресс: ${characterType}</strong><br>
-            ${characterDesc}</p>
-            
-            <p><strong>Как вести себя в конфликте:</strong><br>
-            ${characterAdvice}</p>
-            
-            <div style="background: rgba(212,175,55,0.1); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                <p><strong>📖 Пример: ${characterStory}</strong></p>
-            </div>
-            
-            <div style="background: rgba(168, 218, 220, 0.15); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                <p><strong>🌡️ Влияние темперамента</strong><br>${tempAdvice}</p>
-                <p><em>Пример: ${tempStory}</em></p>
-            </div>
-            
-            ${selfEsteemNote ? `
-            <div style="background: rgba(255, 215, 0, 0.08); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                <p><strong>⚠️ Особое сочетание качеств</strong><br>${selfEsteemNote}</p>
-            </div>` : ''}
-            
-            ${parentInfluence ? `
-            <div style="background: rgba(255, 107, 107, 0.1); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                <p><strong>💡 Важный совет для вас, родители</strong><br>${parentInfluence}</p>
-            </div>` : ''}
-            
-            <div style="background: rgba(76, 175, 80, 0.1); padding: 15px; border-radius: 12px; margin: 15px 0;">
-                <p><strong>🕯️ Ритуал на сегодня</strong><br>
-                Сядьте напротив ребёнка. Зажгите свечу. Спросите: «Какое чувство у тебя сейчас самое сильное? Назови его одним словом». Если он не может – покажите карточки с эмоциями или нарисуйте смайлики. Просто назвать чувство – уже облегчение. Потом скажите: «Я рядом. Ты в безопасности». Обнимитесь.
-                </p>
-            </div>
-            
-            <div style="background: rgba(255, 215, 0, 0.08); padding: 15px; border-radius: 12px; border-left: 4px solid var(--gold); margin: 15px 0;">
-                <p><strong>🌟 Что запомнить навсегда</strong><br>
-                «Эмоции ребёнка – не манипуляция, не слабость, не бунт. Это его язык. Ваша задача – не переводить его на свой, а выучить его. Когда ребёнок плачет, он не говорит «я хочу тебя достать». Он говорит: «Мне нужна твоя поддержка». Когда он злится, он говорит: «Мои границы нарушены». Когда он молчит, он говорит: «Мне страшно, я не знаю, как сказать». Услышьте его. И тогда он услышит вас».</p>
-            </div>
-        </div>
-    `;
-    
-    return fullText;
 }
-// Убедитесь, что остальные функции (formatHarmonyZone, formatTensionZone, formatGrowthZone, getParentTraps, getGeneralPortrait) уже есть в вашем коде.
-// Если нет – возьмите их из предыдущих сообщений.
-
-
 /* ============================================
    ПЛАВНОЕ ПЕРЕКЛЮЧЕНИЕ РЕЖИМОВ ФИНАНСОВ
    ============================================ */
@@ -6039,7 +3856,7 @@ function closeMasterModal() {
 
 function showChildMatrixSection() {
     // Показываем секцию child-matrix
-    console.log('showChildMatrixSection вызвана');
+    //console.log('showChildMatrixSection вызвана');
     showSection('child-matrix');
     // Плавно прокручиваем к этой секции
     const section = document.getElementById('child-matrix');
@@ -6744,6 +4561,8 @@ function getArcanaFullDescription(num) {
 // ==========================================================
 
 async function downloadPaidPDF() {
+    
+
     const data = window.lastMatrixData;
     const userName = window.lastUserName;
     const nameNum = window.lastNameNum;
@@ -6754,15 +4573,19 @@ async function downloadPaidPDF() {
         return;
     }
 
-    // Показываем индикатор загрузки
-    const btn = document.querySelector('.btn-gold[onclick="downloadPaidPDF()"]');
+    // 1. Запоминаем кнопку
+    const btn = document.getElementById('download-pdf-btn');
+    const originalHTML = btn ? btn.innerHTML : '';
+    
+    // 2. Показываем загрузку
     if (btn) {
         btn.disabled = true;
+        btn.classList.add('pdf-loading');
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Генерация PDF...';
     }
 
     try {
-        // 1. Собираем данные квадрата (визуал + описания)
+        // Вся логика сборки данных и отправки на сервер (без изменений)
         const getS = (n) => { let s = ""; for(let k=0; k<data.c[n]; k++) s+=n; return s||"—"; };
         const getDesc = (i) => cellTexts[i] ? cellTexts[i][data.c[i]] || '' : '';
         const getRowDesc = (name, val) => rowTexts[name] ? rowTexts[name][getRowValue(val)] || '' : '';
@@ -6787,7 +4610,6 @@ async function downloadPaidPDF() {
             { title: 'Темперамент', value: data.temp.toString(), description: getRowDesc('Темперамент', data.temp), isSummary: false, name: 'Темперамент' }
         ];
 
-        // 2. Собираем синтезы
         const levels = {
             c1: getLevel(data.c[1],'cell'), c2: getLevel(data.c[2],'cell'), c3: getLevel(data.c[3],'cell'),
             c4: getLevel(data.c[4],'cell'), c5: getLevel(data.c[5],'cell'), c6: getLevel(data.c[6],'cell'),
@@ -6815,68 +4637,53 @@ async function downloadPaidPDF() {
             if (syn) syntheses.push({ name, ...syn });
         });
 
-        // 3. Прогнозы (как HTML, сервер вставит как есть)
         const forecasts = {
             yearly: getYearlyForecast(data, userName),
             routine: getDailyRoutine(data, userName),
             money: getMoneyInsights(data, userName)
         };
-// ... после сборки forecasts ...
 
-// 5. Лунный день (берём из DOM, т.к. он уже отрендерен)
-const moonBlock = document.getElementById('moon-block');
-const moonPhaseName = document.getElementById('moon-phase-name')?.textContent || '';
-const moonDescription = document.getElementById('moon-description')?.innerHTML || '';
+        const moonBlock = document.getElementById('moon-block');
+        const moonPhaseName = document.getElementById('moon-phase-name')?.textContent || '';
+        const moonDescription = document.getElementById('moon-description')?.innerHTML || '';
 
-// 6. Талисманы
-const luckyNumber = document.getElementById('lucky-number')?.textContent || '';
-const luckyDay = document.getElementById('lucky-day')?.textContent || '';
-const luckyColor = document.getElementById('lucky-color')?.textContent || '';
-const luckyStone = document.getElementById('lucky-stone')?.textContent || '';
-const luckyElement = document.getElementById('lucky-element')?.textContent || '';
-const luckyPlanet = document.getElementById('lucky-planet')?.textContent || '';
+        const luckyNumber = document.getElementById('lucky-number')?.textContent || '';
+        const luckyDay = document.getElementById('lucky-day')?.textContent || '';
+        const luckyColor = document.getElementById('lucky-color')?.textContent || '';
+        const luckyStone = document.getElementById('lucky-stone')?.textContent || '';
+        const luckyElement = document.getElementById('lucky-element')?.textContent || '';
+        const luckyPlanet = document.getElementById('lucky-planet')?.textContent || '';
 
-// Добавляем в payload
-const payload = {
-    userName,
-    birthDate,
-    matrix: matrixCells,
-    lifePath: data.master || data.lp,
-    nameNum,
-    syntheses,
-    forecasts,
-    // новые поля
-    moon: {
-        phaseName: moonPhaseName,
-        description: moonDescription
-    },
-    lucky: {
-        number: luckyNumber,
-        day: luckyDay,
-        color: luckyColor,
-        stone: luckyStone,
-        element: luckyElement,
-        planet: luckyPlanet
-    }
-};
-        // 4. Отправляем на сервер
-const response = await fetch(`${SERVER_URL}/generate-pdf`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        userName,
-        birthDate,
-        matrix: matrixCells,
-        lifePath: data.master || data.lp,
-        nameNum,
-        syntheses,
-        forecasts
-    })
-});
+        const payload = {
+            userName,
+            birthDate,
+            matrix: matrixCells,
+            lifePath: data.master || data.lp,
+            nameNum,
+            syntheses,
+            forecasts,
+            moon: {
+                phaseName: moonPhaseName,
+                description: moonDescription
+            },
+            lucky: {
+                number: luckyNumber,
+                day: luckyDay,
+                color: luckyColor,
+                stone: luckyStone,
+                element: luckyElement,
+                planet: luckyPlanet
+            }
+        };
+
+        const response = await fetch(`${SERVER_URL}/generate-pdf`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
 
         if (!response.ok) throw new Error('Ошибка сервера');
 
-        // 5. Скачиваем PDF
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -6889,11 +4696,13 @@ const response = await fetch(`${SERVER_URL}/generate-pdf`, {
 
     } catch (error) {
         console.error('Ошибка генерации PDF:', error);
-        alert('Не удалось создать PDF. Убедитесь, что сервер запущен (http://localhost:3000).');
+        alert('Не удалось создать PDF. Убедитесь, что сервер запущен.');
     } finally {
+        // 3. Возвращаем кнопку в исходное состояние
         if (btn) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-file-pdf"></i> Скачать PDF-отчёт';
+            btn.classList.remove('pdf-loading');
+            btn.innerHTML = originalHTML;
         }
     }
 }
@@ -7040,6 +4849,29 @@ function closeOutOfAttemptsModal() {
 }
 function updateAttemptsDisplay(remaining) {
     let counter = document.getElementById('attempts-counter');
+
+    if (remaining <= 0) {
+        // Попытки закончились – вместо счётчика показываем кнопку покупки
+        if (counter) counter.remove();
+        if (document.getElementById('buy-more-btn')) return; // уже показана
+
+        const btn = document.createElement('div');
+        btn.id = 'buy-more-btn';
+        btn.className = 'attempts-counter';
+        btn.innerHTML = `<i class="fa-solid fa-cart-shopping"></i> Купить ещё расчёты (499 ₽)`;
+        btn.style.cursor = 'pointer';
+        btn.onclick = function() {
+            openUnlockPaymentModal();
+        };
+        document.body.appendChild(btn);
+        return;
+    }
+
+    // Если есть активные попытки – показываем счётчик
+    if (document.getElementById('buy-more-btn')) {
+        document.getElementById('buy-more-btn').remove();
+    }
+
     if (!counter) {
         counter = document.createElement('div');
         counter.id = 'attempts-counter';
@@ -7047,7 +4879,7 @@ function updateAttemptsDisplay(remaining) {
         document.body.appendChild(counter);
     }
     counter.innerHTML = `<i class="fa-solid fa-calculator"></i> Осталось расчётов: ${remaining} / 4`;
-    if (remaining === 0) counter.remove();
+    counter.style.cursor = 'default';
 }
 
 // В функции checkPremiumAccess после успешной активации добавьте:
@@ -7127,13 +4959,27 @@ async function downloadSectionPDF(section) {
         return;
     }
 
+    // Определяем, какую кнопку анимировать
+    let btnId = '';
+    if (section === 'compat') btnId = 'download-compat-pdf';
+    else if (section === 'money') btnId = 'download-money-pdf';
+    else if (section === 'parentchild') btnId = 'download-parentchild-pdf';
+
+    const btn = btnId ? document.getElementById(btnId) : null;
+    const originalHTML = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.classList.add('pdf-loading');
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Генерация PDF...';
+    }
+
     let html = '';
     let filename = 'report.pdf';
 
-    // Безопасное получение текста из поля
     const getText = (id) => document.getElementById(id)?.value?.trim() || '';
 
     try {
+        // Твоя существующая логика сборки html для каждого раздела
         if (section === 'compat') {
             const name1 = getText('nameP1') || 'Партнёр 1';
             const name2 = getText('nameP2') || 'Партнёр 2';
@@ -7207,12 +5053,18 @@ ${content}
         a.click();
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
+
     } catch (err) {
         console.error('Ошибка генерации PDF:', err);
         alert('Не удалось создать PDF. Попробуйте позже.');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.classList.remove('pdf-loading');
+            btn.innerHTML = originalHTML;
+        }
     }
 }
-
 // Новый звёздный фон на Canvas
 (function() {
     const canvas = document.getElementById('star-canvas');
@@ -7265,3 +5117,48 @@ ${content}
     createStars();
     draw();
 })();
+
+// ==========================================================
+//  МОБИЛЬНОЕ МЕНЮ
+// ==========================================================
+function openMobileMenu() {
+    document.getElementById('mobile-menu').classList.add('open');
+    document.getElementById('mobile-menu-overlay').style.display = 'block';
+    document.getElementById('mobile-menu-btn').style.display = 'none';  // бургер прячется
+    document.getElementById('mobile-menu-close').style.display = 'flex'; // крестик показывается
+    document.body.style.overflow = 'hidden';
+}
+
+
+function closeMobileMenu() {
+    document.getElementById('mobile-menu').classList.remove('open');
+    document.getElementById('mobile-menu-overlay').style.display = 'none';
+    document.getElementById('mobile-menu-btn').style.display = '';        // бургер возвращается
+    document.getElementById('mobile-menu-close').style.display = '';      // крестик возвращается
+    document.body.style.overflow = '';
+}
+// Обработчики событий
+document.addEventListener('DOMContentLoaded', function() {
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const overlay = document.getElementById('mobile-menu-overlay');
+    const closeBtn = document.getElementById('mobile-menu-close');
+
+    if (menuBtn) {
+        menuBtn.addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            if (menu.classList.contains('open')) {
+                closeMobileMenu();
+            } else {
+                openMobileMenu();
+            }
+        });
+    }
+
+    if (overlay) {
+        overlay.addEventListener('click', closeMobileMenu);
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeMobileMenu);
+    }
+});

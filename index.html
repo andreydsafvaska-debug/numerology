@@ -29,6 +29,31 @@
 </head>
    
 <body>
+    <!-- Мобильное меню (бургер) -->
+<div id="mobile-menu-btn" class="mobile-menu-btn">
+    <span></span>
+    <span></span>
+    <span></span>
+</div>
+
+<div id="mobile-menu" class="mobile-menu">
+    <div class="mobile-menu-header">
+        <span style="font-family: 'Cormorant Garamond', serif; color: var(--gold); font-size: 1.5rem;">ASTRA</span>
+        <button id="mobile-menu-close" class="mobile-close-btn">&times;</button>
+    </div>
+    <div class="mobile-menu-links">
+        <button onclick="showSection('home'); closeMobileMenu();">Главная</button>
+        <button onclick="showSection('compat'); closeMobileMenu();">Совместимость</button>
+        <button onclick="showSection('sponsor'); closeMobileMenu();">Финансовый Архетип</button>
+        <button onclick="showSection('parent-child'); closeMobileMenu();">Родитель-ребёнок</button>
+        <button onclick="showChildMatrixSection(); closeMobileMenu();">Детская матрица</button>
+        <button onclick="showSection('services'); closeMobileMenu();">Услуги</button>
+        <button onclick="showSection('course'); closeMobileMenu();" style="border: 1px solid var(--purple-light); border-radius: 30px; color: var(--purple-light);">🎓 Стать нумерологом</button>
+    </div>
+</div>
+
+<!-- Затемнение при открытом меню -->
+<div id="mobile-menu-overlay" class="mobile-menu-overlay"></div>
     
  <!-- ЭНЕРГИЯ ДНЯ -->
 <div id="daily-widget" class="daily-widget" onclick="toggleWidget()">
@@ -318,12 +343,7 @@
         <div id="result-parent-child" style="display: none; margin-top: 30px;"></div>
     </div>
     
-     <!-- Кнопка PDF -->
-        <div style="text-align: center; margin-top: 30px;">
-            <button id="download-parentchild-pdf" class="btn-gold" onclick="downloadSectionPDF('parentchild')" style="display: none; padding: 12px 30px;">
-                <i class="fa-solid fa-file-pdf"></i> Скачать отчёт (PDF)
-            </button>
-        </div>
+    
 </section>
         
         
@@ -1660,6 +1680,7 @@
 <script src="js/data-cells.js"></script>
 <script src="js/data-compatibility.js"></script>
 <script src="js/child-life-path-texts.js"></script>
+<script src="js/data-deep-compat.js"></script>
 <script src="js/data-child.js"></script>
 <script src="js/synthesis-templates.js"></script>      <!-- НОВЫЙ -->
 <script src="js/synthesis-data.js"></script>
