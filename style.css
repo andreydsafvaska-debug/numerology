@@ -59,7 +59,7 @@ section {
 
 
 @keyframes animStar {
-    from { transform: translateY(0px); }
+    from { transform: translateY(0); }
     to { transform: translateY(-2000px); }
 }
 
@@ -137,7 +137,7 @@ nav.scrolled {
    ОСНОВНОЙ КОНТЕНТ
    ============================================ */
 main {
-    padding-top: 0px;
+    padding-top: 0;
     max-width: 1200px;
     margin: 0 auto;
     padding-bottom: 50px;
@@ -3425,7 +3425,7 @@ html::-webkit-scrollbar-thumb:hover {
 .matrix-cell {
     background: rgba(255,255,255,0.08);
     border-radius: 10px;
-    padding: 0px 0px;
+    padding: 0 0;
     text-align: center;
 }
 .cell-title {
@@ -4447,11 +4447,11 @@ h1 {
 .mobile-menu-btn {
     display: none;
     position: fixed;
-    top: 20px;
+    top: 35px;
     left: 20px;
     z-index: 2000;
-    width: 48px;
-    height: 48px;
+    width: 38px;
+    height: 38px;
     background: linear-gradient(135deg, 
         rgba(15, 12, 41, 0.95), 
         rgba(30, 25, 60, 0.9));
@@ -4805,7 +4805,7 @@ details.money-details {
    ============================================ */
 .premium-service-card {
     position: relative;
-    background: linear-gradient(145deg, #1e1a2e %, #2a2348 100%);
+    background: linear-gradient(145deg, #1e1a2e , #2a2348 100%);
     border: 2px solid var(--gold);
     box-shadow: 0 0 35px rgba(212, 175, 55, 0.25), 0 15px 30px rgba(0,0,0,0.5);
     transform: scale(1.03);
@@ -5726,7 +5726,7 @@ section#home {
 
 /* Утапливание при клике */
 .btn-gold:active {
-  transform: translateY(0px);
+  transform: translateY(0);
   box-shadow: 0 5px 12px rgba(201, 169, 110, 0.4);
 }
 
@@ -5847,9 +5847,9 @@ nav.scrolled .nav-links button.active {
 
 /* Номер тарифа */
 .tariff-badge {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #D4AF37, #f8d96d);
+  width: 29px;
+  height: 29px;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0), rgba(248, 217, 109, 0));
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -5857,9 +5857,9 @@ nav.scrolled .nav-links button.active {
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.6rem;
   font-weight: 700;
-  color: #0f0c1f;
+  color: rgba(15, 12, 31, 0);
   margin-bottom: 18px;
-  box-shadow: 0 6px 14px rgba(212, 175, 55, 0.35);
+  box-shadow: 0 6px 14px rgba(212, 175, 55, 0);
 }
 
 .tariff-title {
@@ -5996,14 +5996,8 @@ nav.scrolled .nav-links button.active {
   box-shadow: 0 18px 38px rgba(0,0,0,0.5), 0 0 25px rgba(212, 175, 55, 0.12);
 }
 
-/* Иконки в информационных карточках — как номера в тарифах */
-.tariff-card--info .tariff-badge {
-  background: linear-gradient(135deg, #D4AF37, #f8d96d);
-  font-size: 1rem;
-  color: #0f0c1f;
-  box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3);
-      
-}
+
+
 
 
 /* Иконки внутри node-icon — чёткие и по центру */
@@ -6646,4 +6640,43 @@ transform: translateY(-67px);  /* ← поднимает только загол
 .elegant-report .report-content ul li {
     margin-bottom: 4px;
     color: #bbb;
+}
+
+/* Прозрачное мобильное меню */
+#mobile-menu {
+    background: rgba(5, 8, 20, 0.13) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+}
+
+/* Прячем отдельный крестик */
+#mobile-menu .mobile-close-btn {
+    display: none !important;
+}
+
+/* Бургер-кнопка превращается в крестик */
+.mobile-menu-btn.active span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+.mobile-menu-btn.active span:nth-child(2) {
+    opacity: 0;
+}
+.mobile-menu-btn.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* Плавное появление плашки куки */
+#cookie-notice {
+    animation: cookieFadeIn 0.8s ease;
+}
+
+@keyframes cookieFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
 }

@@ -6,7 +6,7 @@ const myPhone = "79956506287";
 
 
 // ⚡ ТЕСТОВЫЙ РЕЖИМ (true = всё бесплатно, false = платно)
-const TEST_MODE = true ;
+const TEST_MODE = false ;
 // ==========================================================
 //  ПРОВЕРКА ЦЕЛОСТНОСТИ ДАННЫХ (защита от пропажи файлов)
 // ==========================================================
@@ -387,7 +387,7 @@ function calculateNameNumber(name) {
         }
     }
     while (sum > 9 && sum !== 11 && sum !== 22 && sum !== 33) {
-        sum = sum.toString().split('').reduce((a, b) => +a + +b, 0);
+       sum = sum.toString().split('').reduce((a, b) => Number(a) + Number(b), 0);
     }
     return sum;
 
@@ -1857,7 +1857,7 @@ function quickCompatibility() {
     const num1 = calculateNameNumber(name1);
     const num2 = calculateNameNumber(name2);
     let result = num1 + num2;
-    while (result > 9) result = result.toString().split('').reduce((a, b) => +a + +b, 0);
+   while (result > 9) result = result.toString().split('').reduce((a, b) => Number(a) + Number(b), 0);
     
     // 2. Определяем пол
     const gender1 = detectGenderAdvanced(name1); // Используем твою умную функцию
@@ -1963,8 +1963,7 @@ function initDailyEnergy() {
     
     // Расчет числа дня
     let sum = day + month + year;
-    while (sum > 9) sum = sum.toString().split('').reduce((a,b) => +a + +b, 0);
-    
+while (sum > 9) sum = sum.toString().split('').reduce((a,b) => Number(a) + Number(b), 0);    
     document.getElementById('daily-number').textContent = sum;
     
     const descs = {
@@ -2362,9 +2361,9 @@ decodeHtml += `<div class="child-decode-block">
 
 // --- ЧИСЛО СУДЬБЫ (из внешнего файла) ---
 const lifePathData = (typeof childLifePathTexts !== 'undefined') ? childLifePathTexts[lifePath] : null;
-const lifePathDesc = (lifePathData && lifePathData.description) 
-    ? lifePathData.description 
-    : "<p>Уникальный путь, который раскроется с вашей поддержкой и любовью.</p>";
+const lifePathDesc = (lifePathData && lifePathData.description) ?
+    lifePathData.description :
+    "<p>Уникальный путь, который раскроется с вашей поддержкой и любовью.</p>";
 
 decodeHtml += `<div class="child-decode-block child-decode-highlight">
     <div class="child-decode-title"><i class="fa-solid fa-star"></i> Число судьбы ${lifePath}</div>
@@ -2470,6 +2469,19 @@ function switchMoneyMode(mode) {
     const personal = document.getElementById('money-personal-block');
     const pair = document.getElementById('money-pair-block');
     const btns = document.querySelectorAll('.mode-btn');
+
+    // Ленивая загрузка тяжёлых скриптов (при первом вызове)
+    loadScriptLazy('js/data-money-pair-core.js');
+    loadScriptLazy('js/data-money-danger.js');
+    loadScriptLazy('js/data-money-mirror.js');
+    loadScriptLazy('js/data-money-pair-mirror.js');
+    loadScriptLazy('js/data-money-path.js');
+    loadScriptLazy('js/data-money-blind-growth.js');
+    loadScriptLazy('js/data-money-synthesis-pairs.js');
+    loadScriptLazy('js/data-money-archetype.js');
+    loadScriptLazy('js/data-money-tempo.js');
+    loadScriptLazy('js/data-money-invest.js');
+    loadScriptLazy('js/data-money-affirmations.js');
 
     if (mode === 'personal') {
         if (personal) personal.style.display = 'block';
@@ -3166,10 +3178,8 @@ function getYearlyForecast(data, userName) {
     const lp = data.lp; // Число судьбы
 
     // Вычисляем число личного года (упрощённо: lp + год)
-    let personalYear = lp + year.toString().split('').reduce((a,b) => +a + +b, 0);
-    while (personalYear > 9) personalYear = personalYear.toString().split('').reduce((a,b) => +a + +b, 0);
-    if (personalYear === 0) personalYear = 9;
-
+let personalYear = lp + year.toString().split('').reduce((a,b) => Number(a) + Number(b), 0);
+while (personalYear > 9) personalYear = personalYear.toString().split('').reduce((a,b) => Number(a) + Number(b), 0);
     // Базовые тексты для каждого значения личного года
     const yearMeanings = {
         1: { title: 'Год Начинаний', advice: 'Активно начинайте новые проекты, меняйте имидж, берите инициативу.' },
@@ -4138,12 +4148,23 @@ async function downloadSectionPDF(section) {
     }
 }
 // Новый звёздный фон на Canvas
+// ==========================================================
+// ЗВЁЗДНЫЙ ФОН (Canvas) — ОПТИМИЗИРОВАННЫЙ
+// ==========================================================
 (function() {
     const canvas = document.getElementById('star-canvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let stars = [];
-    const STAR_COUNT = 400; // Можешь менять количество звёзд
+    
+    // Автоматически определяем количество звёзд в зависимости от ширины экрана
+    function getStarCount() {
+        const width = window.innerWidth;
+        if (width < 480) return 80;        // маленькие телефоны
+        if (width < 768) return 120;       // планшеты
+        if (width < 1024) return 200;      // ноутбуки
+        return 280;                         // большие экраны
+    }
 
     function resize() {
         canvas.width = window.innerWidth;
@@ -4151,32 +4172,34 @@ async function downloadSectionPDF(section) {
     }
 
     function createStars() {
+        const count = getStarCount();
         stars = [];
-        for (let i = 0; i < STAR_COUNT; i++) {
+        for (let i = 0; i < count; i++) {
             stars.push({
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
-                radius: Math.random() * 1.8 + 0.2,
-                speed: Math.random() * 0.3 + 0.05,
-                opacity: Math.random() * 0.5 + 0.3
+                radius: Math.random() * 1.6 + 0.3,
+                speed: Math.random() * 0.35 + 0.08,
+                opacity: Math.random() * 0.45 + 0.35
             });
         }
     }
 
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        stars.forEach(star => {
+        const len = stars.length;
+        for (let i = 0; i < len; i++) {
+            const star = stars[i];
             ctx.beginPath();
             ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
             ctx.fillStyle = `rgba(255,255,255,${star.opacity})`;
             ctx.fill();
-            // Движение вверх
             star.y -= star.speed;
             if (star.y < -5) {
                 star.y = canvas.height + 5;
                 star.x = Math.random() * canvas.width;
             }
-        });
+        }
         requestAnimationFrame(draw);
     }
 
@@ -4196,17 +4219,14 @@ async function downloadSectionPDF(section) {
 function openMobileMenu() {
     document.getElementById('mobile-menu').classList.add('open');
     document.getElementById('mobile-menu-overlay').style.display = 'block';
-    document.getElementById('mobile-menu-btn').style.display = 'none';  // бургер прячется
-    document.getElementById('mobile-menu-close').style.display = 'flex'; // крестик показывается
+    document.getElementById('mobile-menu-btn').classList.add('active');
     document.body.style.overflow = 'hidden';
 }
-
 
 function closeMobileMenu() {
     document.getElementById('mobile-menu').classList.remove('open');
     document.getElementById('mobile-menu-overlay').style.display = 'none';
-    document.getElementById('mobile-menu-btn').style.display = '';        // бургер возвращается
-    document.getElementById('mobile-menu-close').style.display = '';      // крестик возвращается
+    document.getElementById('mobile-menu-btn').classList.remove('active');
     document.body.style.overflow = '';
 }
 // Обработчики событий
@@ -4234,8 +4254,7 @@ document.addEventListener('DOMContentLoaded', function() {
         closeBtn.addEventListener('click', closeMobileMenu);
     }
 });
-<<<<<<< Updated upstream
-=======
+
 
 // ==========================================
 // ОПИСАНИЯ ЛИЧНОГО ГОДА (1-9)
@@ -4285,8 +4304,7 @@ function calcPersonalYear(birthDateStr, targetYear) {
     const month = parseInt(parts[1]);
     let sum = day + month + targetYear;
     while (sum > 9) {
-        sum = sum.toString().split('').reduce((a, b) => +a + +b, 0);
-    }
+sum = sum.toString().split('').reduce((a, b) => Number(a) + Number(b), 0);    }
     return sum;
 }
 
@@ -4389,4 +4407,96 @@ function calcPersonalYear(birthDateStr, targetYear) {
     };
 })();
 
->>>>>>> Stashed changes
+
+// Показ уведомления о куки (только если согласие еще не дано)
+(function() {
+    var notice = document.getElementById('cookie-notice');
+    var acceptBtn = document.getElementById('accept-cookies');
+    
+    // Выходим, если куки уже приняты
+    if (localStorage.getItem('cookiesAccepted') === 'true') {
+        if (notice) notice.style.display = 'none';
+        return;
+    }
+    
+    // Показываем плашку
+    if (notice) {
+        notice.style.display = 'flex';
+    }
+    
+    // Обработчик клика по кнопке
+    if (acceptBtn) {
+        acceptBtn.addEventListener('click', function() {
+            if (!notice) return;
+            notice.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            notice.style.opacity = '0';
+            notice.style.transform = 'translateX(-50%) translateY(20px)';
+            
+            setTimeout(function() {
+                notice.style.display = 'none';
+                localStorage.setItem('cookiesAccepted', 'true');
+            }, 600);
+        });
+    }
+})();
+
+// ==========================================================
+// АВТОСОХРАНЕНИЕ И ПОДСТАНОВКА ДАТЫ РОЖДЕНИЯ ДЛЯ ВСЕХ ПОЛЕЙ
+// ==========================================================
+(function() {
+    // Все поля ввода дат на сайте
+    const dateFields = [
+        document.getElementById('birthDateMatrix'),
+        document.getElementById('dateP1'),
+        document.getElementById('dateP2'),
+        document.getElementById('moneyDate'),
+        document.getElementById('moneyDate1'),
+        document.getElementById('moneyDate2'),
+        document.getElementById('parentDate'),
+        document.getElementById('childDate'),
+        document.getElementById('childDateInput')
+    ].filter(Boolean); // убираем null-элементы, если какого-то поля нет
+
+    // Добавляем обработчики на все поля дат
+    dateFields.forEach(function(field) {
+        // При изменении даты — сохраняем её в localStorage
+        field.addEventListener('change', function() {
+            if (this.value) {
+                localStorage.setItem('savedBirthDate', this.value);
+            }
+        });
+
+        // При загрузке страницы — подставляем сохранённую дату
+        var savedDate = localStorage.getItem('savedBirthDate');
+        if (savedDate && !field.value) {
+            field.value = savedDate;
+        }
+    });
+})();
+
+// Загрузка отзывов из отдельного файла
+(function() {
+    const container = document.getElementById('testimonials-container');
+    if (!container) return;
+
+    fetch('testimonials.html')
+        .then(response => response.text())
+        .then(html => {
+            container.innerHTML = html;
+        })
+        .catch(err => {
+            console.warn('Отзывы не загрузились:', err);
+        });
+})();
+
+// Ленивая загрузка «тяжёлых» скриптов по требованию
+function loadScriptLazy(selector) {
+    const scriptTag = document.querySelector(`script[data-src="${selector}"]`);
+    if (!scriptTag || scriptTag.loaded) return;
+    
+    const newScript = document.createElement('script');
+    newScript.src = selector;
+    newScript.defer = true;
+    newScript.onload = () => { scriptTag.loaded = true; };
+    document.head.appendChild(newScript);
+}
