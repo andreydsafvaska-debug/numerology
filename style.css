@@ -6680,3 +6680,19 @@ transform: translateY(-67px);  /* ← поднимает только загол
         transform: translateX(-50%) translateY(0);
     }
 }
+
+/* Исправление для iOS Safari и мобильных экранов */
+@media (max-width: 768px) {
+    /* Убираем белый фон на всех вкладках */
+    body, section, .calc-container, .service-card {
+        background-color: #0a0a10 !important;
+    }
+
+    /* Фиксим поля ввода */
+    input[type="text"],
+    input[type="date"] {
+        max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+}
