@@ -37,10 +37,12 @@
 </div>
 
 <div id="mobile-menu" class="mobile-menu">
-    <div class="mobile-menu-header">
-        <span style="font-family: 'Cormorant Garamond', serif; color: var(--gold); font-size: 1.5rem;">ASTRA</span>
-        <button id="mobile-menu-close" class="mobile-close-btn">&times;</button>
-    </div>
+    <!-- Кнопка закрытия (крестик) -->
+    <button id="mobile-menu-close" class="mobile-close-btn" onclick="closeMobileMenu()">
+        <i class="fa-solid fa-xmark"></i>
+    </button>
+
+    <!-- Список кнопок -->
     <div class="mobile-menu-links">
         <button onclick="showSection('home'); closeMobileMenu();">Главная</button>
         <button onclick="showSection('compat'); closeMobileMenu();">Совместимость</button>
@@ -48,7 +50,7 @@
         <button onclick="showSection('parent-child'); closeMobileMenu();">Родитель-ребёнок</button>
         <button onclick="showChildMatrixSection(); closeMobileMenu();">Детская матрица</button>
         <button onclick="showSection('services'); closeMobileMenu();">Услуги</button>
-        <button onclick="showSection('course'); closeMobileMenu();" style="border: 1px solid var(--purple-light); border-radius: 30px; color: var(--purple-light);">🎓 Стать нумерологом</button>
+        <button onclick="showSection('course'); closeMobileMenu();">🎓 Стать нумерологом</button>
     </div>
 </div>
 
@@ -90,12 +92,69 @@
         <!-- ГЛАВНАЯ СТРАНИЦА -->
         
         <section id="home" class="active">
-            <div style="text-align: center; padding: 40px 0;">
-                <p style="text-transform: uppercase; letter-spacing: 3px; color: var(--gold);">Портал самопознания</p>
-                <h1>Архитектура<span style="color: var(--gold); text-shadow: 0 0 20px rgba(212,175,55,0.4);"> Души</span> </h1>
-                <p style="max-width: 700px; margin: 0 auto; font-size: 1.2rem;">Древняя система Пифагора, которая расскажет о вас больше, чем вы сами.</p>
+           <div class="hero-section">
+    <div class="hero-flex">
+        <!-- Левая колонка -->
+        <div class="hero-left">
+            <div class="hero-tags">НУМЕРОЛОГИЯ / ПСИХОМАТРИЦА / СУДЬБА</div>
+<h1 class="hero-title">
+    <span class="hero-title-accent">Архитектура</span>
+    <span class="hero-title-main">Души</span>
+</h1>
+            <p class="hero-desc">
+                Каждая дата рождения — это уникальная симфония цифр, раскрывающая тайны вашей судьбы, предназначения и потенциала.
+            </p>
+            <p class="hero-subtitle">
+                Профессиональная нумерология • Квадрат Пифагора • Матрица судьбы • Совместимость партнёров
+            </p>
+            
+           
+        </div>
+
+        <!-- Правая колонка (фото) -->
+      <div class="hero-right">
+    <div class="hero-image-wrapper">
+        <div class="hero-image-glow"></div>
+        <div class="hero-image-frame">
+            <img src="20260120_001150.png" alt="Нумеролог" class="hero-image" />
+            <div class="hero-image-text">
+                <!-- тут подпись, если нужна -->
             </div>
-    
+        </div>
+        <!-- Уголки внутри hero-image-wrapper -->
+        <div class="corner-top-right"></div>
+        <div class="corner-bottom-left"></div>
+    </div>
+</div>
+            </div>
+               
+</div>
+     <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-num">5000+</div>
+                    <div class="stat-label">Расчётов</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">8 лет</div>
+                    <div class="stat-label"> практики</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">98%</div>
+                    <div class="stat-label">Точность</div>
+                </div>
+            </div>
+
+      
+            
+          
+           <!-- ПРЕМИУМ БЛОК (ПЛАТНЫЙ КОНТЕНТ) -->
+<div id="premium-insights" style="display:none; margin-top: 40px; margin-bottom: 40px; padding: 25px; background: rgba(20,20,40,0.8); border-radius: 20px; border: 1px solid var(--gold); position: relative; transition: all 0.5s;">
+</div> 
+	
+            
+            <h2 class="calculator-title">
+    <span>Таблица Пифагора</span>
+</h2>
             <!-- КАЛЬКУЛЯТОР ПИФАГОРА -->
             <div class="calc-container calc-compact">
                 <p>Введите ваши данные для расчёта:</p>
@@ -104,7 +163,26 @@
                 <input type="date" id="birthDateMatrix">
                
                 <br>
+                
+                
+                
                 <button class="btn-gold" onclick="calculateMatrix()">Рассчитать</button>
+                
+                 <!-- Аудит-плашка -->
+        <div id="audit-block" class="audit-preview" style="display: block;">
+   
+    <ul>
+        <li><strong>Квадрат Пифагора</strong> — ваша личная психоматрица с 17 ключевыми показателями</li>
+        <li><strong>Расшифровка всех ячеек</strong> — Характер, Энергия, Логика, Здоровье и другие</li>
+        <li><strong>Итоговые линии</strong> — Цель, Семья, Талант, Самооценка и ещё 5 параметров</li>
+        <li><strong>Число Судьбы и Число Имени</strong> — ваш кармический код и вибрация имени</li>
+        <li><strong>Слепые зоны и Сильные стороны</strong> — чего не хватает, а где переизбыток</li>
+        <li><strong>Интегральный портрет</strong> — синтез ключевых качеств вашей личности</li>
+        <li><strong>Личный год и Лунный день</strong> — ваш энергетический прогноз и ритмы</li>
+        <li><strong>График энергии на 12 месяцев</strong> и ваши личные Талисманы</li>
+    </ul>
+    <p style="font-style:italic; color: var(--gold); margin-top: 10px;">💡  Читайте не спеша, блок за блоком.</p>
+               </div> 
                 
                 <div id="loader-matrix" class="magic-loader">
                     <div class="magic-circle"></div>
@@ -209,8 +287,7 @@
                     </div>
                     <div id="lucky-description" class="lucky-description"></div>
                 </div>
-				
-                <!-- ГРАФИК ЛИЧНОГО ГОДА -->
+				                    <!-- ГРАФИК ЛИЧНОГО ГОДА -->
 <div id="year-chart-block" style="display: none; margin-top: 50px; animation: fadeIn 1s ease;">
     <h3 style="color: var(--gold); margin-bottom: 10px;">📈 Энергетическая Карта 2026 Года</h3>
     <p style="font-size: 0.9rem; color: #aaa; margin-bottom: 30px;">
@@ -228,33 +305,42 @@
         <h4 id="month-title" style="margin: 0 0 5px 0; color: #fff;">Выберите месяц на графике</h4>
         <p id="month-text" style="margin: 0; font-size: 0.9rem; color: #ddd;">Нажмите на столбик, чтобы получить рекомендацию.</p>
     </div>
-</div>
-				<!-- РАДАРНАЯ ДИАГРАММА -->
-<div id="radar-container" class="radar-container" style="display: none; opacity: 0; transition: opacity 1s;">
-    <h4>📊 Визуализация вашей матрицы</h4>
-    <div class="radar-chart">
-        <svg id="radar-svg" class="radar-svg" viewBox="0 0 400 400"></svg>
-    </div>
-    <div id="radar-tooltip" style="display: none;">
-        <h4 id="radar-tooltip-title" style="color: var(--gold); margin: 0 0 5px 0;"></h4>
-        <p id="radar-tooltip-desc" style="color: #fff; margin: 0; font-size: 0.95rem; line-height: 1.5;"></p>
-    </div>
-</div>
-                <div id="decoding-block">
-                    <h3 style="margin-top:0; color: #fff;">Детальная расшифровка</h3>
-                    <div id="decoding-content"></div>
-				</div>
-         </div>
-                            
-           <!-- ПРЕМИУМ БЛОК (ПЛАТНЫЙ КОНТЕНТ) -->
-<div id="premium-insights" style="display:none; margin-top: 40px; margin-bottom: 40px; padding: 25px; background: rgba(20,20,40,0.8); border-radius: 20px; border: 1px solid var(--gold); position: relative; transition: all 0.5s;">
 </div> 
-			<!-- КНОПКА СКАЧИВАНИЯ PDF -->
-<div style="text-align: center; margin: 30px 0;">
+             
+				
+<!-- ВИЗУАЛИЗАЦИЯ -->
+<div id="viz-container" style="display:none; margin-top:40px; text-align:center;">
+    <h4 style="color:#9b87f5;">📊 Визуализация вашей матрицы</h4>
+    <div id="bar-chart" style="display:flex; justify-content:space-around; align-items:flex-end; height:260px; margin:20px auto; max-width:600px; gap:4px;"></div>
+    <div id="bar-tooltip" style="display:none; margin-top:20px; padding:15px; background:rgba(20,20,40,0.9); border:1px solid #D4AF37; border-radius:12px; color:#fff;">
+        <h4 id="bar-tooltip-title" style="color:#D4AF37; margin:0 0 5px;"></h4>
+        <p id="bar-tooltip-desc" style="margin:0; font-size:0.9rem; line-height:1.5;"></p>
+    </div>
+</div>
+                <!-- Расштфровки -->
+                 <div id="decoding-block" style="position: relative;">
+    <h3 style="margin-top:0; color: #fff;">Детальная расшифровка</h3>
+    <div id="decoding-content"></div>
+    <!-- Платный оверлей -->
+    <div id="main-lock-overlay" class="premium-lock-overlay" style="display: none;">
+        <div class="premium-lock-box">
+            <div class="premium-lock-stars">✦ ✦ ✦</div>
+            <div class="premium-lock-icon">🔐</div>
+            <h3>Полный разбор личности</h3>
+            <p class="premium-lock-desc">Детальные расшифровки, 11 синтезов, прогнозы и PDF-отчёт</p>
+            <div class="premium-lock-price">1290 ₽</div>
+           <button class="btn-gold premium-lock-btn" onclick="openUnlockPaymentModal('matrix')">🔓 Разблокировать</button>
+            <p class="premium-lock-note">Откроется мгновенно после оплаты</p>
+        </div>
+    </div>
+</div>
+                <div style="text-align: center; margin: 30px 0;">
     <button id="download-pdf-btn" class="btn-gold" onclick="downloadPaidPDF()" style="padding: 16px 40px; font-size: 1.2rem; display: none;">
         <i class="fa-solid fa-file-pdf"></i> Скачать PDF-отчёт
     </button>
 </div>
+               
+         </div>
             <!-- БЫСТРАЯ СОВМЕСТИМОСТЬ -->
             <div class="quick-compat">
                 <h4>💫 Быстрая проверка совместимости</h4>
@@ -280,9 +366,7 @@
 
             <!-- ОБ АВТОРЕ -->           
             <div class="about-container">
-                <div class="about-photo-wrapper">
-                    <img src="20260120_001150.png" alt="Зоя" class="about-photo">
-                </div>
+               
                 <div class="about-text">
                     <h3>Приветствую! Меня зовут Зоя</h3>
                     <p>Эксперт в области современной нумерологии и дипломированный консультант по психоанализу личности. Более 7 лет я исследую глубокую взаимосвязь между числовыми кодами и человеческой судьбой. Мой метод — это сочетание точных расчетов и глубокой психологической работы. Я помогаю своим клиентам находить ясные ответы и закономерности там, где другие видят лишь случайные совпадения.</p>
@@ -297,8 +381,155 @@
                     <button class="btn-gold" onclick="showSection('services')">Мои услуги</button>
                 </div>
             </div>
+                <!-- ===== ОТЗЫВЫ (БЕГУЩАЯ СТРОКА) ===== -->
+<div id="testimonials">
+    <h2 class="testimonials-title">
+    <span>Отзывы</span>
+</h2>
+
+    <div class="marquee-wrapper">
+        <div class="marquee-track">
+            <!-- Набор карточек (дублируется для бесконечности) -->
+            <div class="testimonial-card">
+                <div class="testimonial-photo"><img src=3.png alt="Фото" /></div>
+                <div class="testimonial-text">
+                    <p>«Потрясающий разбор! Я узнала о себе больше, чем за 10 лет терапии. Всё точно и глубоко.»</p>
+                    <span class="testimonial-name">Алина, 34 года</span>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="testimonial-photo"><img src=4.png alt="Фото" /></div>
+                <div class="testimonial-text">
+                    <p>«Финансовый код перевернул моё представление о деньгах. Теперь я знаю, куда двигаться.»</p>
+                    <span class="testimonial-name">Светлана, 41 год</span>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+               <div class="testimonial-photo"><img src=5.png alt="Фото" /></div>
+                <div class="testimonial-text">
+                    <p>«Совместимость с мужем стала для нас откровением. Перестали ссориться из-за денег!»</p>
+                    <span class="testimonial-name">Екатерина, 29 лет</span>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="testimonial-photo"><img src=1.png alt="Фото" /></div>
+                <div class="testimonial-text">
+                    <p>«Очень красивый и умный сервис. Рекомендую всем, кто ищет себя.»</p>
+                    <span class="testimonial-name">Александра, 24</span>
+                </div>
+            </div>
+
+            <!-- Дублируем карточки для плавности -->
+            <div class="testimonial-card">
+                <div class="testimonial-photo"><img src=2.png alt="Фото" /></div>
+                <div class="testimonial-text">
+                    <p>«Потрясающий разбор! Я узнала о себе больше, чем за 10 лет терапии. Всё точно и глубоко.»</p>
+                    <span class="testimonial-name">Анна, 34 года</span>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="testimonial-photo"><img src=6.png alt="Фото" /></div>
+                <div class="testimonial-text">
+                    <p>«Финансовый код перевернул моё представление о деньгах. Теперь я знаю, куда двигаться.»</p>
+                    <span class="testimonial-name">Евгения, 35 лет</span>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="testimonial-photo"><img src=7.png alt="Фото" /></div>
+                <div class="testimonial-text">
+                    <p>«Совместимость с мужем стала для нас откровением. Перестали ссориться из-за денег!»</p>
+                    <span class="testimonial-name">Екатерина, 30 лет</span>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                                <div class="testimonial-photo"><img src=8.png alt="Фото" /></div>
+                <div class="testimonial-text">
+                    <p>«Потрясающий разбор! Я узнала о себе больше, чем за 10 лет терапии. Всё точно и глубоко.»</p>
+                    <span class="testimonial-name">Виктория, 23 года</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="testimonials-divider">
+    <span>Также из личных консультаций:</span>
+</div>
+    <!-- Вторая бегущая строка (обратное направление) -->
+<div class="marquee-wrapper marquee-reverse">
+    <div class="marquee-track-reverse">
+        <!-- Карточки (можно добавить другие отзывы) -->
+        <div class="testimonial-card">
+             <div class="testimonial-photo"><img src=9.png alt="Фото" /></div>
+            <div class="testimonial-text">
+                <p>«Спасибо за такой интересный опыт в нумерологии. Удивило то, что всего лишь по дате рождения можно так много рассказать о человеке. Действительно, многое попало в точку, во многом узнала себя. »</p>
+                <span class="testimonial-name">Анна, 34 года</span>
+            </div>
+        </div>
+        <div class="testimonial-card">
+             <div class="testimonial-photo"><img src=10.jpeg alt="Фото" /></div>
+            <div class="testimonial-text">
+                <p>«Зоя!  просто в шоке от того, на сколько точно вы меня описали, прям в самую точку) уже несколько раз пролушала и как 2 дня в голове все прокручиваю, в одном вопросе нашла для себя ответ) спасибо вам большое 🌸»</p>
+                <span class="testimonial-name">Инна, 27 год</span>
+            </div>
+        </div>
+        <div class="testimonial-card">
+            <div class="testimonial-photo"><img src=11.jpeg alt="Фото" /></div>
+            <div class="testimonial-text">
+                <p>«Императрица. Социальный статусу - в точную точку! У меня эти блага на первом месте! И без них не могу идти дальше. Как в точку вы сказали - по головам никогда не пойду, пойду по своим принципам! Право на ошибку я только учусь давать сейчас, раньше всегда по принципу
+                    «хочешь сделать хорошо, сделай сам»»</p>
+                <span class="testimonial-name">Екатерина, 29 лет</span>
+            </div>
+        </div>
+        <div class="testimonial-card">
+            <div class="testimonial-photo"><img src=12.png alt="Фото" /></div>
+            <div class="testimonial-text">
+                <p>«Все послушала 3 раза! Даже тезисы выписала 😊 Я в приятном удивлении, как все совпало и подробно все по полочкам разобрано. Уверена, что к разбору вернусь еще не раз) разбор на самом деле характеризует меня на 100%
+Информация ценная и полезная, буду двигаться дальше по своему пути 😍»</p>
+                <span class="testimonial-name">Елена, 36 лет</span>
+            </div>
+        </div>
+        <!-- Дублируем карточки для плавности -->
+        <div class="testimonial-card">
+            <div class="testimonial-photo"><img src=13.png alt="Фото" /></div>
+            <div class="testimonial-text">
+                <p>«Доброе утро ☀️ Это мой первый такой опыт. 
+Все что вы сказали прям в яблочко 😳 спасибо за важную информацию по поводу отношений с мужем, исходя из преобладания этой энергии, я никогда даже не думала в этом направлении, теперь намотаю на ус как говорится. Всё супер, я под впечатлением.
+Благодарю вас, очень было интересно послушать 💕»</p>
+                <span class="testimonial-name">Анна, 34 года</span>
+            </div>
+        </div>
+        <div class="testimonial-card">
+            <div class="testimonial-photo"><img src=14.png alt="Фото" /></div>
+            <div class="testimonial-text">
+                <p>«Ох как мне понравилась ваша фраза в начале «ну готовьтесь»😁❤️ Благодарю вас от всего сердца ❤️ Вы прям дали мне мощнейшую мотивацию двигаться !  Вселенная услышала, и ещё раз подтвердила мне, что нужно идти!
+Благодарю вас за то, что помогаете и даете  очень нужную и важную информацию ❤️❤️❤️»</p>
+                <span class="testimonial-name">Игорь, 41 год</span>
+            </div>
+        </div>
+        <div class="testimonial-card">
+            <div class="testimonial-photo"><img src=15.png alt="Фото" /></div>
+            <div class="testimonial-text">
+                <p>«Зоя, вы не представляете, как я благодарна Вселенной, что  узнала о вас 💗 Мне кажется, что вокруг меня никто не понимает, что я реально на обрыве и произошло всё так резко и спонтанно, что я была к этому не готова. Насколько сильно меня успокоили ваши слова, я даже описать не могу 😔 Я так сильно благодарна вам, что познакомилась с Вами ✨»</p>
+                <span class="testimonial-name">Екатерина, 23 лет</span>
+            </div>
+        </div>
+        <div class="testimonial-card">
+           <div class="testimonial-photo"><img src=16.png alt="Фото" /></div>
+            <div class="testimonial-text">
+                <p>«Очень красивый и умный сервис. Рекомендую всем, кто ищет себя.»</p>
+                <span class="testimonial-name">Анастасия, 28 лет</span>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
         </section>
-        
+          
         
 <!-- РОДИТЕЛЬ-РЕБЁНОК: АНАЛИЗ ВЗАИМОДЕЙСТВИЯ -->
 <section id="parent-child" style="display: none;">
@@ -340,7 +571,9 @@
         </div>
 
         <!-- Результат -->
-        <div id="result-parent-child" style="display: none; margin-top: 30px;"></div>
+        <div id="result-parent-child" style="display: none; margin-top: 30px;">
+               
+        </div>
     </div>
     
     
@@ -351,49 +584,88 @@
         <section id="services">
             <h2>Ваш Путь к Успеху</h2>
             <div class="services-grid">
+               <div class="service-card">
+    <i class="fa-solid fa-fingerprint service-icon"></i>
+    <h3>Матрица личности</h3>
+    <p>Уникальная методика психоанализа. Разбор по 17 ключевым позициям. Психологический портрет.</p>
+    <span class="price">12 500 ₽</span>
+    <div class="service-buttons">
+        <button class="btn-gold" onclick="openModal('modal-matrix')">Подробнее</button>
+        <button class="btn-outline-gold" onclick="bookService('Матрица Личности', 'https://zoyanum.getplatinum.ru/cabinet/link/12386/1')">Записаться</button>
+    </div>
+</div>
                 <div class="service-card">
-                    <i class="fa-solid fa-fingerprint service-icon"></i>
-                    <h3>Матрица личности</h3>
-                    <p>Уникальная методика психоанализа. Разбор по 17 ключевым позициям. Психологический портрет.</p>
-                    <span class="price">12 500 ₽</span>
-                    <button class="btn-gold" onclick="openModal('modal-matrix')">Подробнее</button>
-                </div>
+    <i class="fa-solid fa-calendar-star service-icon"></i>
+    <i class="fa-solid fa-calendar-days service-icon"></i>
+    <h3>Прогноз на год</h3>
+    <p>Моделирование жизни, финансов и карьеры на предстоящий период.</p>
+    <span class="price">8 500 ₽</span>
+    <div class="service-buttons">
+        <button class="btn-gold" onclick="openModal('modal-forecast')">Подробнее</button>
+        <button class="btn-outline-gold" onclick="bookService('Прогноз на год', 'https://zoyanum.getplatinum.ru/payment/qpElIXe')">Записаться</button>
+    </div>
+</div>
+            <div class="service-card">
+    <i class="fa-solid fa-heart service-icon"></i>
+    <h3>Совместимость</h3>
+    <p>Для чего вы встретились? Кармические задачи пары, деньги в семье и причины конфликтов.</p>
+    <span class="price">9 000 ₽</span>
+    <div class="service-buttons">
+        <button class="btn-gold" onclick="openModal('modal-compat')">Подробнее</button>
+        <button class="btn-outline-gold" onclick="bookService('Совместимость', 'https://zoyanum.getplatinum.ru/payment/3c60hMp')">Записаться</button>
+    </div>
+</div>
                 <div class="service-card">
-                    <i class="fa-solid fa-calendar-star service-icon"></i>
-					<i class="fa-solid fa-calendar-days service-icon"></i>
-                    <h3>Прогноз на год</h3>
-                    <p>Моделирование жизни, финансов и карьеры на предстоящий период.</p>
-                    <span class="price">8 500 ₽</span>
-                    <button class="btn-gold" onclick="openModal('modal-forecast')">Подробнее</button>
-                </div>
+    <i class="fa-solid fa-briefcase service-icon"></i>
+    <h3>Профессия и деньги</h3>
+    <p>Поиск предназначения. В какой сфере деньги? Какой бизнес открывать? Точка душевного комфорта.</p>
+    <span class="price">7 000 ₽</span>
+    <div class="service-buttons">
+        <button class="btn-gold" onclick="openModal('modal-prof')">Подробнее</button>
+        <button class="btn-outline-gold" onclick="bookService('Профессия', 'https://zoyanum.getplatinum.ru/payment/43xh2Q3')">Записаться</button>
+    </div>
+</div>
                 <div class="service-card">
-                    <i class="fa-solid fa-heart service-icon"></i>
-                    <h3>Совместимость</h3>
-                    <p>Для чего вы встретились? Кармические задачи пары, деньги в семье и причины конфликтов.</p>
-                    <span class="price">9 000 ₽</span>
-                    <button class="btn-gold" onclick="openModal('modal-compat')">Подробнее</button>
-                </div>
+    <i class="fa-solid fa-coins service-icon"></i>
+    <h3>Финансовый канал</h3>
+    <p>Блоки и убеждения. Стратегия увеличения дохода.</p>
+    <span class="price">5 000 ₽</span>
+    <div class="service-buttons">
+        <button class="btn-gold" onclick="openModal('modal-finance')">Подробнее</button>
+        <button class="btn-outline-gold" onclick="bookService('Финансы', 'https://zoyanum.getplatinum.ru/payment/VJ8eqHd')">Записаться</button>
+    </div>
+</div>
                 <div class="service-card">
-                    <i class="fa-solid fa-briefcase service-icon"></i>
-                    <h3>Профессия и деньги</h3>
-                    <p>Поиск предназначения. В какой сфере деньги? Какой бизнес открывать? Точка душевного комфорта.</p>
-                    <span class="price">7 000 ₽</span>
-                    <button class="btn-gold" onclick="openModal('modal-prof')">Подробнее</button>
-                </div>
-                <div class="service-card">
-                    <i class="fa-solid fa-coins service-icon"></i>
-                    <h3>Финансовый канал</h3>
-                    <p>Блоки и убеждения. Стратегия увеличения дохода.</p>
-                    <span class="price">5 000 ₽</span>
-                    <button class="btn-gold" onclick="openModal('modal-finance')">Подробнее</button>
-                </div>
-                <div class="service-card">
-                    <i class="fa-solid fa-child-reaching service-icon"></i>
-                    <h3>Детская матрица</h3>
-                    <p>Инструкция к ребенку. Раскрытие талантов, гармоничное развитие и воспитание.</p>
-                    <span class="price">6 000 ₽</span>
-                    <button class="btn-gold" onclick="openModal('modal-child')">Подробнее</button>
-                </div>
+    <i class="fa-solid fa-child-reaching service-icon"></i>
+    <h3>Детская матрица</h3>
+    <p>Инструкция к ребенку. Раскрытие талантов, гармоничное развитие и воспитание.</p>
+    <span class="price">6 000 ₽</span>
+    <div class="service-buttons">
+        <button class="btn-gold" onclick="openModal('modal-child')">Подробнее</button>
+        <button class="btn-outline-gold" onclick="bookService('Детская матрица', 'https://zoyanum.getplatinum.ru/payment/6WeXiTa')">Записаться</button>
+    </div>
+</div>
+                
+  <!-- 🥇 Премиум карточка -->
+<div class="service-card premium-service-card">
+    <div class="premium-badge">💎 Премиум</div>
+    <i class="fa-solid fa-crown service-icon premium-service-icon"></i>
+    <h3>Архитектура Души</h3>
+    <p>Исчерпывающий анализ вашей жизни: психологический портрет, кармические задачи, денежная стратегия и отношения с партнёром. Вся ваша нумерологическая ДНК в одном разборе.</p>
+    <span class="price premium-price">15 000 ₽</span>
+    <div class="service-buttons">
+        <button class="btn-gold premium-btn" onclick="openModal('modal-premium')">Подробнее</button>
+        <button class="btn-outline-gold" onclick="bookService('Консультация под ключ', 'https://zoyanum.getplatinum.ru/payment/полная_консультация')">Записаться</button>
+    </div>
+</div>
+                <div class="service-card premium-service-card">
+    <div class="premium-badge">💎 СКИДКА 37%</div>
+    <i class="fa-solid fa-crown service-icon premium-service-icon"></i>
+    <h3>Пакет «Все расчёты»</h3>
+    <p>Матрица личности + Совместимость + Финансовый архетип (личный + парный) + Родитель-ребёнок. Полная картина вашей нумерологической ДНК.</p>
+    <span class="price premium-price">2 990 ₽</span>
+    <button class="btn-gold premium-btn" onclick="openUnlockPaymentModal('all')">Приобрести</button>
+</div>
             </div>
             
         </section>
@@ -419,12 +691,27 @@
                 <label>ЖЕНЩИНА:</label>
                 <input type="text" id="nameP2" placeholder="Имя женщины">
                 <input type="date" id="dateP2">
-                <span class="date-hint">Формат: ДД.ММ.ГГГГ</span>
+                
             </div>
         </div>
 
+   
+        
         <button class="btn-gold" onclick="calculateCompat()">Узнать совместимость</button>
-
+        
+     <div id="audit-compat" class="audit-preview" style="display: block;">
+ 
+    <ul>
+        <li><strong>Две матрицы Пифагора</strong> — наглядное сравнение ваших потенциалов</li>
+        <li><strong>Энергия вашего союза</strong> — общая вибрация пары и её влияние</li>
+        <li><strong>Финансовая карма</strong> — как деньги приходят и уходят в вашей паре</li>
+        <li><strong>Зона конфликта</strong> — главные точки напряжения и способы их сгладить</li>
+        <li><strong>Сексуальная и эмоциональная динамика</strong> — что вас связывает на глубинном уровне</li>
+        <li><strong>Магический ключ</strong> — главный совет для гармонизации ваших отношений</li>
+    </ul>
+    <p style="font-style:italic; color: var(--gold); margin-top: 10px;">💡 Введите имена и даты рождения обоих партнёров, чтобы получить глубокий разбор.</p>
+</div>
+        
         <div id="loader-compat" class="magic-loader" style="display:none;">
             <div class="magic-circle"></div>
             <div class="magic-circle"></div>
@@ -437,26 +724,43 @@
 
         <div id="result-compat" style="margin-top: 30px; opacity: 0; transition: opacity 1s;">
             <div id="matrices-compare-container"></div>
+            
+           
+            
+       
 
-            <div style="font-size: 1.2rem; color: #aaa; margin-bottom: 10px;">
-                Энергия Союза
-            </div>
+           <div style="font-size: 1.2rem; color: #aaa; margin-bottom: 10px;">
+    Энергия Союза
+</div>
 
-            <h3 id="compat-number" 
-                style="font-size: 5rem; color: var(--gold); margin: 0; line-height: 1;">
-            </h3>
+<div id="compat-tooltip" ...></div>
 
-            <div id="compat-names" 
-                style="color: var(--purple-light); font-size: 1.3rem; margin: 15px 0;">
-            </div>
+<h3 id="compat-number" 
+    style="font-size: 5rem; color: var(--gold); margin: 0; line-height: 1;">
+</h3>
 
-            <div id="compat-text-container" 
-                 style="text-align: left; margin-top: 30px; background: rgba(0,0,0,0.3); border-left: 3px solid var(--purple-light); padding: 25px; border-radius: 10px;">
-                <div id="compat-text" 
-                     style="font-size: 1.05rem; color: #eee; line-height: 1.7;">
-                </div>
-            </div>
+<div id="compat-names" 
+    style="color: var(--purple-light); font-size: 1.3rem; margin: 15px 0;">
+</div>
 
+<!-- Бесплатно: суть союза -->
+<div id="compat-free-text" class="insight-block mirror-block"></div>
+
+<!-- Платный контейнер -->
+<div id="compat-premium-container" style="display:none; position:relative;">
+    <div id="compat-premium-content"></div>
+    <div id="compat-lock-overlay" class="premium-lock-overlay" style="display:none;">
+        <div class="premium-lock-box">
+            <div class="premium-lock-stars">✦ ✦ ✦</div>
+            <div class="premium-lock-icon">🔐</div>
+            <h3>Полный разбор совместимости</h3>
+            <p class="premium-lock-desc">Энергия союза, Финансовая карма, Зона конфликта, Магический ключ</p>
+            <div class="premium-lock-price">990 ₽</div>
+            <button class="btn-gold premium-lock-btn" onclick="openUnlockPaymentModal('compat')">🔓 Разблокировать</button>
+            <p class="premium-lock-note">Откроется мгновенно после оплаты</p>
+        </div>
+    </div>
+</div>
             <!-- КНОПКА СКАЧИВАНИЯ PDF ДЛЯ СОВМЕСТИМОСТИ -->
             <div style="text-align: center; margin-top: 30px;">
                 <button id="download-compat-pdf" class="btn-gold" onclick="downloadSectionPDF('compat')" style="display: none; padding: 12px 30px;">
@@ -473,8 +777,8 @@
 <!-- СЕКЦИЯ: ФИНАНСОВЫЙ КОД -->
 <section id="sponsor" class="calc-section">
     
-    <div style="text-align: center; margin-bottom: 30px;">
-        <h2 style="color: var(--gold); font-size: 2.2rem; margin-bottom: 10px;">
+    <div style="text-align: center; margin-bottom: -132px;">
+        <h2 style="color: var(--gold); font-size: 2.2rem; margin-bottom: 8px;">
             <i class="fa-solid fa-coins"></i> Денежный Код
         </h2>
         <p style="color: #aaa; max-width: 600px; margin: 0 auto 20px;">
@@ -487,142 +791,160 @@
             <button class="mode-btn" onclick="switchMoneyMode('pair')">Финансы пары</button>
         </div>
     </div>
-
-    <!-- ==========================================
-         БЛОК 1: ЛИЧНЫЙ РАСЧЕТ (Для одного)
-         ========================================== -->
-    <div id="money-personal-block">
-        <div class="calc-container premium-border">
-            
-            <div class="inputs-group single-input">
-                <div class="input-block">
-                    <label>Ваше Имя:</label>
-                    
-                    <input type="text" id="moneyName" placeholder="Имя" class="glass-input">
-                    
-                </div>
-                <div class="input-block">
-                    <label>Дата рождения:</label>
-                    <input type="date" id="moneyDate" class="glass-input">
-                </div>
+    
+    <!-- ===== БЛОК ДЛЯ ПАРНОГО РАСЧЁТА ===== -->
+<div id="money-pair-block" style="display: none;">
+    <div class="calc-container premium-border">
+        <div class="inputs-group">
+            <div class="input-block">
+                <label>Партнёр 1 (Имя):</label>
+                <input type="text" id="moneyName1" placeholder="Имя">
+                <input type="date" id="moneyDate1">
             </div>
-
-            <button class="btn-gold" onclick="calculateMoneyMatrix()">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> Рассчитать Личный Код
-            </button>
-
-            <!-- ЛОАДЕР (Личный) -->
-            <div id="loader-money" class="magic-loader" style="display:none;">
-                <div class="magic-circle"></div>
-                <div class="magic-circle"></div>
-                <div class="magic-symbols"><span>$</span><span>€</span></div>
-            </div>
-
-            <!-- РЕЗУЛЬТАТ (Личный) -->
-            <div id="result-money" style="opacity: 1; transition: opacity 0.3s ease;">
-                <h3 id="money-user-title" style="text-align: center; color: #fff; margin-bottom: 30px;"></h3>
-
-                <!-- Схема -->
-                <div class="money-scheme">
-                    <div class="money-point">
-                        <div class="point-circle" style="border-color: #ff6b6b; color: #ff6b6b;">
-                            <span id="val-block">?</span>
-                        </div>
-                        <p>Блок</p>
-                    </div>
-                    <div class="connector-line"></div>
-                    <div class="money-point">
-                        <div class="point-circle" style="border-color: var(--gold); color: var(--gold); transform: scale(1.2);">
-                            <span id="val-prof">?</span>
-                        </div>
-                        <p style="font-weight: bold; color: var(--gold);">Профессия</p>
-                    </div>
-                    <div class="connector-line"></div>
-                    <div class="money-point">
-                        <div class="point-circle" style="border-color: #a8dadc; color: #a8dadc;">
-                            <span id="val-active">?</span>
-                        </div>
-                        <p>Ключ</p>
-                    </div>
-                </div>
-
-                <!-- Тексты -->
-                <div class="money-descriptions">
-                    <div class="matrix-card" style="border-left: 4px solid #ff6b6b;">
-                        <div id="desc-block"></div>
-                    </div>
-                    <div class="matrix-card" style="border-left: 4px solid var(--gold);">
-                        <div id="desc-prof"></div>
-                    </div>
-                    <div class="matrix-card" style="border-left: 4px solid #a8dadc;">
-                        <div id="desc-active"></div>
-                    </div>
-                </div>
+            <div class="input-block">
+                <label>Партнёр 2 (Имя):</label>
+                <input type="text" id="moneyName2" placeholder="Имя">
+                <input type="date" id="moneyDate2">
             </div>
         </div>
-    </div>
-
-    <!-- ==========================================
-         БЛОК 2: ДЛЯ ПАРЫ (Для двоих)
-         ========================================== -->
-    <div id="money-pair-block" style="display: none; opacity: 0; transition: opacity 0.3s ease;">
-        <div class="calc-container premium-border">
-            
-            <div class="inputs-group">
-                <div class="input-block">
-                    <label>Партнёр 1 (Имя):</label>
-                    <input type="text" id="moneyName1" class="glass-input" placeholder="Имя">
-                    <input type="date" id="moneyDate1" class="glass-input" style="margin-top: 10px;">
-                </div>
-                <div class="input-block">
-                    <label>Партнёр 2 (Имя):</label>
-                    <input type="text" id="moneyName2" class="glass-input" placeholder="Имя">
-                    <input type="date" id="moneyDate2" class="glass-input" style="margin-top: 10px;">
-                </div>
-            </div>
-
-            <button class="btn-gold" onclick="calculateMoneyCompat()">
-                <i class="fa-solid fa-users-viewfinder"></i> Рассчитать Финансы Пары
-            </button>
-
-            <!-- ЛОАДЕР (Пара) -->
-            <div id="loader-money-compat" class="magic-loader" style="display:none;">
-                <div class="magic-circle"></div>
-                <div class="magic-circle"></div>
-                <div class="magic-symbols"><span>$</span><span>❤️</span></div>
-            </div>
-
-            <!-- РЕЗУЛЬТАТ (Пара) -->
-            <div id="result-money-compat" style="display:none; margin-top: 40px;">
-                <h3 id="money-compat-names" style="text-align: center; color: #fff;"></h3>
-                
-                <div class="money-scheme">
-                    <div class="money-point">
-                        <div class="point-circle" style="border-color: #a8dadc;"><span id="compat-val-1">?</span></div>
-                        <p>П1</p>
-                    </div>
-                    <div class="connector-line"></div>
-                    <div class="money-point">
-                        <div class="point-circle" style="border-color: var(--gold); transform: scale(1.3); background: #2a2a40;"><span id="compat-val-total">?</span></div>
-                        <p style="color:var(--gold); font-weight:bold;">ОБЩИЙ ПОТОК</p>
-                    </div>
-                    <div class="connector-line"></div>
-                    <div class="money-point">
-                        <div class="point-circle" style="border-color: #ff6b6b;"><span id="compat-val-2">?</span></div>
-                        <p>П2</p>
-                    </div>
-                </div>
-
-                <div id="desc-money-total" class="matrix-card" style="border-top: 3px solid var(--gold);"></div>
-            </div>
-        </div>
-    </div>
-<!-- КНОПКА СКАЧИВАНИЯ PDF ДЛЯ ФИНАНСОВОГО РАЗДЕЛА -->
-    <div style="text-align: center; margin-top: 40px;">
-        <button id="download-money-pdf" class="btn-gold" onclick="downloadSectionPDF('money')" style="display: none; padding: 12px 30px;">
-            <i class="fa-solid fa-file-pdf"></i> Скачать отчёт (PDF)
+        <button class="btn-gold" onclick="calculateMoneyPair()">
+            <i class="fa-solid fa-people-arrows"></i> Рассчитать финансы пары
         </button>
+        <!-- Аудит-плашка -->
+        <div  id="audit-pair" class="audi-preview" style="display: block;">
+            
+            <ul>
+                <li><strong>Две матрицы Пифагора</strong> — наглядное сравнение ваших денежных потенциалов</li>
+                <li><strong>Зеркало вашего союза</strong> — глубинная суть ваших финансовых отношений</li>
+                <li><strong>Распределение денежных ролей</strong> — кто в паре добытчик, хранитель, инвестор</li>
+                <li><strong>Интегральный портрет пары</strong> — как ваши качества усиливают или конфликтуют</li>
+                <li><strong>Денежная совместимость</strong> — точки трения и точки синергии</li>
+                <li><strong>Идеальная модель бюджета</strong> и совместная стратегия роста</li>
+                <li><strong>Главная опасность для ваших общих денег</strong></li>
+            </ul>
+            <p style="font-style:italic; color:var(--gold); margin-top:10px;">💡 Читайте вместе, обсуждайте каждый блок. Это инструкция к вашему финансовому партнёрству.</p>
+        </div>
+
+        <!-- Лоадер -->
+        <div id="loader-money-pair" class="magic-loader" style="display:none;">
+            <div class="magic-circle"></div>
+            <div class="magic-symbols"><span>$</span><span>❤️</span></div>
+        </div>
+
+        <!-- Контейнер для результатов -->
+<div id="result-money-pair" style="display:none;">
+    <div id="pair-matrices-container"></div>
+    <div id="pair-blocks-container"></div>
+<div id="pair-premium-container" style="display:none; position:relative; margin-top: 25px;">
+    <div id="pair-premium-content" style="position: relative; z-index: 1;"></div>
+    <div id="pair-lock-overlay" class="premium-lock-overlay" style="display:none; position: relative; z-index: 2; margin-top: -20px;">
+        <div class="premium-lock-box">
+            <div class="premium-lock-stars">✦ ✦ ✦</div>
+            <div class="premium-lock-icon">🔐</div>
+            <h3>Полный денежный разбор пары</h3>
+            <p class="premium-lock-desc">Роли, Портрет, Совместимость, Бюджет, Стратегия и ещё 5 блоков</p>
+            <div class="premium-lock-price">990 ₽</div>
+            <button class="btn-gold premium-lock-btn" onclick="openUnlockPaymentModal('money-pair')">🔓 Разблокировать</button>
+            <p class="premium-lock-note">Откроется мгновенно после оплаты</p>
+        </div>
     </div>
+</div>
+    </div>
+          </div>
+       <!-- КНОПКА PDF -->
+        <div style="text-align: center; margin-top: 25px;">
+            <button id="download-money-pair-pdf" class="btn-gold" onclick="downloadSectionPDF('money-pair')" style="display: none;">
+                <i class="fa-solid fa-file-pdf"></i> Скачать расчёт (PDF)
+            </button>
+        </div>
+</div>
+    
+<!-- Личный денежный код (Пифагор) -->
+<div id="money-personal-block">
+    <div class="calc-container premium-border">
+        <div class="inputs-group single-input">
+            <div class="input-block">
+                <label>Ваше Имя:</label>
+                <input type="text" id="moneyName" placeholder="Имя" class="glass-input">
+            </div>
+            <div class="input-block">
+                <label>Дата рождения:</label>
+                <input type="date" id="moneyDate" class="glass-input">
+            </div>
+         
+        </div>
+        <button class="btn-gold" onclick="calculateMoneyPersonal()">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Рассчитать Личный Код
+        </button>
+        
+        <!-- Аудит-плашка -->
+<div  id="audit-personal" class="audit-preview" style="display: block;">
+   
+    <ul>
+        <li><strong>Финансовый портрет</strong> на основе вашего числа судьбы и психоматрицы</li>
+        <li><strong>Слепые зоны и гипертрофии</strong> — где вы теряете деньги, а где ваш скрытый ресурс</li>
+        <li><strong>Интегральный портрет</strong> — как ваши ключевые качества взаимодействуют в деньгах</li>
+        <li><strong>Личный денежный архетип</strong> с описанием привычек и ловушек</li>
+        <li><strong>Темп роста и удача</strong> — когда ждать финансового расцвета</li>
+        <li><strong>Во что вкладывать капитал</strong> — персональная рекомендация</li>
+        <li><strong>3 аффирмации</strong> для снятия денежных блоков</li>
+    </ul>
+    <p style="font-style:italic; color: var(--gold); margin-top: 10px;">💡 Читайте медленно, блок за блоком. Это инструкция к вашему денежному мышлению.</p>
+</div>
+        <!-- Лоадер -->
+        <div id="loader-money" class="magic-loader" style="display:none;">
+            <div class="magic-circle"></div>
+            <div class="magic-symbols"><span>$</span><span>€</span></div>
+        </div>
+
+        <!-- Результаты -->
+        <div id="result-money" style="display:none;">
+            
+         <h3 id="money-user-title" style="text-align:center;"></h3>
+        <div id="money-matrix-container" style="margin-bottom: 25px; text-align: center;"></div>
+        <div id="money-mirror-block" class="insight-block mirror-block">
+    <h4> Зеркало души</h4>
+    <p id="money-mirror-text"></p>
+</div>
+            <div class="insight-block" id="money-block-a"></div>
+            <div class="insight-block" id="money-block-b"></div>
+            <div class="insight-block" id="money-block-c"></div>
+            <div class="insight-block" id="money-block-d"></div>
+            <div class="insight-block" id="money-block-e"></div>
+            <div class="insight-block" id="money-block-f"></div>
+            <div class="insight-block" style="background: rgba(34, 33, 30, 0.1);" id="money-block-g"></div>
+       <!-- Платный контейнер -->
+<!-- Платный контейнер (Личный) -->
+<div id="premium-money-container" style="display:none; position:relative; margin-top: 25px;">
+    <div id="premium-money-content" style="position: relative; z-index: 1;"></div>
+    <div id="premium-lock-overlay" class="premium-lock-overlay" style="display:none; position: relative; z-index: 2; margin-top: -20px;">
+        <div class="premium-lock-box">
+            <div class="premium-lock-stars">✦ ✦ ✦</div>
+            <div class="premium-lock-icon">🔐</div>
+            <h3>Полный денежный разбор</h3>
+            <p class="premium-lock-desc">Портрет, Стоп-кран, Слепые зоны, Архетип, Стратегия, Аффирмации и ещё 5 блоков</p>
+            <div class="premium-lock-price">890 ₽</div>
+            <button class="btn-gold premium-lock-btn" onclick="openUnlockPaymentModal('money')">🔓 Разблокировать</button>
+            <p class="premium-lock-note">Откроется мгновенно после оплаты</p>
+        </div>
+    </div>
+</div>
+    
+     <!-- КНОПКА PDF -->
+        <div style="text-align: center; margin-top: 25px;">
+            <button id="download-money-pdf" class="btn-gold" onclick="downloadSectionPDF('money')" style="display: none;">
+                <i class="fa-solid fa-file-pdf"></i> Скачать расчёт (PDF)
+            </button>
+        </div>
+    
+</div>
+        
+        </div>
+    </div>
+</div>
+    
+ 
+   
 </section>
 
 		
@@ -631,7 +953,7 @@
     <div style="text-align: center; margin-bottom: 40px;">
         <p style="text-transform: uppercase; letter-spacing: 3px; color: #aaa; font-size: 0.9rem;">Авторский обучающий курс</p>
         <h1 style="font-size: 3.5rem; line-height: 1.2;">
-            <span style="color: var(--purple-light); text-shadow: 0 0 20px rgba(155,135,245,0.4);">Мелодия</span> 
+            <span style="color: var(--purple-light); text-shadow: 0 0 20px rgba(155,135,245,0.4);">Мелодия</span>
             <span style="color: var(--gold); text-shadow: 0 0 20px rgba(212,175,55,0.4);">Цифр</span>
         </h1>
         <div class="typewriter-container">
@@ -640,122 +962,211 @@
     </div>
 
     <div class="calc-container" style="text-align: left; padding: 50px;">
+
+        <!-- ===== ДВЕ БОЛЬШИЕ ПРОЗРАЧНЫЕ КАРТОЧКИ ===== -->
+     
+<div class="tariffs-row">
+  <!-- Тариф 1 -->
+  <div class="tariff-card">
+ 
+    <h3 class="tariff-title">Базовый курс нумерологии</h3>
+    <div class="tariff-meta">
+      <span><i class="fa-regular fa-clock"></i> зависит от вас</span>
+      <span><i class="fa-solid fa-play"></i> 25 уроков</span>
+      <span><i class="fa-regular fa-user"></i> 800+</span>
+    </div>
+    <ul class="tariff-features">
+      <li>Математика Пифагора и числа</li>
+      <li>Числа жизненного пути 1–9, 11, 22, 33</li>
+      <li>Построение квадрата Пифагора</li>
+      <li>Базовая интерпретация матриц</li>
+         <li>PDF - файлы </li>
+    </ul>
+    <div class="tariff-outcome">
+      <i class="fa-solid fa-circle-check"></i> Умеете рассчитывать и объяснять базовые числа и применять их в жизненном опыте 
         
-        <!-- Карточки преимуществ -->
-       <div class="benefits-row">
-    <div class="benefit-card-old">
-        <div class="benefit-icon">👁️</div>
-        <h4>Видеть невидимое</h4>
-        <p>Вы будете смотреть на дату рождения и видеть не просто цифры, а судьбу, таланты и скрытые боли человека. Вас невозможно будет обмануть.</p>
     </div>
-    <div class="benefit-card-old">
-        <div class="benefit-icon">💰</div>
-        <h4>Обрести свободу</h4>
-        <p>Нумеролог — это профессия без границ. Консультируйте из любой точки мира, управляйте своим графиком и доходом. Спрос на осознанность растёт каждый день.</p>
+       <div class="tariff-outcome">
+      <i class="fa-solid fa-circle-check"></i>Самостоятельное обучение без личного наставничества
+        
     </div>
-    <div class="benefit-card-old">
-        <div class="benefit-icon">🔑</div>
-        <h4>Помогать людям</h4>
-        <p>Нет ничего приятнее, чем видеть, как после вашей консультации у человека загораются глаза, и он находит свой путь. Вы станете проводником к счастью.</p>
+    <div class="tariff-price">15 000 ₽</div>
+    <button class="btn-gold tariff-btn" onclick="bookService('Базовый курс', 'payment-link-1')">Записаться →</button>
+  </div>
+
+  <!-- Тариф 2 -->
+  <div class="tariff-card tariff-card--popular">
+    <div class="tariff-popular-label">VIP</div>
+   
+    <h3 class="tariff-title">Практикующий нумеролог</h3>
+    <div class="tariff-meta">
+      <span><i class="fa-regular fa-clock"></i> от 3 месяцев</span>
+      <span><i class="fa-solid fa-play"></i> 25 уроков</span>
+      <span><i class="fa-regular fa-user"></i> 85+</span>
     </div>
-    <div class="benefit-card-old">
-        <div class="benefit-icon">🧬</div>
-        <h4>Взломать код</h4>
-        <p>Нумерология — это математика судьбы. Вы научитесь читать людей как открытую книгу, понимая их мотивы и потенциал лучше, чем они сами. Это власть знания.</p>
+    <ul class="tariff-features">
+      <li>Углублённый анализ матриц</li>
+      <li>Числа имени и судьбы</li>
+      <li>Совместимость и синастрия</li>
+      <li>Финансовые архетипы</li>
+      <li>Детская нумерология</li>
+      <li>Практика с реальными клиентами</li>
+    </ul>
+    <div class="tariff-outcome">
+      <i class="fa-solid fa-circle-check"></i> Обучение под моим личным, чутким наставничеством
     </div>
+       <div class="tariff-outcome">
+      <i class="fa-solid fa-circle-check"></i> Готовы проводить платные консультации
+    </div>
+    <div class="tariff-price">50 000 ₽</div>
+    <button class="btn-gold tariff-btn" onclick="bookService('Практикующий нумеролог', 'payment-link-2')">Записаться →</button>
+  </div>
 </div>
 
-        <!-- Временная шкала модулей -->
-        <h3 style="color: var(--gold); margin: 50px 0 30px;">🌙 Программа курса</h3>
-        <div class="module-timeline">
-            <div class="timeline-node">
-                <div class="node-icon">📖</div>
-                <div class="node-content">
-                    <h4>Модуль 1: Архитектура Личности</h4>
-                    <p>Расчёт психоматрицы по 17 позициям. Сильные и слабые стороны, рекомендации. <strong>11 уроков</strong></p>
-                </div>
-            </div>
-            <div class="timeline-node">
-                <div class="node-icon">🔮</div>
-                <div class="node-content">
-                    <h4>Модуль 2: Код Судьбы</h4>
-                    <p>Кармические задачи, предназначение, родовые сценарии. Почему мы повторяем ошибки родителей. <strong>2 урока</strong></p>
-                </div>
-            </div>
-            <div class="timeline-node">
-                <div class="node-icon">💰</div>
-                <div class="node-content">
-                    <h4>Модуль 3: Деньги и Реализация</h4>
-                    <p>В какой профессии лежат ваши миллионы? Как разблокировать финансовый поток. <strong>3 урока</strong></p>
-                </div>
-            </div>
-            <div class="timeline-node">
-                <div class="node-icon">❤️</div>
-                <div class="node-content">
-                    <h4>Модуль 4: Магия Отношений</h4>
-                    <p>Совместимость, конфликты, кармические союзы. Как найти «своего» человека. <strong>2 урока</strong></p>
-                </div>
-            </div>
-            <div class="timeline-node">
-                <div class="node-icon">👶</div>
-                <div class="node-content">
-                    <h4>Модуль 5: Детская матрица</h4>
-                    <p>Ключ к пониманию ребенка и его развитию. <strong>1 урок</strong></p>
-                </div>
-            </div>
-            <div class="timeline-node">
-                <div class="node-icon">📈</div>
-                <div class="node-content">
-                    <h4>Модуль 6: Прогнозирование</h4>
-                    <p>Как моделировать свою жизнь в периоде личного года. <strong>6 уроков</strong></p>
-                </div>
-            </div>
-            <div class="timeline-node">
-                <div class="node-icon">✨</div>
-                <div class="node-content">
-                    <h4>Бонус: Монетизация</h4>
-                    <p>Как начать консультировать, найти первых клиентов и не бояться назвать цену. </p>
-                </div>
-            </div>
-        </div>
-            
-                <!-- Блок с ценами (3D карточки) -->
-        <div style="background: linear-gradient(135deg, rgba(155,135,245,0.1), rgba(212,175,55,0.1)); padding: 0px 66px; 
-                    border-radius: 37px; margin-top: 5px; text-align: center; border: 1px solid var(--gold);">
-            <h3 style="margin-bottom: 10px;">✨ Начните свой путь Мастера уже сегодня</h3>
-            <p style="margin-bottom: 30px; opacity:0.9;">Выберите удобный формат обучения:</p>
-            
-            <div class="pricing-cards">
-                <!-- Карточка 1 -->
-                <div class="pricing-card pricing-card-gold">
-                    <div class="pricing-badge">📥</div>
-                    <h4>Самостоятельное изучение</h4>
-                    <p class="pricing-desc">Полный курс в PDF + Видеоуроки</p>
-                    <div class="pricing-price">15 000 ₽</div>
-                    <button class="btn-course" onclick="buyCourseFile()">Выбрать</button>
-                </div>
-                
-                <!-- Карточка 2 -->
-                <div class="pricing-card pricing-card-premium">
-                    <div class="pricing-badge">💎 ТОП</div>
-                    <h4>Личное наставничество</h4>
-                    <p class="pricing-desc">Обучение 1 на 1 со мной + Практика</p>
-                    <div class="pricing-price">50 000 ₽</div>
-                    <div class="seats-left">Осталось 3 места на ближайший поток</div>
-                    <button class="btn-course btn-course-premium" onclick="bookPersonalMentoring()">Записаться</button>
-                </div>
-            </div>
-        </div>
+      
+       
+<!-- ===== ПРОГРАММА КУРСА ===== -->
+<div class="tariff-card tariff-card--info tariff-card--info-mod">
+  <div class="tariff-badge"><i class="fa-solid fa-list-check"></i></div>
+  <h3 class="tariff-title">Программа курса</h3>
 
-        <!-- Счётчик выпускников -->
-        <div style="text-align:center; margin-top:40px;">
-            <div class="graduates-counter">
-                <span>Уже <strong id="graduatesCount">127</strong> мастеров изменили свою жизнь с нами</span>
-            </div>
-        </div>
-
+  <div class="modules-list">
+    <div class="module-item">
+      <div class="module-icon"><i class="fa-solid fa-sitemap"></i></div>
+      <div class="module-text">
+        <h4>Модуль 1: Архитектура Личности</h4>
+        <p>Расчёт психоматрицы по 17 позициям. Сильные и слабые стороны, рекомендации. <strong>11 уроков</strong></p>
+      </div>
     </div>
-</section>
+    <div class="module-item">
+      <div class="module-icon"><i class="fa-solid fa-scroll"></i></div>
+      <div class="module-text">
+        <h4>Модуль 2: Код Судьбы</h4>
+        <p>Кармические задачи, предназначение, родовые сценарии. <strong>2 урока</strong></p>
+      </div>
+    </div>
+    <div class="module-item">
+      <div class="module-icon"><i class="fa-solid fa-coins"></i></div>
+      <div class="module-text">
+        <h4>Модуль 3: Деньги и Реализация</h4>
+        <p>Финансовый архетип, разблокировка денежного потока. <strong>3 урока</strong></p>
+      </div>
+    </div>
+    <div class="module-item">
+      <div class="module-icon"><i class="fa-solid fa-heart"></i></div>
+      <div class="module-text">
+        <h4>Модуль 4: Магия Отношений</h4>
+        <p>Совместимость, конфликты, кармические союзы. <strong>2 урока</strong></p>
+      </div>
+    </div>
+    <div class="module-item">
+      <div class="module-icon"><i class="fa-solid fa-child-reaching"></i></div>
+      <div class="module-text">
+        <h4>Модуль 5: Детская матрица</h4>
+        <p>Ключ к пониманию ребенка и его развитию. <strong>1 урок</strong></p>
+      </div>
+    </div>
+    <div class="module-item">
+      <div class="module-icon"><i class="fa-solid fa-chart-line"></i></div>
+      <div class="module-text">
+        <h4>Модуль 6: Прогнозирование</h4>
+        <p>Моделирование жизни через циклы личного года. <strong>6 уроков</strong></p>
+      </div>
+    </div>
+    <div class="module-item">
+      <div class="module-icon"><i class="fa-solid fa-star"></i></div>
+      <div class="module-text">
+        <h4>Бонус: Монетизация</h4>
+        <p>Как начать консультировать, найти первых клиентов и назначить цену.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ПРЕИМУЩЕСТВА ===== -->
+<div class="tariff-card tariff-card--info tariff-card--info-mod">
+  <div class="tariff-badge"><i class="fa-solid fa-gem"></i></div>
+  <h3 class="tariff-title">Что вам даст нумерология</h3>
+
+  <div class="benefits-list">
+    <div class="benefit-item">
+      <div class="benefit-icon"><i class="fa-solid fa-eye"></i></div>
+      <div class="benefit-text">
+        <h4>Видеть невидимое</h4>
+        <p>Вы будете смотреть на дату рождения и видеть судьбу, таланты и скрытые боли человека.</p>
+      </div>
+    </div>
+    <div class="benefit-item">
+      <div class="benefit-icon"><i class="fa-solid fa-rocket"></i></div>
+      <div class="benefit-text">
+        <h4>Обрести свободу</h4>
+        <p>Нумеролог — это профессия без границ. Управляйте своим графиком и доходом.</p>
+      </div>
+    </div>
+    <div class="benefit-item">
+      <div class="benefit-icon"><i class="fa-solid fa-hand-holding-heart"></i></div>
+      <div class="benefit-text">
+        <h4>Помогать людям</h4>
+        <p>Вы станете проводником к счастью, видя, как после консультации загораются глаза.</p>
+      </div>
+    </div>
+    <div class="benefit-item">
+      <div class="benefit-icon"><i class="fa-solid fa-dna"></i></div>
+      <div class="benefit-text">
+        <h4>Взломать код</h4>
+        <p>Нумерология — математика судьбы. Читайте людей как открытую книгу.</p>
+      </div>
+    </div>
+    <div class="benefit-item">
+      <div class="benefit-icon"><i class="fa-solid fa-compass"></i></div>
+      <div class="benefit-text">
+        <h4>Найти свой путь</h4>
+        <p>Определите своё предназначение и поймите, куда двигаться в карьере, любви и жизни.</p>
+      </div>
+    </div>
+    <div class="benefit-item">
+      <div class="benefit-icon"><i class="fa-solid fa-shield-halved"></i></div>
+      <div class="benefit-text">
+        <h4>Защитить себя</h4>
+        <p>Распознавайте токсичных людей, избегайте ловушек и стройте здоровые отношения.</p>
+      </div>
+    </div>
+  </div>
+</div>
+    </div>
+    <!-- ===== ЧАСТО ЗАДАВАЕМЫЕ ВОПРОСЫ ===== -->
+<div class="tariff-card tariff-card--info tariff-card--info-mod">
+  <div class="tariff-badge"><i class="fa-solid fa-circle-question"></i></div>
+  <h3 class="tariff-title">Часто задаваемые вопросы</h3>
+
+  <div class="faq-list">
+    <details class="faq-item">
+      <summary>Нужен ли опыт в нумерологии?</summary>
+      <p>Нет. Курс разработан с нуля. Первый уровень подходит абсолютным новичкам.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Что такое мастер-числа?</summary>
+      <p>Это 11, 22, 33. Они несут более высокую вибрацию, повышенный потенциал и сложные уроки, в отличие от базовых чисел.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Может ли нумерология предсказать будущее?</summary>
+      <p>Точных предсказаний она не даёт. Она показывает благоприятные периоды (например, персональный год), кармические задачи и тенденции, но выбор всегда за человеком.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Сколько времени нужно в день?</summary>
+      <p>1-2 часа в день достаточно. Все уроки в записи — учитесь в удобное время.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Можно ли зарабатывать как нумеролог?</summary>
+      <p> Да. Средний чек консультации — 3000-10000 ₽. После 2-го уровня вы готовы к практике.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Есть ли рассрочка?</summary>
+      <p>Да, доступна беспроцентная рассрочка на 3, 6 и 12 месяцев.</p>
+    </details>
+  </div>
+</div>
+    </section>
 
      <!-- ДЕТСКАЯ МАТРИЦА (УПРОЩЁННАЯ – ТОЛЬКО КВАДРАТ ПИФАГОРА) -->
 <section id="child-matrix">
@@ -805,9 +1216,42 @@
 </section>
     </main>
 
-     <!-- FOOTER -->
+
+    <!-- Модальное окно: Консультация под ключ -->
+<div id="modal-premium" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeModals()">&times;</span>
+        <h2>💎 Архитектура Души</h2>
+        <div class="modal-text">
+            <p>Это самый полный и глубокий разбор вашей жизни, который объединяет <strong>все ключевые сферы</strong> в одном персональном отчёте. Вы получаете не разрозненные ответы, а целостную картину своей судьбы.</p>
+            
+            <h4>Что входит в консультацию?</h4>
+            <ul>
+                <li><strong>🔮 Матрица личности</strong> — полный психологический портрет по 17 ключевым позициям. Ваши сильные и слабые стороны, скрытые таланты, кармические задачи.</li>
+                <li><strong>💖 Совместимость с партнёром</strong> — глубинный анализ вашей пары: кармические задачи союза, денежная динамика, причины конфликтов и ключи к гармонии.</li>
+                <li><strong>💰 Финансовый архетип</strong> — ваш персональный денежный код, слепые зоны, стратегия увеличения дохода и рекомендации по инвестициям.</li>
+                <li><strong>📈 Прогноз на год</strong> — энергетическая карта года, благоприятные периоды для карьеры, финансов и отношений.</li>
+                <li><strong>🎁 Бонус:</strong> запись консультации + PDF-отчёт со всеми расшифровками.</li>
+            </ul>
+
+            <h4>✨</h4>
+            <p>Благодаря этой консультации  вы получаете <strong>единую, связанную картину</strong>. Я не просто расскажем о вас , а  покажу, как все сферы вашей жизни влияют друг на друга и как использовать эти знания для максимального роста.</p>
+
+            <p style="margin-top:20px; font-style:italic;">Длительность: 2–2.5 часа онлайн-встречи + запись + PDF</p>
+            <span class="price">15 000 ₽</span>
+            
+            <button class="btn-gold" onclick="bookService('Консультация под ключ', 'https://zoyanum.getplatinum.ru/payment/полная_консультация')">
+                <i class="fa-solid fa-gem"></i> Оплатить и Записаться
+            </button>
+        </div>
+    </div>
+</div>
      
-    <footer>
+    
+
+    
+    <!-- FOOTER -->
+         <footer>
         <div class="footer-container">
             
             <!-- Колонка 1: Реквизиты -->
@@ -1675,40 +2119,45 @@
             <div id="master-text"></div>
         </div>
     </div>  
-    <button type="button" onclick="fillTestDates()" style="margin-top:10px;">📅 Заполнить тестовыми датами</button>
+
     
 <script src="js/data-cells.js"></script>
+    <script src="js/data-money-pair-core.js" defer></script>
+<script src="js/data-money-danger.js" defer></script>
 <script src="js/data-compatibility.js"></script>
 <script src="js/child-life-path-texts.js"></script>
 <script src="js/data-deep-compat.js"></script>
+<script src="js/data-money-mirror.js" defer></script>
 <script src="js/data-child.js"></script>
+<script src="js/money.js"></script>
 <script src="js/synthesis-templates.js"></script>      <!-- НОВЫЙ -->
 <script src="js/synthesis-data.js"></script>
 <script src="js/data-life-path-descriptions.js"></script>
 <script src="js/data-life-path.js"></script>
-<script src="js/data-money.js"></script>
-<script src="js/data-financial.js"></script>
 <script src="js/data-parent-child.js"></script>
 <script src="js/data-row-texts.js"></script>
 <script src="js/data-synthesis-pythagoras.js"></script>
+<script src="js/data-money-pair-mirror.js" defer></script>
+    <!-- Файлы денежного кода Пифагора -->
+<script src="js/data-money-path.js" defer></script>
+<script src="js/data-money-blind-growth.js" defer></script>
+<script src="js/data-money-synthesis-pairs.js" defer></script>
+<script src="js/data-money-archetype.js" defer></script>
+<script src="js/data-money-tempo.js" defer></script>
+<script src="js/data-money-invest.js" defer></script>
+<script src="js/data-money-affirmations.js" defer></script>
 <script>
-function fillTestDates() {
-    document.getElementById('parentDate').value = '1994-05-10';
-    document.getElementById('childDate').value = '2017-04-02';
-    document.getElementById('parentName').value = 'Родитель';
-    document.getElementById('childName').value = 'Ребёнок';
-    // Можно добавить и другие поля
-}
+
     
 </script>
     <!-- НЕЗАВИСИМОЕ ОКНО ОПЛАТЫ ДЛЯ ГЛАВНОЙ СТРАНИЦЫ -->
+<!-- НЕЗАВИСИМОЕ ОКНО ОПЛАТЫ ДЛЯ ВСЕХ РАСЧЁТОВ -->
 <div id="unlock-payment-modal" class="payment-modal">
     <div class="payment-modal-content" style="max-width: 480px;">
         <span class="close-modal" onclick="closeUnlockPaymentModal()">&times;</span>
-        <h3>🔓 </h3>
-        <h3 class="payment-title" style="color: var(--gold);"> Полный разбор личности</h3>
-        <p style="color: #ddd; margin-bottom: 20px;">Детальные расшифровки, 11 синтезов, прогнозы и PDF-отчёт</p>
-        <div style="font-size: 2.5rem; color: var(--gold); margin-bottom: 20px;">499 ₽</div>
+        <h3 class="payment-title" style="color: var(--gold);">🔓 Полный разбор личности</h3>
+        <p style="color: #ddd; margin-bottom: 20px;">Детальные расшифровки, синтезы, прогнозы и PDF-отчёт</p>
+        <div style="font-size: 2.5rem; color: var(--gold); margin-bottom: 20px;">1 290 ₽</div>
         
         <input type="email" id="unlock-client-email" class="payment-input" placeholder="Введите ваш Email" required>
         
@@ -1725,7 +2174,7 @@ function fillTestDates() {
             </label>
         </div>
         <p class="payment-hint" style="margin-top: 15px;">
-            После оплаты вам будут доступны <strong>4</strong> расчета
+            После оплаты доступ откроется автоматически
         </p>
     </div>
 </div>
@@ -1742,5 +2191,6 @@ function fillTestDates() {
         <button class="btn-close" onclick="closeNoAttemptsModal()" style="margin-top: 10px;">Закрыть</button>
     </div>
 </div>
+    
 </body>
 </html>

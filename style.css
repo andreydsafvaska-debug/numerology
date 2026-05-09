@@ -28,7 +28,7 @@ body {
     padding: 0;
     font-family: 'Open Sans', sans-serif;
     background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
-    background: #090A0F; /* запасной цвет на случай, если градиент не загрузится */
+    background: radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a10 70%);
     color: var(--text-main);
     min-height: 100vh;
     overflow-x: hidden;
@@ -92,22 +92,7 @@ section {
 /* ============================================
    МЕНЮ НАВИГАЦИИ
    ============================================ */
-nav {
-    position: fixed;
-    top: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-    background: rgba(15, 12, 41, 0.8);
-    backdrop-filter: blur(15px);
-    border: 1px solid rgba(212, 175, 55, 0.3);
-    border-radius: 50px;
-    padding: 8px 10px;
-    width: max-content;
-    max-width: 95%;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-     transition: box-shadow 0.4s ease;
-}
+
 
 nav.scrolled {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6), 0 0 15px rgba(212, 175, 55, 0.3);
@@ -152,7 +137,7 @@ nav.scrolled {
    ОСНОВНОЙ КОНТЕНТ
    ============================================ */
 main {
-    padding-top: 120px;
+    padding-top: 0px;
     max-width: 1200px;
     margin: 0 auto;
     padding-bottom: 50px;
@@ -178,11 +163,6 @@ section.active {
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
-}
-@media (max-width: 768px) {
-    body, section, section.active {
-
-    }
 }
 
 /* ============================================
@@ -312,11 +292,11 @@ li {
     background: var(--glass);
     padding: 40px;
     border-radius: 20px;
-    border: 1px solid var(--purple-deep);
+    border: 1px solid rgba(201, 169, 110, 0.5) !important;
     text-align: center;
-    box-shadow: 0 0 50px rgba(104, 78, 78, 0.5);
+   
     margin-bottom: 60px;
-    margin-top: 40px;
+    margin-top: 184px;
 }
 
 input[type="text"], input[type="date"] {
@@ -515,7 +495,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     font-size: 4rem;
     color: var(--purple-light);
     font-weight: bold;
-    text-shadow: 0 0 30px rgba(155, 135, 245, 0.5);
+    text-shadow: 0 0 38px rgba(181, 47, 189, 0.96);
 }
 
 .name-meaning {
@@ -532,27 +512,31 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     margin-top: 40px;
     text-align: left;
     display: none;
-    animation: fadeIn 1.5s ease;
+    animation: fadeIn 1.7s ease;
+
 }
 
 .decode-card {
-    background: rgba(0,0,0,0.3);
+    background: rgba(67, 67, 112, 0.16);
     border-left: 4px solid var(--gold);
-    padding: 20px;
+   
     margin-bottom: 15px;
     border-radius: 0 10px 10px 0;
-    transition: 0.3s;
+    transition: 0.7s;
+    padding: 10px 5px;        /* было 20px, стало просторнее */
+    box-sizing: border-box;    /* чтобы ширина считалась правильно */
 }
 
 .decode-card:hover {
-    background: rgba(255,255,255,0.05);
-    transform: translateX(5px);
+    background: rgba(29, 29, 29, 0.42);
+    transform: translateX(10px);
+    
 }
 
 .decode-header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 8px;
+    margin-bottom: 7px;
     align-items: center;
 }
 
@@ -573,8 +557,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .decode-text {
-    font-size: 1rem;
-    color: #e0e0e0;
+    font-size: 1.1rem;
+    color: #dfdfdf;
     line-height: 1.6;
 }
 
@@ -597,7 +581,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     background: var(--glass);
     padding: 50px;
     border-radius: 20px;
-    border: 1px solid var(--glass-border);
+      border: 1px solid rgba(201, 169, 110, 0.5) !important;
     margin-top: 80px;
 }
 
@@ -693,7 +677,8 @@ footer {
 
 .input-block {
     flex: 1;
-    min-width: 250px;
+    min-width: 0;
+    width: 100%;
 }
 
 .input-block label {
@@ -717,7 +702,8 @@ footer {
 
 .compat-matrix-single {
     flex: 1;
-    min-width: 280px;
+    min-width: 0;
+    width: 100%;
     background: rgba(0,0,0,0.2);
     padding: 15px;
     border-radius: 15px;
@@ -956,98 +942,7 @@ footer {
     to { transform: rotate(-360deg); }
 }
 
-/* ============================================
-   РАДАРНАЯ ДИАГРАММА (PRO)
-   ============================================ */
-/* УЛУЧШЕННАЯ РАДАРНАЯ ДИАГРАММА */
-.radar-container {
-    margin: 30px auto;
-    text-align: center;
-}
 
-.radar-chart {
-    position: relative;
-    width: 100%;
-    max-width: 600px;
-    height: auto;
-    aspect-ratio: 1 / 1;
-    margin: 0 auto;
-}
-
-.radar-svg {
-    width: 100%;
-    height: 100%;
-    filter: drop-shadow(0 0 15px rgba(212,175,55,0.3));
-    cursor: pointer;
-}
-
-.radar-grid {
-    fill: none;
-    stroke: rgba(255,255,255,0.15);
-    stroke-width: 1.5;
-}
-
-.radar-axis {
-    stroke: rgba(255,255,255,0.2);
-    stroke-width: 1.5;
-    stroke-dasharray: 5 5;
-}
-
-.radar-area {
-    fill: rgba(212,175,55,0.35);
-    stroke: #D4AF37;
-    stroke-width: 3;
-    filter: drop-shadow(0 0 12px #D4AF37);
-    transition: all 0.5s ease;
-}
-
-.radar-label {
-    fill: #9b87f5;
-    font-size: 14px;
-    font-family: 'Open Sans', sans-serif;
-    font-weight: 600;
-    text-anchor: middle;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    text-shadow: 0 0 8px rgba(155,135,245,0.5);
-}
-
-.radar-point-circle {
-    fill: #1a1a2e;
-    stroke: #D4AF37;
-    stroke-width: 3;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.radar-point-circle:hover {
-    fill: #D4AF37;
-    stroke: #fff;
-    stroke-width: 4;
-    transform: scale(1.2);
-    transform-origin: center;
-}
-
-.radar-point-value {
-    fill: #fff;
-    font-size: 13px;
-    font-weight: bold;
-    text-anchor: middle;
-    alignment-baseline: middle;
-    pointer-events: none;
-}
-
-/* Подсказка при клике */
-#radar-tooltip {
-    margin-top: 25px;
-    padding: 18px 22px;
-    background: rgba(20,20,40,0.9);
-    border: 1px solid #D4AF37;
-    border-radius: 16px;
-    backdrop-filter: blur(8px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    transition: opacity 0.3s ease;
-}
 
 /* ============================================
    СЧАСТЛИВЫЕ ЧИСЛА
@@ -1127,7 +1022,7 @@ footer {
    ============================================ */
 .quick-compat {
     background: var(--glass);
-    border: 1px solid var(--glass-border);
+      border: 1px solid rgba(201, 169, 110, 0.5) !important;
     border-radius: 15px;
     padding: 25px;
     margin-top: -25px;
@@ -1536,7 +1431,8 @@ footer {
     
     .about-photo {
         width: 100%;
-        height: 400px;
+        max-width: 100%;
+        height: auto;
     }
     
     .about-text {
@@ -1568,6 +1464,7 @@ footer {
     
     .quick-inputs input {
         min-width: 100%;
+        max-width: 100%;
     }
     
     .sponsor-couple-visual {
@@ -1577,6 +1474,7 @@ footer {
     .sponsor-vs {
         flex: 0 0 auto;
         width: 100%;
+        max-width: 100%;
     }
     
     .sponsor-person {
@@ -1868,9 +1766,9 @@ div.magic-loader {
     position: fixed !important;
     top: 340px !important; 
     bottom: auto !important;   /* ПРИНУДИТЕЛЬНО отключаем низ *//* Высота появления (под навигацией) */
-    right: -355px !important;         /* Прячем основной текст за экран */
-    width: 320px;          /* Фиксированная ширина для точности */
-    height: 60px;
+    right: -358px !important;         /* Прячем основной текст за экран */
+    width: 315px;          /* Фиксированная ширина для точности */
+    height: 63px;
     z-index: 9999 !important;         /* Поверх всего */
     cursor: pointer;
     transition: right 2s cubic-bezier(0.175, 0.885, 0.32, 1.1); /* Эффект пружины */
@@ -1900,7 +1798,7 @@ div.magic-loader {
 /* Стиль золотого язычка */
 .widget-tab {
     position: absolute;
-    left: -40px;           /* Выносим его влево за пределы основного блока */
+    left: -34px;           /* Выносим его влево за пределы основного блока */
     width: 39px;
     height: 50px;
     background: var(--gold);
@@ -1981,8 +1879,9 @@ div.magic-loader {
 @media (max-width: 768px) {
     .daily-widget {
         top: auto;
-        bottom: 90px; /* Внизу, над кнопкой колеса фортуны */
+        bottom: 90px;
         right: 10px;
+        max-width: calc(100vw - 20px);
         border-radius: 10px;
         border-right: 1px solid rgba(212, 175, 55, 0.3);
     }
@@ -2526,7 +2425,7 @@ div.magic-loader {
    ============================================ */
 
 footer {
-    background: #12121c;
+    background: rgb(10, 10, 16);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding-top: 25px;
     padding-bottom: 0;                       /* убираем нижний отступ у footer */
@@ -3510,6 +3409,10 @@ html::-webkit-scrollbar-thumb:hover {
         padding: 12px;
         font-size: 0.9rem;
     }
+    nav {
+        max-height: 80vh;
+        overflow-y: auto;
+    }
 }
 .matrix-grid {
     display: grid;
@@ -3588,12 +3491,12 @@ html::-webkit-scrollbar-thumb:hover {
 
 /* Анимированный градиент для главного заголовка */
 h1 {
-    background: linear-gradient(45deg, #D4AF37, #9b87f5, #a8dadc, #D4AF37);
+    background: linear-gradient(45deg, #f3c530, #7c61f5, #98e0e3, #D4AF37);
     background-size: 300% 300%;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    animation: gradientShift 8s ease infinite;
+    animation: gradientShift 5s ease infinite;
 }
 
 @keyframes gradientShift {
@@ -3719,7 +3622,7 @@ h1 {
     background: rgba(20,20,35,0.9);
     backdrop-filter: blur(10px);
     border-radius: 30px;
-    padding: 35px 30px;
+    padding: 35px 8px;
     width: 300px;
     text-align: center;
     border: 1px solid rgba(255,255,255,0.1);
@@ -3740,12 +3643,12 @@ h1 {
     border-color: var(--gold);
 }
 .pricing-badge {
-    font-size: 2.5rem;
-    margin-bottom: 15px;
+    font-size: 1.5rem;
+    margin-bottom: -7px;
 }
 .pricing-card h4 {
     color: #fff;
-    margin-bottom: 10px;
+    margin-bottom: -10px;
     font-size: 1.5rem;
 }
 .pricing-desc {
@@ -4059,7 +3962,7 @@ h1 {
 /* Временная шкала модулей */
 .module-timeline {
     position: relative;
-    padding-left: 30px;
+    padding-left: 41px;
 }
 .module-timeline::before {
     content: '';
@@ -4075,7 +3978,7 @@ h1 {
 .timeline-node {
     display: flex;
     align-items: flex-start;
-    margin-bottom: 35px;
+    margin-bottom: 13px;
     cursor: pointer;
     transition: transform 0.3s;
 }
@@ -4083,8 +3986,8 @@ h1 {
     transform: translateX(10px);
 }
 .node-icon {
-    width: 55px;
-    height: 55px;
+    width: 25px;
+    height: 25px;
     background: rgba(15,12,41,0.8);
     border: 2px solid var(--gold);
     border-radius: 50%;
@@ -4103,11 +4006,7 @@ h1 {
     box-shadow: 0 0 25px var(--gold);
     transform: scale(1.1);
 }
-.node-content h4 {
-    color: #fff;
-    margin: 0 0 5px 0;
-    font-size: 1.3rem;
-}
+
 .node-content p {
     margin: 0;
     color: #aaa;
@@ -4168,15 +4067,7 @@ h1 {
 
 
 
-/* Счётчик выпускников */
-.graduates-counter {
-    display: inline-block;
-    background: rgba(212,175,55,0.1);
-    padding: 10px 25px;
-    border-radius: 40px;
-    border: 1px solid var(--gold);
-    font-size: 1.1rem;
-}
+
 .graduates-counter strong {
     color: var(--gold);
     font-size: 1.6rem;
@@ -4294,8 +4185,8 @@ h1 {
     }
     #course .pricing-card {
         width: 100% !important;
-        max-width: 350px !important;
-        margin: 10px auto !important;
+        max-width: 258px !important;
+        margin: 17px auto !important;
         box-sizing: border-box !important;
     }
     #course .btn-course {
@@ -4313,7 +4204,7 @@ h1 {
         align-items: center !important;
     }
     #course .benefit-card-old {
-        width: 100% !important;
+        width: 52% !important;
         max-width: 300px !important;
         margin: 10px auto !important;
     }
@@ -4398,6 +4289,157 @@ h1 {
 }
 
 /* ============================================
+   ПОЛНОЭКРАННОЕ МОБИЛЬНОЕ МЕНЮ
+   ============================================ */
+#mobile-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    
+    /* Очень тёмный синий градиент */
+    background: radial-gradient(ellipse at center, #070b15 0%, #03050a 100%);
+    backdrop-filter: blur(10px);
+    
+    /* Скрыто по умолчанию */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+/* Открытое меню */
+#mobile-menu.open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+/* Кнопка закрытия (крестик) */
+#mobile-menu .mobile-close-btn {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    width: 44px;
+    height: 44px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(212,175,55,0.3);
+    border-radius: 50%;
+    color: rgba(212,175,55,0.9);
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background-color: rgba(10,15,30,0.9);
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+#mobile-menu .mobile-close-btn:hover {
+    background: rgba(212,175,55,0.15);
+    border-color: var(--gold);
+    color: var(--gold);
+    transform: rotate(90deg);
+}
+
+/* Контейнер для кнопок */
+.mobile-menu-links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 0 30px;
+    box-sizing: border-box;
+}
+
+/* Стили кнопок меню */
+.mobile-menu-links button {
+    background: transparent;
+    border: none ;
+    border-radius: 50px;
+    color: rgb(186, 186, 186);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 14px 30px;
+    width: 100%;
+    max-width: 320px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    backdrop-filter: blur(4px);
+ 
+}
+
+.mobile-menu-links button:hover {
+    background: rgba(212,175,55,0.12);
+    border-color: rgba(212,175,55,0.6);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(212,175,55,0.15);
+}
+
+/* Кнопка "🎓 Стать нумерологом" – особый акцент */
+.mobile-menu-links button:last-child {
+    border-color: rgba(155,135,245,0.5);
+    color: #d9ceff;
+    background: rgba(155,135,245,0.08);
+}
+.mobile-menu-links button:last-child:hover {
+    background: rgba(155,135,245,0.18);
+    border-color: rgba(155,135,245,0.8);
+    box-shadow: 0 6px 18px rgba(155,135,245,0.25);
+}
+
+/* Затемнение фона (оверлей) */
+#mobile-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(3px);
+    z-index: 1998;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+#mobile-menu.open ~ #mobile-menu-overlay {
+    display: block;
+    opacity: 1;
+}
+
+/* Показываем бургер и скрываем основную навигацию на мобильных */
+@media (max-width: 768px) {
+    #main-nav {
+        display: none !important;
+    }
+    .mobile-menu-btn {
+        display: flex !important;
+    }
+}
+
+/* На десктопе бургер и мобильное меню скрыты */
+@media (min-width: 769px) {
+    .mobile-menu-btn,
+    #mobile-menu,
+    #mobile-menu-overlay {
+        display: none !important;
+    }
+}
+/* ============================================
    МОБИЛЬНОЕ МЕНЮ (НЕЗАВИСИМОЕ)
    ============================================ */
 
@@ -4414,7 +4456,7 @@ h1 {
         rgba(15, 12, 41, 0.95), 
         rgba(30, 25, 60, 0.9));
     backdrop-filter: blur(15px);
-    border: 1px solid rgba(212, 175, 55, 0.5);
+    border: 1px solid rgba(155, 55, 212, 0.5);
     border-radius: 14px;
     flex-direction: column;
     align-items: center;
@@ -4461,225 +4503,2147 @@ h1 {
     transform: rotate(-45deg) translate(5px, -5px);
 }
 
-/* Само меню */
-.mobile-menu {
-    position: fixed;
-    top: 0;
-    left: -320px;
-    width: 300px;
-    height: 67vh;
-    background: linear-gradient(286deg, 
-        rgba(73, 40, 97, 0.98) 0%, 
-        rgba(39, 32, 61, 0.95) 50%,
-        rgba(16, 12, 41, 0.98) 100%);
-    backdrop-filter: blur(20px);
-    border-right: 1px solid rgba(212, 175, 55, 0.4);
-    z-index: 1999;
-    transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    flex-direction: column;
-    box-shadow: 
-        5px 0 30px rgba(0, 0, 0, 0.6),
-        inset -1px 0 0 rgba(255, 255, 255, 0.05),
-        0 0 40px rgba(155, 135, 245, 0.1);
+
+
+
+/* Анимация нажатия (утапливание) */
+.btn-gold:active {
+    transform: scale(0.96);
+    box-shadow: 0 3px 10px rgba(212, 175, 55, 0.2);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
-/* Декоративная линия сверху */
-.mobile-menu::before {
-    content: '';
+/* Плавное раскрытие карточек <details> */
+.decode-card .decode-text {
+    max-height: 0 !important;
+    overflow: hidden;
+    transition: max-height 0.5s ease-out, padding 0.5s ease-out;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.decode-card[open] .decode-text {
+    max-height: 4000px !important; /* достаточно для любого текста */
+    padding-top: 10px;
+    padding-bottom: 5px;
+}
+
+/* Чтобы стрелка у summary не исчезала при клике */
+.decode-card summary::-webkit-details-marker {
+    display: none;
+}
+
+.decode-card summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.decode-card summary::after {
+    content: '▼';
+    font-size: 0.8rem;
+    color: var(--gold);
+    transition: transform 0.3s ease;
+    margin-left: auto;
+}
+
+.decode-card[open] summary::after {
+    transform: rotate(180deg);
+}
+
+/* Более воздушные тексты в отчётах */
+.report-block p,
+.trait-block p,
+.format-harmony-text p,
+.format-tension-text p,
+.lock-text p,
+.parent-trap-text p {
+    margin-bottom: 18px;
+    line-height: 1.8;
+    font-size: 1rem;
+    color: #f0f0f8;
+}
+
+/* Увеличение отступов вокруг блоков с примерами и ритуалами */
+.report-block .highlight-box,
+.report-block .insight,
+.report-block .trait-block {
+    margin-top: 25px;
+    margin-bottom: 25px;
+    padding: 20px 25px;
+}
+
+/* Золотая линия слева для особых блоков (истории, ритуалы) */
+.story-box, .ritual-box {
+    border-left: 4px solid var(--gold);
+    background: rgba(212, 175, 55, 0.05);
+    padding: 15px 20px;
+    border-radius: 0 12px 12px 0;
+    margin: 20px 0;
+    font-style: italic;
+}
+
+/* ============================================
+   ИНТЕРАКТИВНАЯ ПОДСВЕТКА ЯЧЕЕК СОВМЕСТИМОСТИ
+   ============================================ */
+.compat-matrix-single .matrix-cell {
+    cursor: pointer;
+    transition: background 0.3s, border-color 0.3s;
+}
+.matrix-cell.match-high { background: rgba(76,175,80,0.25); border-color: #4caf50; }
+.matrix-cell.match-medium { background: rgba(255,193,7,0.25); border-color: #ffc107; }
+.matrix-cell.match-low { background: rgba(246, 42, 27, 0.13); border-color: #ff6161; }
+.matrix-cell.match-neutral { background: rgba(158,158,158,0.15); border-color: #bdbdbd; }
+
+.legend-box {
+    display: none; /* будет показана после расчёта */
+    margin: 15px 0;
+    padding: 10px 18px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px;
+    font-size: 0.85rem;
+    color: #ccc;
+    text-align: center;
+}
+.legend-box span { margin: 0 10px; }
+.legend-color {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+/* ============================================
+   ДЕНЕЖНЫЙ КОД – ОФОРМЛЕНИЕ БЛОКОВ
+   ============================================ */
+.insight-block {
+  
+
+   
+    padding: 17px -22px;
+    margin: 33px auto 30px auto;
+    max-width: 860px;
+    color: #eee;
+    line-height: 1.7;
+    text-align: left;                /* ← выравнивание влево */
+}
+
+.insight-block h4 {
+    color: var(--gold);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;              /* ← крупный заголовок */
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    letter-spacing: 0.5px;
+    text-align: left;               /* ← заголовок тоже слева */
+}
+
+.audit-preview {
+    background: rgba(212, 175, 55, 0.05);
+  
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin: 20px 0;
+    color: #ddd;
+    text-align: left;
+    cursor: pointer;
+}
+.audit-preview summary {
+    font-weight: bold;
+    color: var(--gold);
+    font-size: 1.1rem;
+    list-style: none;
+}
+.audit-preview ul {
+    margin-top: 10px;
+    padding-left: 20px;
+}
+.audit-preview li {
+    margin-bottom: 6px;
+}
+
+
+/* Раскрывающиеся блоки денежного кода (без отдельной рамки) */
+details.money-details {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0 0 4px 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    display: block;
+    overflow: hidden;      /* на всякий случай */
+}
+
+details.money-details summary {
+    cursor: pointer;
+    padding: 14px 8px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--gold);
+    background: rgba(212, 175, 55, 0.08);
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 14px;
+    margin-bottom: 1px;
+    transition: background 0.3s, color 0.3s;
+    border-bottom: none;
+}
+details.money-details summary:hover {
+    background: rgba(76, 64, 119, 0.15);
+    color: #fdfdfd;
+}
+details.money-details summary::after {
+    content: "▼";
+    font-size: 0.9rem;
+    transition: transform 0.3s;
+}
+details.money-details[open] summary::after {
+    transform: rotate(180deg);
+}
+
+details.money-details .money-content {
+    padding: 15px 0 10px 0;     /* отступ сверху и слева, без выделения */
+    text-align: left;
+    color: #eee;
+    line-height: 1.7;
+        word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* === ЖЁСТКАЯ ФИКСАЦИЯ ШИРИНЫ ДЛЯ ДЕНЕЖНОГО КОДА === */
+#result-money,
+details.money-details {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    display: block;
+}
+
+#result-money {
+    overflow-x: hidden;  
+    width: 100%;
+    max-width: 100%;
+}
+
+
+
+
+.mirror-block {
+    background: rgba(212, 175, 55, 0.05);
+   
+    border-radius: 0 12px 12px 0;
+}
+
+.danger-block {
+    background: rgba(255, 107, 107, 0.05);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    border-left: 4px solid #ff6b6b;
+    border-radius: 12px;
+}
+
+/* Парный расчёт — две матрицы рядом */
+.pair-matrices {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 20px;
+}
+
+.pair-matrix-wrapper {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+    max-width: 420px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 16px;
+    padding: 15px;
+}
+
+.pair-matrix-wrapper h5 {
+    text-align: center;
+    color: var(--gold);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+}
+
+
+
+.role-card h4 {
+    color: var(--gold);
+    margin: 0 0 10px 0;
+    font-size: 1.2rem;
+}
+.role-card p {
+    margin: 0;
+    color: #ddd;
+    line-height: 1.6;
+}
+
+@media (max-width: 680px) {
+    .pricing-card h4 {
+        font-size: 1.2rem !important;
+    }
+    .pricing-price {
+        font-size: 1.8rem !important;
+    }
+}
+
+/* ============================================
+   ПРЕМИУМ-КАРТОЧКА "КОНСУЛЬТАЦИЯ ПОД КЛЮЧ"
+   ============================================ */
+.premium-service-card {
+    position: relative;
+    background: linear-gradient(145deg, #1e1a2e %, #2a2348 100%);
+    border: 2px solid var(--gold);
+    box-shadow: 0 0 35px rgba(212, 175, 55, 0.25), 0 15px 30px rgba(0,0,0,0.5);
+    transform: scale(1.03);
+    z-index: 2;
+    overflow: hidden;
+}
+
+.premium-service-card:hover {
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 0 25px 50px rgba(0,0,0,0.6), 0 0 50px rgba(212, 175, 55, 0.4);
+    border-color: #f8d96d;
+}
+
+/* Плашка Премиум */
+.premium-badge {
+    position: absolute;
+    top: 16px;
+    right: -32px;
+    background: linear-gradient(90deg, #f8d96d, #b89220);
+    color: #000;
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 6px 40px;
+    transform: rotate(45deg);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+}
+
+/* Золотая иконка */
+.premium-service-icon {
+    filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.6));
+}
+
+/* Цена */
+.premium-price {
+    font-size: 2.2rem !important;
+    background: linear-gradient(135deg, #f8d96d, #a8882e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 800;
+}
+
+/* Кнопка */
+.premium-btn {
+    background: linear-gradient(135deg, #D4AF37, #f8d96d) !important;
+    color: #000 !important;
+    font-weight: 700 !important;
+    letter-spacing: 1px !important;
+    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.35);
+    border: 1px solid #f8d96d;
+    transition: 0.3s;
+}
+.premium-btn:hover {
+    box-shadow: 0 12px 35px rgba(212, 175, 55, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 768px) {
+    .premium-service-card {
+        transform: scale(1);
+    }
+    .premium-service-card:hover {
+        transform: translateY(-5px) scale(1.02);
+    }
+}
+
+/* ============================================
+   МОДАЛЬНОЕ ОКНО ПРЕМИУМ-УСЛУГИ
+   ============================================ */
+#modal-premium .modal-content {
+    background: linear-gradient(145deg, #1e1a2e 0%, #2a2348 100%);
+    border: 2px solid var(--gold);
+    box-shadow: 0 0 60px rgba(212, 175, 55, 0.3), 0 20px 50px rgba(0,0,0,0.7);
+}
+#modal-premium h2 {
+    background: linear-gradient(135deg, #D4AF37, #f8d96d);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 2.4rem;
+}
+
+/* ============================================
+   МОБИЛЬНАЯ ВЕРСИЯ ДЛЯ СОВМЕСТИМОСТИ
+   ============================================ */
+@media (max-width: 768px) {
+    .compat-matrices-wrapper {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 20px !important;
+    }
+
+    .compat-matrix-single {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        overflow-x: auto !important;   /* если таблица всё же шире, появится горизонтальная прокрутка */
+        padding: 10px !important;
+        box-sizing: border-box;
+    }
+}
+
+.premium-blur {
+    filter: blur(6px);
+    pointer-events: none;
+    user-select: none;
+}
+
+.premium-lock-overlay {
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, 
-        transparent, 
-        var(--gold), 
-        var(--purple-light), 
-        var(--gold), 
-        transparent);
-    opacity: 0.8;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    background: rgba(15, 12, 41, 0.3);
+    border-radius: 16px;
+}
+#main-lock-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 43%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    background: rgba(15, 12, 41, 0.3);
+    border-radius: 16px;
 }
 
-/* Декоративная линия снизу */
-.mobile-menu::after {
-    content: '';
+
+
+/* Мобильная версия для парного расчёта */
+@media (max-width: 768px) {
+    .pair-matrices {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 20px !important;
+    }
+
+    .pair-matrix-wrapper {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        overflow-x: auto !important;
+        padding: 10px !important;
+        box-sizing: border-box;
+    }
+}
+
+.premium-lock-box {
+    text-align: center;
+    background: linear-gradient(145deg, rgba(82, 49, 148, 0.38) 0%, rgba(69, 23, 70, 0.6) 100%);
+    border: 2px solid var(--gold);
+    border-radius: 24px;
+    padding: 35px 40px 30px;
+    box-shadow: 0 0 50px rgba(212, 175, 55, 0.25), 0 20px 40px rgba(0,0,0,0.5);
+    max-width: 420px;
+    position: relative;
+    
+}
+
+.premium-lock-stars {
+    color: var(--gold);
+    font-size: 1.2rem;
+    letter-spacing: 8px;
+    margin-bottom: 8px;
+}
+
+.premium-lock-icon {
+    font-size: 3.5rem;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.4));
+}
+
+.premium-lock-box h3 {
+    color: var(--gold);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    line-height: 1.3;
+}
+
+.premium-lock-desc {
+    color: #ccc;
+    font-size: 0.95rem;
+    margin-bottom: 18px;
+    line-height: 1.5;
+}
+
+.premium-lock-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 18px;
+    text-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+}
+
+.premium-lock-btn {
+    width: 100%;
+    padding: 16px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    border-radius: 50px;
+    background: linear-gradient(135deg, #D4AF37, #f8d96d);
+    color: #000;
+    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.35);
+    transition: all 0.3s;
+}
+
+.premium-lock-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(212, 175, 55, 0.5);
+}
+
+.premium-lock-note {
+    color: #888;
+    font-size: 0.8rem;
+    margin-top: 10px;
+}
+
+#money-matrix-container .matrix-grid.matrix-compact {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+#main-lock-overlay {
+    top: 25%;
+    transform: translateY(-60%);
+}
+
+/* ============================================
+   ДИЗАЙН КАРТОЧЕК УСЛУГ – СТЕКЛО И СВЕЧЕНИЕ
+   ============================================ */
+.services-grid .service-card {
+    background: rgba(255, 255, 255, 0.03); /* прозрачный фон */
+    backdrop-filter: blur(5px);            /* эффект стекла */
+    border: 1px solid rgba(255, 255, 255, 0.15); /* чёткая, но тонкая рамка */
+    transition: all 0.35s ease;
+    position: relative;
+}
+
+/* Общее увеличение при наведении */
+.services-grid .service-card:hover {
+    transform: translateY(-8px) scale(1.02);
+}
+
+/* Индивидуальное свечение для каждой карточки */
+.services-grid .service-card:nth-child(1) { box-shadow: 0 0 25px rgba(155, 135, 245, 0.25); }
+.services-grid .service-card:nth-child(2) { box-shadow: 0 0 25px rgba(212, 175, 55, 0.25); }
+.services-grid .service-card:nth-child(3) { box-shadow: 0 0 25px rgba(255, 107, 107, 0.2); }
+.services-grid .service-card:nth-child(4) { box-shadow: 0 0 25px rgba(78, 205, 196, 0.2); }
+.services-grid .service-card:nth-child(5) { box-shadow: 0 0 25px rgba(102, 255, 252, 0.25); }
+.services-grid .service-card:nth-child(6) { box-shadow: 0 0 25px rgba(168, 218, 220, 0.2); }
+.services-grid .service-card:nth-child(7) { box-shadow: 0 0 30px rgba(212, 175, 55, 0.3); } /* Премиум-карточка */
+
+/* Усиление свечения при наведении */
+.services-grid .service-card:nth-child(1):hover { box-shadow: 0 0 40px rgba(155, 135, 245, 0.45); }
+.services-grid .service-card:nth-child(2):hover { box-shadow: 0 0 40px rgba(212, 175, 55, 0.45); }
+.services-grid .service-card:nth-child(3):hover { box-shadow: 0 0 40px rgba(255, 107, 107, 0.4); }
+.services-grid .service-card:nth-child(4):hover { box-shadow: 0 0 40px rgba(78, 205, 196, 0.4); }
+.services-grid .service-card:nth-child(5):hover { box-shadow: 0 0 40px rgba(102, 255, 146, 0.45); }
+.services-grid .service-card:nth-child(6):hover { box-shadow: 0 0 40px rgba(168, 218, 220, 0.4); }
+.services-grid .service-card:nth-child(7):hover { box-shadow: 0 0 50px rgba(212, 175, 55, 0.55); }
+
+/* ============================================
+   HERO SECTION
+   ============================================ */
+.hero-section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 40px 0;
+}
+
+.hero-flex {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    width: 100%;
+}
+
+.hero-left {
+    flex: 1;
+    padding-left: 2rem;
+}
+
+.hero-right {
+    flex-shrink: 0;
+    padding-right: 2rem;
+}
+
+/* Теги */
+.hero-tags {
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+}
+
+/* Заголовок */
+.hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    font-weight: 300;
+}
+.hero-title-main {
+    display: block;
+    color: #FFFFFF;
+    font-size: clamp(3rem, 8vw, 5.5rem);
+}
+.hero-title-accent {
+    display: block;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-style: italic;
+    font-size: clamp(3.5rem, 9vw, 6.5rem);
+}
+
+/* Описание */
+.hero-desc {
+    color: var(--text-muted);
+    font-size: 2rem;
+    font-family: 'Cormorant Garamond', serif;
+    max-width: 480px;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.hero-subtitle {
+    color: #6B6B7A;
+    font-size: 1.3rem;
+    max-width: 400px;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+/* Кнопки */
+.hero-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 3rem;
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid rgba(201,168,76,0.4);
+    color: var(--gold);
+    padding: 23px 30px;
+    border-radius: 5px;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    height: 61px
+}
+.btn-outline:hover {
+    background: rgba(201,168,76,0.1);
+    border-color: var(--gold);
+    color: var(--gold-light);
+    box-shadow: 0 0 20px rgba(201,168,76,0.2);
+}
+
+/* Статистика */
+.hero-stats {
+    display: flex;
+    gap: 2rem;
+}
+.stat-item {
+    text-align: left;
+}
+.stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    color: var(--gold);
+}
+.stat-label {
+    font-size: 0.8rem;
+    color: #5A5A6A;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* Фото */
+.hero-image-wrapper {
+    position: relative;
+    width: clamp(260px, 30vw, 500px);
+}
+.hero-image-glow {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(201,168,76,0.3) 0%, rgba(123,94,167,0.2) 100%);
+    filter: blur(20px);
+    transform: scale(1.05);
+    border-radius: 1rem;
+}
+.hero-image-frame {
+    position: relative;
+    border-radius: 1rem;
+    overflow: hidden;
+    border: 1px solid rgba(201,168,76,0.3);
+    aspect-ratio: 3/4;
+}
+.hero-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+}
+.hero-image-text {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, 
-        transparent, 
-        rgba(212, 175, 55, 0.3), 
-        transparent);
+    padding: 1.5rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
 }
-
-.mobile-menu.open {
-    left: 0;
-}
-
-/* Заголовок меню */
-.mobile-menu-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 25px 14px 10px;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.3);
-    position: relative;
-}
-
-/* Золотая точка перед названием */
-.mobile-menu-header span::before {
-    content: '✦';
-    margin-right: 8px;
-    font-size: 1.2rem;
+.hero-image-text .section-label {
     color: var(--gold);
-    text-shadow: 0 0 10px var(--gold);
-}
-
-/* Кнопка закрытия */
-.mobile-close-btn {
-    background: rgba(212, 175, 55, 0.1);
-    border: 1px solid rgba(212, 175, 55, 0.3);
-    border-radius: 50%;
-    width: 36px;
-    height: 36px;
-    color: var(--gold);
-    font-size: 24px;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-    position: relative;
-    right: 10px;   /* смещаем чуть правее */
-}
-
-/* Воздушное меню с глубокими тенями */
-.mobile-menu {
-    position: fixed;
-    top: 0;
-    left: -320px;
-    width: 280px;
-    height: auto;
-    max-height: 90vh;
-    top: 11px;
-    border-radius: 13px;
-    background: rgba(15, 12, 41, 0.85);
-    backdrop-filter: blur(25px);
-    border: 1px solid rgba(212, 175, 55, 0.4);
-    z-index: 1999;
-    transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    flex-direction: column;
-    box-shadow: 
-        0 20px 50px rgba(0, 0, 0, 0.7),           /* глубокая тень */
-        0 0 30px rgba(155, 135, 245, 0.2),         /* фиолетовое свечение */
-        0 0 60px rgba(212, 175, 55, 0.1),          /* золотое свечение */
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);    /* лёгкий блик внутри */
-}
-
-.mobile-menu.open {
-    left: 3px;
-}
-
-.mobile-close-btn:hover {
-    background: rgba(212, 175, 55, 0.2);
-    transform: rotate(90deg) scale(1.1);
-    box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
-}
-
-/* Ссылки меню */
-.mobile-menu-links {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 20px 0px;
-    gap: 8px;
-    overflow-y: auto;
-}
-
-
-.mobile-menu-links button {
-    background: transparent;
-    border: 1px solid transparent;
-    color: #ccc;
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.2rem;
-    font-weight: 600;
+    font-size: 1.5rem;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    padding: 14px 20px;
-    cursor: pointer;
-    border-radius: 12px;
-    text-align: left;
-    transition: all 0.3s ease;
-    position: relative;
+}
+.hero-image-name {
+    color: #fff;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 300;
 }
 
-/* Золотая полоска слева при наведении */
-.mobile-menu-links button::before {
+/* Адаптивность */
+@media (max-width: 1024px) {
+    .hero-flex {
+        flex-direction: column;
+        text-align: center;
+    }
+    .hero-left {
+        order: 0;
+        padding-left: 0;
+    }
+    .hero-right {
+        order: 1;
+        margin-bottom: 2rem;
+        padding-right: 0;
+    }
+    .hero-desc, .hero-subtitle {
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .hero-buttons {
+        justify-content: center;
+    }
+    .hero-stats {
+        justify-content: center;
+    }
+}
+
+#calculator {
+    scroll-margin-top: 80px;
+}
+
+
+.hero-section {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.hero-flex {
+    width: 100%;
+    margin: 0;
+}
+
+#sponsor {
+    padding-top: 100px;
+}
+
+/* ============================================
+   ОТЗЫВЫ (БЕГУЩАЯ СТРОКА)
+   ============================================ */
+#testimonials {
+    padding: 60px 0 40px;
+    overflow: hidden;
+    background: transparent;
+}
+
+.testimonials-title {
+    text-align: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    color: var(--gold);
+    margin-bottom: 30px;
+}
+
+.marquee-wrapper {
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+.marquee-track {
+    display: flex;
+    gap: 48px;
+    animation: scrollMarquee 37s linear infinite;
+    width: max-content;
+      padding-top: 10px;      /* ← добавь */
+    padding-bottom: 10px;   /* ← добавь */
+}
+
+/* Остановка при наведении или касании */
+.marquee-track:hover,
+.marquee-track:active {
+    animation-play-state: paused;
+}
+
+@keyframes scrollMarquee {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+.testimonial-card {
+    flex: 0 0 auto;
+    width: 315px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(201, 168, 76, 0.2);
+    border-radius: 16px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 0 15px rgba(201, 168, 76, 0.08);
+    transition: all 0.3s ease;
+}
+
+.testimonial-card:hover {
+    border-color: var(--gold);
+    box-shadow: 0 0 25px rgba(201, 168, 76, 0.2);
+    transform: translateY(-4px);
+}
+
+.testimonial-photo img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--gold);
+}
+
+.testimonial-text p {
+    margin: 0 0 -4px;
+    font-size: 0.1rem;
+    color: #ddd;
+    line-height: 1.5;
+    font-style: italic;
+}
+
+.testimonial-name {
+    font-size: 0.85rem;
+    color: var(--gold);
+    font-weight: 600;
+}
+
+/* Обратная бегущая строка */
+.marquee-track-reverse {
+    display: flex;
+    gap: 24px;
+    animation: scrollMarqueeReverse 40s linear infinite;
+    width: max-content;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.marquee-track-reverse:hover,
+.marquee-track-reverse:active {
+    animation-play-state: paused;
+}
+
+@keyframes scrollMarqueeReverse {
+    0%   { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
+}
+
+.testimonial-photo img {
+    object-position: top center;  /* ← добавить эту строку */
+}
+
+.marquee-track {
+    animation: scrollMarquee 60s linear infinite;
+}
+
+
+.marquee-track-reverse {
+    animation: scrollMarqueeReverse 60s linear infinite;
+}
+
+.testimonials-divider {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.testimonials-divider span {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-style: italic;
+    color: var(--gold);
+    position: relative;
+    padding: 0 20px;
+}
+
+.testimonials-divider span::before,
+.testimonials-divider span::after {
     content: '';
     position: absolute;
-    left: 0;
     top: 50%;
-    transform: translateY(-50%);
-    width: 3px;
-    height: 0;
-    background: var(--gold);
-    border-radius: 0 3px 3px 0;
-    transition: height 0.3s ease;
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
 }
 
-.mobile-menu-links button:hover {
-    background: rgba(212, 175, 55, 0.08);
+.testimonials-divider span::before {
+    right: 100%;
+    margin-right: 10px;
+}
+
+.testimonials-divider span::after {
+    left: 100%;
+    margin-left: 10px;
+}
+
+.testimonials-title span {
+    position: relative;
+    display: inline-block;
+    padding: 0 25px;
+}
+
+.testimonials-title span::before,
+.testimonials-title span::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 70px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
+}
+
+.testimonials-title span::before {
+    right: 100%;
+    margin-right: 15px;
+}
+
+.testimonials-title span::after {
+    left: 100%;
+    margin-left: 15px;
+}
+
+/* Заголовок калькулятора */
+.calculator-title {
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: -143px;
+}
+
+.calculator-title span {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
     color: var(--gold);
-    border-color: rgba(212, 175, 55, 0.25);
-    padding-left: 28px;
+    position: relative;
+    display: inline-block;
+    padding: 0 2px;
 }
 
-.mobile-menu-links button:hover::before {
-    height: 60%;
+.calculator-title span::before,
+.calculator-title span::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 70px;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--gold), transparent);
 }
 
-/* Специальная кнопка "Стать нумерологом" */
-.mobile-menu-links button:last-child {
-    border: 1px solid rgba(155, 135, 245, 0.4) !important;
-    border-radius: 30px !important;
-    color: var(--purple-light) !important;
-    margin-top: 10px;
-    text-align: center !important;
-    background: rgba(155, 135, 245, 0.05) !important;
+.calculator-title span::before {
+    right: 100%;
+    margin-right: 15px;
 }
 
-.mobile-menu-links button:last-child:hover {
-    background: rgba(155, 135, 245, 0.15) !important;
-    border-color: var(--purple-light) !important;
-    box-shadow: 0 0 20px rgba(155, 135, 245, 0.3);
+.calculator-title span::after {
+    left: 100%;
+    margin-left: 15px;
 }
 
-/* Мобильные устройства */
+/* Заблокированный платный контент — ограниченная высота */
+#compat-premium-content.premium-blur,
+#premium-money-content.premium-blur,
+#pair-premium-content.premium-blur {
+    max-height: 400px !important;
+    overflow: hidden !important;
+    filter: blur(6px) !important;
+    pointer-events: none !important;
+    user-select: none !important;
+}
+
+/* Разблокированный контент — полная высота */
+#compat-premium-content:not(.premium-blur),
+#premium-money-content:not(.premium-blur),
+#pair-premium-content:not(.premium-blur) {
+    max-height: none !important;
+    overflow: visible !important;
+    filter: none !important;
+    pointer-events: auto !important;
+    user-select: auto !important;
+}
+
+.premium-blur {
+    filter: blur(6px) !important;
+    pointer-events: none !important;
+    user-select: none !important;
+}
+
+/* Заголовки в платном блоке совместимости */
+#compat-premium-content h4 {
+    font-size: 1.5rem;
+    color: var(--gold);
+    margin-bottom: 10px;
+}
+
+/* Обычный текст */
+#compat-premium-content p {
+    font-size: 1rem;
+    color: #ddd;
+    line-height: 1.7;
+}
+
+#compat-premium-content h5 {
+    font-size: 1.1rem;
+}
+
+/* Заголовок */
+#compat-premium-content .money-content h4 {
+    font-size: 1.2rem;
+    color: var(--gold);
+}
+
+/* Обычный текст */
+#compat-premium-content .money-content p {
+    font-size: 1rem;
+    color: #ddd;
+    line-height: 1.7;
+}
+
+/* Жирный текст внутри */
+#compat-premium-content .money-content strong {
+    color: var(--gold);
+}
+
+/* ============================================
+   МАГИЧЕСКАЯ АУРА И УГОЛКИ ДЛЯ ГЛАВНОГО ФОТО
+   ============================================ */
+
+/* Анимированная аура */
+.hero-image-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 1rem;
+    background: linear-gradient(135deg,
+        rgba(201,168,76,0.4) 0%,
+        rgba(123,94,167,0.3) 50%,
+        rgba(201,168,76,0.4) 100%);
+    filter: blur(10px);
+    z-index: -1;
+    animation: auraPulse 3s ease-in-out infinite;
+}
+
+@keyframes auraPulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.03); }
+}
+
+/* Декоративные уголки */
+.corner-top-right {
+    position: absolute;
+    top: -14px;
+    right: -14px;
+    width: 40px;
+    height: 40px;
+    border-top: 0.5px solid var(--gold);
+    border-right: 0.5px solid var(--gold);
+    border-radius: 0 17px 0 0;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.corner-bottom-left {
+    position: absolute;
+    bottom: -14px;
+    left: -12px;
+    width: 40px;
+    height: 40px;
+    border-bottom: 0.5px solid var(--gold);
+    border-left: 0.5px solid var(--gold);
+    border-radius: 0 0 0 17px;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.corner-top-right,
+.corner-bottom-left {
+    opacity: 0.6;
+}
+#compat {
+    padding-top: 100px;
+}
+
+
+
+/* Верхние карточки (строка, идущая влево) */
+.marquee-track .testimonial-card {
+    width: 380px;               /* измените под свой вкус */
+    opacity: 0.92;
+    background: rgba(201, 168, 76, 0.06);
+    border-color: rgba(201, 168, 76, 0.25);
+}
+
+.marquee-track .testimonial-text p {
+    font-size: 0.9rem;
+    color: #f0f0f0;
+}
+
+/* Нижние карточки (строка, идущая вправо) */
+.marquee-track-reverse .testimonial-card {
+    width: 340px;               /* можно сделать уже или шире */
+    opacity: 0.85;
+    background: rgba(123, 94, 167, 0.06);
+    border-color: rgba(123, 94, 167, 0.25);
+}
+
+.marquee-track-reverse .testimonial-text p {
+    font-size: 0.85rem;
+    color: #ddd;
+}
+
+/* Растягиваем отзывы на всю ширину экрана */
+#testimonials {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    overflow: hidden;
+}
+
+/* Снимаем обрезание у родительской секции на это время */
+section#home {
+    overflow: visible;
+}
+
+/* ============================================
+   ШАГ 2: СОЧНЫЕ ЗОЛОТЫЕ КНОПКИ
+   ============================================ */
+.btn-gold {
+  background: linear-gradient(135deg, #b8993c 0%, #e5c77c 50%, #c9a96e 100%);
+  background-size: 200% 200%;
+  border: none;
+  color: #0f0c1f;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border-radius: 50px;
+  box-shadow: 0 8px 25px rgba(201, 169, 110, 0.5), 0 0 15px rgba(212, 175, 55, 0.4);
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-gold:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 35px rgba(201, 169, 110, 0.7), 0 0 35px rgba(212, 175, 55, 0.6);
+  background-position: 100% 0;
+}
+
+/* Блик при наведении */
+.btn-gold::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.5) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.btn-gold:hover::after {
+  opacity: 0.3;
+}
+
+/* Утапливание при клике */
+.btn-gold:active {
+  transform: translateY(0px);
+  box-shadow: 0 5px 12px rgba(201, 169, 110, 0.4);
+}
+
+/* ============================================
+   ШАГ 3: ЗОЛОТАЯ ОБВОДКА БЕЗ АУРЫ
+   ============================================ */
+.calc-container,
+.service-card {
+  border: 1px solid rgba(201, 169, 110, 0.5) !important;
+  box-shadow: none !important;
+}
+
+.service-card:hover,
+.calc-container:hover {
+  border-color: rgba(201, 169, 110, 0.8) !important;
+}
+
+/* ============================================
+   ШАГ 4 (ФИНАЛ): МЕНЮ С ПРОЗРАЧНЫМ ТЕКСТОМ ПРИ СКРОЛЛЕ
+   ============================================ */
+nav {
+  width: 100% !important;
+  max-width: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 0 !important;
+  transform: none !important;
+  border-radius: 0 !important;
+  padding: 1px 30px !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(201, 169, 110, 0.2) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
+  transition: background-color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease !important;
+}
+
+/* При скролле — фон и текст становятся прозрачнее */
+nav.scrolled {
+  background-color: rgba(21, 19, 35, 0.36) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid rgba(201, 169, 110, 0.08) !important;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15) !important;
+}
+
+nav.scrolled .nav-links button {
+  color: rgba(255, 255, 255, 0.07) !important;          /* ← текст тоже прозрачный */
+  transition: color 0.5s ease !important;
+}
+
+nav.scrolled .nav-links button.active {
+  color: rgba(212,175,55,0.6) !important;           /* ← активная тоже мягче */
+}
+
+/* Кнопки меню */
+.nav-links {
+  justify-content: center !important;
+  gap: 6px !important;
+}
+.nav-links button {
+  color: rgba(255,255,255,0.7) !important;
+  font-size: 0.8rem !important;
+  padding: 10px 20px !important;
+  border-radius: 30px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  transition: all 0.3s ease !important;
+}
+.nav-links button:hover {
+  color: #fff !important;
+  background: rgba(201,169,110,0.15) !important;
+}
+.nav-links button.active {
+  color: #d4af37 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-bottom: 2px solid rgba(201,169,110,0.5) !important;
+  border-radius: 0 !important;
+}
+
+/* ============================================
+   ПЕРЕСБОРКА СЕКЦИИ «СТАТЬ НУМЕРОЛОГОМ»
+   ============================================ */
+
+/* ============================================
+   ТРИ ТАРИФНЫЕ КАРТОЧКИ (СТАТЬ НУМЕРОЛОГОМ)
+   ============================================ */
+.tariffs-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 25px;
+  margin-bottom: 40px;
+}
+
+.tariff-card {
+  background: rgba(20, 15, 40, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 28px;
+  padding: 35px 25px 30px;
+  flex: 1;
+  min-width: 280px;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, border-color 0.3s, box-shadow 0.3s;
+  position: relative;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+}
+
+.tariff-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(212, 175, 55, 0.55);
+  box-shadow: 0 22px 42px rgba(0,0,0,0.55), 0 0 30px rgba(212, 175, 55, 0.18);
+}
+
+/* Номер тарифа */
+.tariff-badge {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #D4AF37, #f8d96d);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #0f0c1f;
+  margin-bottom: 18px;
+  box-shadow: 0 6px 14px rgba(212, 175, 55, 0.35);
+}
+
+.tariff-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.7rem;
+  font-weight: 600;
+  color: var(--gold);
+  margin-bottom: 12px;
+  letter-spacing: 0.02em;
+}
+
+.tariff-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 18px;
+  font-size: 0.85rem;
+  color: #b0aaca;
+}
+
+.tariff-meta i {
+  color: var(--gold);
+  margin-right: 4px;
+}
+
+.tariff-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px;
+  flex: 1;
+}
+
+.tariff-features li {
+  position: relative;
+  padding-left: 1.6em;
+  margin-bottom: 10px;
+  color: #ddd;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.tariff-features li::before {
+  content: '✦';
+  position: absolute;
+  left: 0;
+  color: var(--gold);
+  font-size: 0.7rem;
+  top: 0.2em;
+}
+
+.tariff-outcome {
+  background: rgba(212, 175, 55, 0.08);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 12px 12px 0;
+  padding: 10px 14px;
+  margin-bottom: 22px;
+  font-size: 0.85rem;
+  color: #e0dcc0;
+}
+
+.tariff-outcome i {
+  color: var(--gold);
+  margin-right: 6px;
+}
+
+.tariff-price {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2.3rem;
+  font-weight: 700;
+  color: #D4AF37;
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.tariff-btn {
+  width: 100%;
+  padding: 12px !important;
+  font-size: 0.95rem !important;
+}
+
+/* Популярный тариф */
+.tariff-card--popular {
+  border-color: rgba(212, 175, 55, 0.5);
+  background: rgba(30, 22, 60, 0.75);
+  box-shadow: 0 16px 32px rgba(0,0,0,0.45), 0 0 35px rgba(212, 175, 55, 0.15);
+}
+
+.tariff-popular-label {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #D4AF37, #f8d96d);
+  color: #0f0c1f;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 5px 18px;
+  border-radius: 30px;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+}
+
+/* Адаптация */
+@media (max-width: 900px) {
+  .tariffs-row {
+    flex-direction: column;
+    align-items: center;
+  }
+  .tariff-card {
+    max-width: 360px;
+    width: 100%;
+  }
+}
+
+/* ============================================
+   ПЛАШКИ ДЛЯ ПРОГРАММЫ И ПРЕИМУЩЕСТВ
+   ============================================ */
+.course-section-card {
+  background: rgba(20, 15, 40, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 28px;
+  padding: 40px 35px;
+  margin: 0 auto 40px;
+  max-width: 1000px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.course-section-card:hover {
+  border-color: rgba(212, 175, 55, 0.45);
+  box-shadow: 0 18px 38px rgba(0,0,0,0.5), 0 0 25px rgba(212, 175, 55, 0.12);
+}
+
+/* Иконки в информационных карточках — как номера в тарифах */
+.tariff-card--info .tariff-badge {
+  background: linear-gradient(135deg, #D4AF37, #f8d96d);
+  font-size: 1rem;
+  color: #0f0c1f;
+  box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3);
+      
+}
+
+
+/* Иконки внутри node-icon — чёткие и по центру */
+.node-icon i {
+  font-size: 1.1rem;
+  color: var(--gold);
+}
+
+/* Информационные карточки — ровно по ширине двух тарифов */
+.tariff-card--info-mod {
+  max-width: 840px;
+     margin-bottom: 20px; /* было 40px, можно больше или меньше */
+}
+
+/* ============================================
+   ТЕКСТ ВНУТРИ ИНФОРМАЦИОННЫХ КАРТОЧЕК
+   ============================================ */
+
+/* Заголовок */
+.tariff-card--info-mod .tariff-title {
+  font-size: 1.6rem;        /* размер */
+  text-align: center;       /* слева / center / справа */
+  margin-bottom: 53px;      /* отступ снизу */
+  color: var(--gold);          /* цвет */
+ margin-top: -68px;  
+}
+
+/* Обычный текст */
+.tariff-card--info-mod p {
+  font-size: 0.95rem;
+  line-height: 2.8;
+  color: #d0d0e0;
+  text-align: left;
+    margin-top: -8px; 
+}
+
+/* Заголовки модулей */
+.tariff-card--info-mod .node-content h4 {
+  font-size: 1.4rem;
+  color: rgba(223, 198, 59, 0.92);
+  margin-bottom: 9px;
+    margin-top: -15px; 
+     text-align: left;
+}
+
+/* Подписи модулей */
+.tariff-card--info-mod .node-content p {
+  font-size: 0.88rem;
+  color: #b0aaca;
+    margin-top: -27px; 
+}
+
+/* Заголовки преимуществ */
+.tariff-card--info-mod .benefit-card-old h4 {
+  font-size: 1.1rem;
+transform: translateY(-67px);  /* ← поднимает только заголовок */
+  margin-bottom: 11px;
+     color: rgba(223, 198, 59, 0.92);
+   
+}
+
+/* Текст преимуществ */
+.tariff-card--info-mod .benefit-card-old p {
+  font-size: 0.85rem;
+  color: #ccc;
+  text-align: center;
+     margin-top: -128px; 
+    
+}
+
+/* Иконки преимуществ */
+.tariff-card--info-mod .benefit-icon {
+  font-size: 1.5rem;
+  margin-bottom: 39px;
+}
+
+.benefit-icon i {
+  font-size: 1.3rem;
+  color: var(--gold);
+  width: 26px;
+  height: 26px;
+  line-height: 24px;
+  border-radius: 50%;
+ background: rgba(15,12,41,0.8);
+  border: 2px solid rgba(255, 212, 73, 0.77);
+  display: inline-block;
+  text-align: center;
+     
+}
+
+/* Убираем фон у контейнера в секции курса */
+#course .calc-container {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.hero-title-main {
+    color: #D4AF37;
+    background: none;
+    -webkit-text-fill-color: #D4AF37;
+    text-shadow: 0 0 12px rgba(212, 175, 55, 0.5);
+}
+
+/* ============================================
+   АДАПТАЦИЯ «СТАТЬ НУМЕРОЛОГОМ» ДЛЯ МОБИЛЬНЫХ
+   ============================================ */
 @media (max-width: 768px) {
-    #main-nav {
-        display: none !important;
-    }
-    .mobile-menu-btn {
-        display: flex !important;
-    }
+  /* Контейнер секции */
+  #course .calc-container {
+    padding: 15px 10px !important;
+    margin: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  /* Тарифные карточки */
+  .tariffs-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .tariff-card {
+    min-width: 0;
+    max-width: 100% !important;
+    width: 100%;
+    padding: 25px 18px;
+    box-sizing: border-box;
+  }
+
+  /* Информационные карточки */
+  .tariff-card--info-mod {
+    max-width: 100% !important;
+    width: 100%;
+    padding: 25px 18px;
+    box-sizing: border-box;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* Модули — таймлайн */
+  .module-timeline {
+    padding-left: 10px;
+  }
+
+  .timeline-node {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .node-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+    flex-shrink: 0;
+    margin-right: 10px;
+  }
+
+  .node-content h4 {
+    font-size: 1rem;
+  }
+
+  .node-content p {
+    font-size: 0.82rem;
+  }
+
+  /* Преимущества */
+  .benefits-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .benefit-card-old {
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+    padding: 20px 15px;
+    box-sizing: border-box;
+  }
+
+  /* Заголовок секции */
+  #course h1 {
+    font-size: 2.2rem !important;
+    line-height: 1.2;
+  }
+
+  #course h1 span {
+    display: block;
+  }
+
+  /* Текст печатной машинки */
+  .typewriter-text {
+    font-size: 0.95rem !important;
+  }
+
+  /* Счётчик выпускников */
+  .graduates-counter {
+    font-size: 0.9rem;
+    padding: 8px 16px;
+  }
+
+  .graduates-counter strong {
+    font-size: 1.3rem;
+  }
 }
 
-/* Десктоп */
-@media (min-width: 769px) {
-    .mobile-menu-btn,
-    .mobile-menu,
-    .mobile-menu-overlay {
-        display: none !important;
-    }
+/* ===== МОДУЛИ (список) ===== */
+.modules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.mobile-menu.open ~ .mobile-menu-btn,
-body:has(.mobile-menu.open) .mobile-menu-btn {
-    display: none !important;
+.module-item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.module-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+  font-size: 1rem;
+}
+
+.module-text h4 {
+  margin: 0 0 5px;
+  font-size: 1.05rem;
+  color: #fff;
+}
+
+.module-text p {
+  margin: 0;
+  font-size: 0.92rem;
+  color: #c0c0d0;
+  line-height: 1.6;
+}
+
+/* ===== ПРЕИМУЩЕСТВА ===== */
+.benefits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.benefit-item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.benefit-item .benefit-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  color: var(--gold);
+}
+
+.benefit-item .benefit-text h4 {
+  margin: 0 0 5px;
+  font-size: 1.05rem;
+   color: #D4AF37;
+}
+
+.benefit-item .benefit-text p {
+  margin: 0;
+  font-size: 0.92rem;
+  color: #c0c0d0;
+  line-height: 1.6;
+}
+
+/* ===== АДАПТАЦИЯ ДЛЯ ТЕЛЕФОНОВ ===== */
+@media (max-width: 768px) {
+  .module-item {
+    gap: 10px;
+  }
+  .module-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 0.85rem;
+  }
+  .module-text h4 {
+    font-size: 0.9rem;
+  }
+  .module-text p {
+    font-size: 0.8rem;
+  }
+
+  .benefit-item {
+    gap: 10px;
+  }
+  .benefit-item .benefit-icon {
+    width: 34px;
+    height: 34px;
+    font-size: 0.9rem;
+  }
+  .benefit-item .benefit-text h4 {
+    font-size: 0.9rem;
+  }
+  .benefit-item .benefit-text p {
+    font-size: 0.8rem;
+  }
+}
+
+.module-text h4 {
+  color: #D4AF37;
+  text-align: center;
+}
+
+.benefit-text h4 {
+  color: #D4AF37;
+  text-align: center;
+}
+
+.bar-chart {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  height: 280px;
+  padding: 0 10px;
+  margin: 20px auto;
+  max-width: 100%;
+}
+.bar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 50px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.bar-item:hover { transform: translateY(-5px); }
+.bar-fill {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(to top, var(--purple-deep), var(--gold));
+  transition: height 0.6s ease, background 0.3s;
+}
+.bar-item:hover .bar-fill {
+  background: linear-gradient(to top, #fff, var(--gold));
+}
+.bar-label {
+  font-size: 0.7rem;
+  color: #aaa;
+  margin-top: 8px;
+  text-align: center;
+  word-break: break-word;
+}
+.bar-value {
+  font-size: 0.75rem;
+  color: var(--gold);
+  margin-top: 4px;
+  font-weight: bold;
+}
+
+
+/* СТОЛБЦЫ */
+/* Столбцы */
+#bar-chart > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+#bar-chart > div:hover { transform: translateY(-5px); }
+#bar-chart > div > div:first-child {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(to top, #7E69AB, #D4AF37);
+  transition: height 0.6s, background 0.3s;
+}
+#bar-chart > div:hover > div:first-child { background: linear-gradient(to top, #fff, #D4AF37); }
+#bar-chart > div > div:nth-child(2) { font-size: 0.75rem; color: #D4AF37; margin-top:4px; font-weight: bold; }
+#bar-chart > div > div:last-child { font-size: 0.65rem; color: #aaa; margin-top:6px; text-align: center; }
+
+@media (max-width: 768px) {
+  #bar-chart {
+    height: 300px !important;          /* чуть компактнее */
+    overflow-x: auto;                 /* горизонтальная прокрутка, если столбцы всё же не влезают */
+    flex-wrap: nowrap;
+  }
+
+  #bar-chart > div {
+    flex: 0 0 auto;
+    min-width: 20px;                 /* минимальная ширина столбца */
+    max-width: 36px;
+    margin: 0 2px;
+  }
+
+  #bar-chart > div > div:last-child { /* подписи */
+    font-size: 0.55rem !important;   /* уменьшаем шрифт */
+    white-space: normal;             /* разрешаем перенос слов */
+    word-break: break-word;
+    line-height: 1.2;
+  }
+
+  #bar-chart > div > div:nth-child(2) { /* значение */
+    font-size: 0.65rem !important;
+  }
+
+  #bar-tooltip {
+    font-size: 0.8rem;
+  }
+}
+
+/* ТЕНЕВЫЕ АУРЫ СВЕРХУ И СНИЗУ */
+.scroll-shroud {
+  position: fixed;
+  left: 0;
+  width: 100%;
+  height: 110px;                /* высоту можно менять (80px – мягче, 150px – заметнее) */
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
+.scroll-shroud--top {
+  top: 55;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9) 0%, transparent 100%);
+}
+
+.scroll-shroud--bottom {
+  bottom: 0;
+  background: linear-gradient(to top, rgb(0, 0, 0) 0%, transparent 100%);
+}
+
+/* ============================================
+   ПЛАВНОЕ ПОЯВЛЕНИЕ БЛОКОВ ПРИ СКРОЛЛЕ
+   ============================================ */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal-on-scroll.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Для элементов, которые должны появляться без сдвига (только прозрачность) */
+.reveal-fade-only {
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+.reveal-fade-only.revealed {
+  opacity: 1;
+}
+
+/* Небольшая задержка для каскадного появления (опционально) */
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+
+
+/* ============================================
+   FAQ (ЧАСТО ЗАДАВАЕМЫЕ ВОПРОСЫ)
+   ============================================ */
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.faq-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  border-radius: 12px;
+  padding: 12px 18px;
+  transition: border-color 0.3s, background 0.3s;
+}
+
+.faq-item:hover {
+  border-color: rgba(212, 175, 55, 0.35);
+  background: rgba(212, 175, 55, 0.05);
+}
+
+.faq-item summary {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #e0d8b0;
+  cursor: pointer;
+  list-style: none;               /* убираем стандартный треугольник */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: color 0.3s;
+}
+
+.faq-item summary::after {
+  content: '\f078';               /* иконка шеврона (Font Awesome) */
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  font-size: 0.7rem;
+  color: var(--gold);
+  transition: transform 0.3s;
+}
+
+.faq-item[open] summary::after {
+  transform: rotate(180deg);
+}
+
+.faq-item summary:hover {
+  color: var(--gold-light);
+}
+
+.faq-item p {
+  margin: 12px 0 4px;
+  font-size: 0.92rem;
+  color: #ccc;
+  line-height: 1.7;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Анимация появления текста */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================
+   КНОПКИ В КАРТОЧКАХ УСЛУГ («Подробнее» + «Записаться»)
+   ============================================ */
+.service-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+/* Чтобы прозрачная кнопка была заметнее */
+.btn-outline-gold {
+  background: transparent;
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  color: var(--gold);
+  padding: 10px 22px;
+  border-radius: 30px;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-gold:hover {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: var(--gold);
+  color: var(--gold-light);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+}
+
+/* Элегантные раскрывающиеся блоки для отчёта родитель-ребёнок */
+.elegant-report details {
+    margin-bottom: 8px;
+    border: 1px solid rgba(212, 175, 55, 0.15);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+.elegant-report details:hover {
+    border-color: rgba(212, 175, 55, 0.35);
+}
+.elegant-report summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--gold);
+    cursor: pointer;
+    list-style: none;
+    transition: color 0.3s;
+}
+.elegant-report summary::-webkit-details-marker { display: none; }
+.elegant-report summary::after {
+    content: '\f078';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    margin-left: auto;
+    font-size: 0.8rem;
+    color: rgba(212, 175, 55, 0.6);
+    transition: transform 0.3s;
+}
+.elegant-report details[open] summary::after {
+    transform: rotate(180deg);
+}
+.elegant-report .report-content {
+    padding: 0 18px 16px;
+    font-size: 0.95rem;
+    color: #ccc;
+    line-height: 1.7;
+}
+.elegant-report .report-content h4 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    color: var(--gold);
+    margin: 16px 0 6px;
+    border-left: 3px solid var(--gold);
+    padding-left: 12px;
+}
+.elegant-report .report-content p {
+    margin-bottom: 10px;
+}
+.elegant-report .report-content ul {
+    padding-left: 20px;
+    margin-bottom: 10px;
+}
+.elegant-report .report-content ul li {
+    margin-bottom: 4px;
+    color: #bbb;
 }

@@ -1,222 +1,272 @@
-async function calculateMoneyMatrix() {
-    if (!premiumAccess) {
-        openUnlockPaymentModal();
-        return;
-    }
-    const canProceed = await useCalculation();
-    if (!canProceed) return;
+// Вспомогательная функция для определения уровня (low/medium/high)
+function getLevel(value) {
+    if (value <= 1) return 'low';
+    if (value >= 3) return 'high';
+    return 'medium';
+}
 
-    const name = document.getElementById('moneyName').value;
+function getMirrorLevel(value) {
+    if (value === 0) return 0;
+    if (value <= 2) return 1;
+    if (value <= 4) return 3;
+    if (value <= 6) return 5;
+    return 7;
+}
+
+// Главная функция расчёта личного денежного кода
+async function calculateMoneyPersonal() {
+    
+const auditPersonal = document.getElementById('audit-personal');
+if (auditPersonal) auditPersonal.style.display = 'none';
+    
+    const name = document.getElementById('moneyName').value.trim();
     const date = document.getElementById('moneyDate').value;
 
-    if(!date) return alert("Введите дату рождения!");
+    if (!date) return alert("Введите дату рождения!");
 
-    // Лоадер
+    // Показываем лоадер, скрываем результат и аудит-блок
     document.getElementById('result-money').style.display = 'none';
     document.getElementById('loader-money').style.display = 'flex';
-    // Показываем кнопку PDF, если есть премиум-доступ
+    const auditBlock = document.getElementById('audit-block');
+    if (auditBlock) auditBlock.style.display = 'none';
+
+    // Показываем кнопку PDF, если есть доступ
     if (premiumAccess) {
-    const pdfBtn = document.getElementById('download-money-pdf');
-    if (pdfBtn) pdfBtn.style.display = 'inline-block';
-}
+        const pdfBtn = document.getElementById('download-money-pdf');
+        if (pdfBtn) pdfBtn.style.display = 'inline-block';
+    }
 
     setTimeout(() => {
-        const d = new Date(date);
-        const day = d.getDate();
-        const month = d.getMonth() + 1;
-        const year = d.getFullYear();
+        // --- 1. Считаем матрицу и Число Жизненного Пути ---
+        const matrix = calculateMatrixData(date);
+        const lpData = calculateLifePath(date);
+        const lifePath = lpData.master || lpData.base;
 
-        // Функция сведения к 22
-        const reduce22 = (n) => {
-            let res = n;
-            while (res > 22) {
-                res = res.toString().split('').reduce((a, b) => +a + +b, 0);
-            }
-            return res;
-        };
+        // --- 2. Собираем ключи для блоков ---
+        // Блок А: Главный портрет
+        const keyA = `${lifePath}-${matrix.c[1]}-${matrix.c[8]}`;
+        // Блок Б: Слепые зоны и Сильные стороны
+        const blindKeys = [];
+        for (let i = 1; i <= 9; i++) if (matrix.c[i] === 0) blindKeys.push(`blind-${i}`);
+        const growthKeys = [];
+        for (let i = 1; i <= 9; i++) if (matrix.c[i] >= 3) growthKeys.push(`growth-${i}`);
 
-        // --- ТОЧКИ ДЛЯ ФИНАНСОВ ---
-        // 1. СФЕРА РЕАЛИЗАЦИИ (День - Личность)
-        // Кем работать, чтобы перло.
-        const pointProf = reduce22(day);
+        // Блок В: Интегральный портрет
+        const pairsV = [
+            { pair: 'pair1', a: matrix.c[1], b: matrix.c[2], name: 'Характер + Энергия' },
+            { pair: 'pair2', a: matrix.c[8], b: matrix.c[6], name: 'Долг + Труд' },
+            { pair: 'pair3', a: matrix.c[5], b: matrix.c[7], name: 'Логика + Удача' },
+            { pair: 'pair4', a: matrix.goal, b: matrix.self, name: 'Цель + Самооценка' }
+        ];
 
-        // 2. АКТИВАТОР / КЛЮЧ (Месяц - Вдохновение)
-        // Что делать, чтобы деньги пришли (Духовная часть).
-        const pointActive = reduce22(month);
+        // Блок Г: Архетип
+        const keyG = `${getLevel(matrix.c[2])}-${getLevel(matrix.habits)}`;
+        // Блок Д: Темп роста
+        const keyD = `${lifePath}-${getLevel(matrix.c[7])}`;
+        // Блок Е: Куда вложить
+        const keyE = `${getLevel(matrix.goal)}-${getLevel(matrix.c[5])}`;
+        // Блок Ж: Аффирмации
+        const keyZh = keyG;
 
-        // 3. БЛОК / КАРМА (Сумма всей даты - Общий фон)
-        // Что мешает, главная ошибка.
-        const sumAll = reduce22(day + month + year.toString().split('').reduce((a, b) => +a + +b, 0));
-        const pointBlock = sumAll; // Или можно взять Кармический хвост, но Сумма даты тоже отлично показывает урок.
+        // --- 3. Извлекаем готовые тексты из баз данных ---
+        const textA = (typeof moneyPath !== 'undefined' && moneyPath[keyA]) || 'Описание готовится...';
+        const textG = (typeof moneyArchetype !== 'undefined' && moneyArchetype[keyG]) || '';
+        const textD = (typeof moneyTempo !== 'undefined' && moneyTempo[keyD]) || '';
+        const textE = (typeof moneyInvest !== 'undefined' && moneyInvest[keyE]) || '';
 
-        // --- ВЫВОД В КРУЖОЧКИ ---
-        document.getElementById('val-block').innerText = pointBlock;
-        document.getElementById('val-prof').innerText = pointProf;
-        document.getElementById('val-active').innerText = pointActive;
+        // --- Добавляем таблицу Пифагора (сразу после setTimeout) ---
+const matrixHTML = renderMatrixHTML(matrix, 'Ваша финансовая матрица', name);
+document.getElementById('money-matrix-container').innerHTML = matrixHTML;
+        // --- 4. Собираем HTML с раскрывающимися карточками ---
+        document.getElementById('money-user-title').innerText = `Денежный код: ${name || 'Гость'}`;
 
-        document.getElementById('money-user-title').innerText = `Финансовый код: ${name || 'Гость'}`;
-
-        // --- ВЫВОД ТЕКСТА (БЕРЕМ ИЗ БАЗЫ) ---
-        // База будет называться moneyMatrixData
         
-        const getData = (num) => moneyMatrixData[num] || { 
-            block: "Описание...", prof: "Описание...", active: "Описание..." 
-        };
+        
+                // --- Зеркало души (moneyMirror) ---
+      const mirrorKey = `${lifePath}-${getMirrorLevel(matrix.c[1])}-${getMirrorLevel(matrix.c[8])}`;
+const mirrorText = (typeof moneyMirror !== 'undefined' && moneyMirror[mirrorKey])
+    ? moneyMirror[mirrorKey]
+    : 'Денежная суть этой души уникальна и раскрывается постепенно.';
+        document.getElementById('money-mirror-text').innerText = mirrorText;
+        
+        
+        
+        const dangerText = (typeof moneyDanger !== 'undefined' && moneyDanger[keyA])
+    ? moneyDanger[keyA]
+    : '⚠️ Помни: главная опасность — забыть о балансе между заработком и жизнью.';
 
-        const dataBlock = getData(pointBlock);
-        const dataProf = getData(pointProf);
-        const dataActive = getData(pointActive);
+        
+        // Блок Б
+        let textB = '';
+        if (blindKeys.length > 0) {
+            textB += '<h5 style="color: var(--gold);">Слепые зоны (чего не хватает)</h5>';
+            blindKeys.forEach(k => { if (typeof moneyBlindGrowth !== 'undefined' && moneyBlindGrowth[k]) textB += `<p><strong>${k.replace('blind-','Ячейка ')}:</strong> ${moneyBlindGrowth[k]}</p>`; });
+        }
+        if (growthKeys.length > 0) {
+            textB += '<h5 style="color: var(--gold);">Сильные стороны (гипертрофия)</h5>';
+            growthKeys.forEach(k => { if (typeof moneyBlindGrowth !== 'undefined' && moneyBlindGrowth[k]) textB += `<p><strong>${k.replace('growth-','Ячейка ')}:</strong> ${moneyBlindGrowth[k]}</p>`; });
+        }
+        if (!textB) textB = '<p>Явных слепых зон и гипертрофий нет.</p>';
 
-        document.getElementById('desc-block').innerHTML = 
-            `<strong>Аркан ${pointBlock}:</strong> ${dataBlock.block}`;
-            
-        document.getElementById('desc-prof').innerHTML = 
-            `<strong>Аркан ${pointProf}:</strong> ${dataProf.prof}`;
-            
-        document.getElementById('desc-active').innerHTML = 
-            `<strong>Аркан ${pointActive}:</strong> ${dataActive.active}`;
+        // Блок В
+        let textV = '';
+        pairsV.forEach(p => {
+            const levelA = getLevel(p.a), levelB = getLevel(p.b), key = `${p.pair}-${levelA}-${levelB}`;
+            if (typeof moneySynthesisPairs !== 'undefined' && moneySynthesisPairs[key]) textV += `<p><strong>${p.name}:</strong> ${moneySynthesisPairs[key]}</p>`;
+        });
 
-        // Показываем
+       
+
+        // Блок Ж
+        let textZh = '';
+        if (typeof moneyAffirmations !== 'undefined' && moneyAffirmations[keyZh]) moneyAffirmations[keyZh].forEach(aff => textZh += `<p style="font-style:italic;">«${aff}»</p>`);
+        else textZh = '<p>Я позволяю себе богатство. Я достоин изобилия. Деньги приходят ко мне легко и свободно.</p>';
+        // --- ПЛАТНАЯ ЧАСТЬ ---
+        let premiumHTML = '';
+        premiumHTML += `<details class="money-details"><summary>🧬 Ваш финансовый портрет</summary><div class="money-content">${textA}</div></details>`;
+        premiumHTML += `<details class="money-details"><summary>⚠️ Финансовый стоп-кран</summary><div class="money-content">${dangerText}</div></details>`;
+        premiumHTML += `<details class="money-details"><summary>🌀 Слепые зоны и Сильные стороны</summary><div class="money-content">${textB}</div></details>`;
+        premiumHTML += `<details class="money-details"><summary>🔗 Интегральный портрет</summary><div class="money-content">${textV}</div></details>`;
+        premiumHTML += `<details class="money-details"><summary>🎭 Ваш денежный архетип</summary><div class="money-content">${textG}</div></details>`;
+        premiumHTML += `<details class="money-details"><summary>⏳ Ваш темп роста и удача</summary><div class="money-content">${textD}</div></details>`;
+        premiumHTML += `<details class="money-details"><summary>💼 Куда вложить капитал</summary><div class="money-content">${textE}</div></details>`;
+        premiumHTML += `<details class="money-details"><summary>✨ Ваши персональные аффирмации</summary><div class="money-content">${textZh}</div></details>`;
+
+        document.getElementById('premium-money-content').innerHTML = premiumHTML;
+        document.getElementById('premium-money-container').style.display = 'block';
+
+        if (premiumAccess) {
+            document.getElementById('premium-lock-overlay').style.display = 'none';
+            document.getElementById('premium-money-content').classList.remove('premium-blur');
+        } else {
+            document.getElementById('premium-lock-overlay').style.display = 'flex';
+            document.getElementById('premium-money-content').classList.add('premium-blur');
+        }
+        // Показываем результат
         document.getElementById('loader-money').style.display = 'none';
         document.getElementById('result-money').style.display = 'block';
-
-    }, 1500);
+        window.revealNewElements(document.getElementById('result-money'));
+    }, 1000);
 }
 
-function calculateMoneyCompat() {
-    const name1 = document.getElementById('moneyName1').value.trim() || "Мужчина";
+async function calculateMoneyPair() {
+    
+    const auditPair = document.getElementById('audit-pair');
+if (auditPair) auditPair.style.display = 'none';
+    
+    const name1 = document.getElementById('moneyName1').value.trim() || 'Партнёр 1';
     const date1 = document.getElementById('moneyDate1').value;
-    const name2 = document.getElementById('moneyName2').value.trim() || "Женщина";
+    const name2 = document.getElementById('moneyName2').value.trim() || 'Партнёр 2';
     const date2 = document.getElementById('moneyDate2').value;
 
-    if(!date1 || !date2) return alert("Введите даты обоих партнёров!");
+    if (!date1 || !date2) return alert("Введите даты обоих партнёров!");
 
-    // Лоадер
-    document.getElementById('result-money-compat').style.display = 'none';
-    document.getElementById('loader-money-compat').style.display = 'flex';
-
-    // Показываем кнопку PDF, если есть премиум-доступ
-    if (premiumAccess) {
-    const pdfBtn = document.getElementById('download-money-pdf');
-    if (pdfBtn) pdfBtn.style.display = 'inline-block';
-}
+    document.getElementById('result-money-pair').style.display = 'none';
+    document.getElementById('loader-money-pair').style.display = 'flex';
 
     setTimeout(() => {
-        // --- МАТЕМАТИКА ---
-        const reduce22 = (n) => {
-            let res = n;
-            while (res > 22) res = res.toString().split('').reduce((a, b) => +a + +b, 0);
-            return res;
+        const matrix1 = calculateMatrixData(date1);
+        const matrix2 = calculateMatrixData(date2);
+        const lp1 = calculateLifePath(date1).master || calculateLifePath(date1).base;
+        const lp2 = calculateLifePath(date2).master || calculateLifePath(date2).base;
+
+        const getLevel = (val) => {
+            if (val <= 2) return 'low';
+            if (val >= 5) return 'high';
+            return 'medium';
         };
 
-        const getMoneyCode = (dStr) => {
-            const d = new Date(dStr);
-            // Для Личных денег в паре берем: День + Месяц (Таланты + Личность)
-            // Это самая точная характеристика для "Стиля поведения в деньгах"
-            return reduce22(d.getDate() + (d.getMonth() + 1));
-        };
+        const sortedLPs = [lp1, lp2].sort((a,b) => a - b);
+        const lpKey = sortedLPs[0] + '-' + sortedLPs[1];
 
-        // 1. Код Мужчины
-        const codeMale = getMoneyCode(date1);
+        const char1 = getLevel(matrix1.c[1]), char2 = getLevel(matrix2.c[1]);
+        const duty1 = getLevel(matrix1.c[8]), duty2 = getLevel(matrix2.c[8]);
+        const pairChar = getLevel(Math.max(matrix1.c[1], matrix2.c[1]));
+        const pairDuty = getLevel(Math.max(matrix1.c[8], matrix2.c[8]));
+        const keyDuty = pairDuty;
 
-        // 2. Код Женщины
-        const codeFemale = getMoneyCode(date2);
-
-        // 3. Код Пары
-        const codePair = reduce22(codeMale + codeFemale);
-
-        // --- ВЫВОД ЦИФР ---
-        document.getElementById('compat-val-1').innerText = codeMale;
-        document.getElementById('compat-val-2').innerText = codeFemale;
-        document.getElementById('compat-val-total').innerText = codePair;
-
-        const safeName1 = escapeHTML(name1);
-        const safeName2 = escapeHTML(name2);
-document.getElementById('money-compat-names').innerHTML = 
-    `<span style="color:#54a0ff">${safeName1}</span> + <span style="color:#ff9ff3">${safeName2}</span>`;
-        // --- СБОРКА ТЕКСТА (КОНСТРУКТОР) ---
-        
-        // Функция безопасного получения текста (если в базе пусто)
-        const getData = (num) => moneyCompatData[num] || { 
-            male: "<p>Описание мужчины готовится...</p>", 
-            female: "<p>Описание женщины готовится...</p>", 
-            pair: "<p>Описание союза готовится...</p>" 
-        };
-
-        const textMale = getData(codeMale).male;     // Берём текст "Он" для его цифры
-        const textFemale = getData(codeFemale).female; // Берём текст "Она" для её цифры
-        const textPair = getData(codePair).pair;     // Берём текст "Пара" для общей цифры
-
-        // Формируем красивый HTML
-        document.getElementById('desc-money-total').innerHTML = `
-            
-            <!-- БЛОК МУЖЧИНЫ -->
-            <div class="trait-block" style="border-left: 4px solid #54a0ff; margin-bottom: 25px;">
-                <h4 style="color:#54a0ff; margin-bottom:15px; font-size:1.2rem;">
-                    <i class="fa-solid fa-mars"></i> Его Денежный Стиль (Аркан ${codeMale})
-                </h4>
-                ${textMale}
-            </div>
-
-            <!-- БЛОК ЖЕНЩИНЫ -->
-            <div class="trait-block" style="border-left: 4px solid #ff9ff3; margin-bottom: 25px;">
-                <h4 style="color:#ff9ff3; margin-bottom:15px; font-size:1.2rem;">
-                    <i class="fa-solid fa-venus"></i> Её Денежный Стиль (Аркан ${codeFemale})
-                </h4>
-                ${textFemale}
-            </div>
-
-            <!-- БЛОК ПАРЫ -->
-            <div class="trait-block" style="border-left: 4px solid var(--gold); background: rgba(255, 215, 0, 0.08);">
-                <h4 style="color:var(--gold); margin-bottom:15px; font-size:1.3rem;">
-                    <i class="fa-solid fa-sack-dollar"></i> Ваш Совместный Поток (Аркан ${codePair})
-                </h4>
-                ${textPair}
+        // --- РЕНДЕР МАТРИЦ ---
+        const matrixHTML1 = renderMatrixHTML(matrix1, 'Партнёр 1', name1);
+        const matrixHTML2 = renderMatrixHTML(matrix2, 'Партнёр 2', name2);
+        document.getElementById('pair-matrices-container').innerHTML = `
+            <div class="pair-matrices">
+                <div class="pair-matrix-wrapper">${matrixHTML1}</div>
+                <div class="pair-matrix-wrapper">${matrixHTML2}</div>
             </div>
         `;
 
-        document.getElementById('loader-money-compat').style.display = 'none';
-        document.getElementById('result-money-compat').style.display = 'block';
+       
+               // ===== БЕСПЛАТНАЯ ЧАСТЬ =====
+        let html = '';
+        html += `<h3 class="section-title">🧬 Ваша денежная ДНК</h3>`;
+        html += buildPairBlock('Зеркало союза', moneyPairMirror[lpKey] || 'Уникальный союз.', true );
 
-    }, 1500);
+        // ===== ПЛАТНАЯ ЧАСТЬ =====
+        let pairPremiumHTML = '';
+        pairPremiumHTML += `<h3 class="section-title">💞 Динамика финансовых отношений</h3>`;
+
+        // Финансовые роли
+        const role1 = moneyPairCore?.roles?.[char1 + '-' + duty1] || 'Роль не определена';
+        const role2 = moneyPairCore?.roles?.[char2 + '-' + duty2] || 'Роль не определена';
+        pairPremiumHTML += buildPairBlock(`👤 ${name1} <span style="font-size:0.8rem;color:#aaa;">(Воля: ${matrix1.c[1]}, Долг: ${matrix1.c[8]})</span>`, role1, false);
+        pairPremiumHTML += buildPairBlock(`👤 ${name2} <span style="font-size:0.8rem;color:#aaa;">(Воля: ${matrix2.c[1]}, Долг: ${matrix2.c[8]})</span>`, role2, false);
+
+        // Интегральный портрет пары
+        pairPremiumHTML += buildPairBlock('📊 Интегральный портрет пары', moneyPairCore?.portrait?.[pairChar + '-' + pairDuty] || 'Портрет готовится.', false);
+
+        // Денежная совместимость
+        pairPremiumHTML += buildPairBlock('💔 Денежная совместимость', `
+            <p><strong>${name1}:</strong> ${moneyPairCore?.compatibility?.[lp1] || '—'}</p>
+            <p><strong>${name2}:</strong> ${moneyPairCore?.compatibility?.[lp2] || '—'}</p>
+        `, false);
+
+        // Секция 3
+        pairPremiumHTML += `<h3 class="section-title">🚀 Ваш план действий</h3>`;
+        pairPremiumHTML += buildPairBlock('🎭 Совместный архетип', moneyPairCore?.archetype?.[pairChar + '-' + pairDuty] || 'Архетип готовится.', false);
+        pairPremiumHTML += buildPairBlock('⚠️ Главная опасность', moneyPairCore?.danger?.[pairChar + '-' + pairDuty] || 'Берегите баланс.', false);
+        pairPremiumHTML += buildPairBlock('💰 Рекомендации по бюджету', moneyPairCore?.budget?.[pairChar + '-' + pairDuty] || 'Рекомендации готовятся.', false);
+        pairPremiumHTML += buildPairBlock('📋 Идеальная стратегия', moneyPairCore?.strategy?.[keyDuty] || 'Стратегия готовится.', false);
+
+        // Вставляем в контейнеры
+        document.getElementById('pair-blocks-container').innerHTML = html;
+        document.getElementById('pair-premium-content').innerHTML = pairPremiumHTML;
+        document.getElementById('pair-premium-container').style.display = 'block';
+
+        if (premiumAccess) {
+            document.getElementById('pair-lock-overlay').style.display = 'none';
+            document.getElementById('pair-premium-content').classList.remove('premium-blur');
+        } else {
+            document.getElementById('pair-lock-overlay').style.display = 'flex';
+            document.getElementById('pair-premium-content').classList.add('premium-blur');
+        }
+        document.getElementById('pair-blocks-container').innerHTML = html;
+
+        document.getElementById('loader-money-pair').style.display = 'none';
+        document.getElementById('result-money-pair').style.display = 'block';
+        if (premiumAccess) {
+    const pdfBtn = document.getElementById('download-money-pair-pdf');
+    if (pdfBtn) pdfBtn.style.display = 'inline-block';
+}
+        window.revealNewElements(document.getElementById('result-money-pair'));
+    }, 1000);
 }
 
-function switchMoneyMode(mode) {
-    const personal = document.getElementById('money-personal-block');
-    const pair = document.getElementById('money-pair-block');
-    const btns = document.querySelectorAll('.mode-btn');
-
-    // Функция для плавной смены
-    const fadeSwap = (hideEl, showEl) => {
-        hideEl.style.opacity = '0';
-        hideEl.style.transition = 'opacity 0.3s ease';
-        
-        setTimeout(() => {
-            hideEl.style.display = 'none';
-            
-            showEl.style.display = 'block';
-            // Небольшая задержка, чтобы браузер отрисовал блок перед анимацией
-            setTimeout(() => {
-                showEl.style.opacity = '1';
-                showEl.classList.add('fade-in'); // Добавляем CSS анимацию
-            }, 50);
-        }, 300); // Ждем пока исчезнет старый (0.3s)
-    };
-
-    if (mode === 'personal') {
-        if (personal.style.display !== 'none') return; // Уже активен
-        fadeSwap(pair, personal);
-        btns[0].classList.add('active');
-        btns[1].classList.remove('active');
-    } else {
-        if (pair.style.display !== 'none') return; // Уже активен
-        fadeSwap(personal, pair);
-        btns[0].classList.remove('active');
-        btns[1].classList.add('active');
-    }
+function buildPairBlock(title, content, open = false) {
+    const openAttr = open ? 'open' : '';
+    return `
+        <details class="money-details" ${openAttr}>
+            <summary>${title}</summary>
+            <div class="money-content">${content}</div>
+        </details>
+    `;
 }
 
-// Экспорт настоящих реализаций в глобальную область
-window._realCalculateMoneyMatrix = calculateMoneyMatrix;
-window._realCalculateMoneyCompat = calculateMoneyCompat;
-window._moneyLoaded = true;
+function buildPairBlock(title, content, open = false) {
+    const openAttr = open ? 'open' : '';
+    return `
+        <details class="money-details" ${openAttr}>
+            <summary>${title}</summary>
+            <div class="money-content">${content}</div>
+        </details>
+    `;
+}

@@ -2052,92 +2052,228 @@ function getCellName(num) {
 
 // ГЛАВНАЯ ФУНКЦИЯ КАЛЬКУЛЯТОРА
 async function calculateParentChild() {
-    if (!premiumAccess) {
-        openUnlockPaymentModal();
-        return;
-    }
+   if (!premiumAccess) {
+    document.getElementById('result-parent-child').style.display = 'none';
+    document.getElementById('loader-parent-child').style.display = 'flex';
+
+    setTimeout(() => {
+        const parentName = document.getElementById('parentName').value.trim() || 'Родитель';
+        const childName = document.getElementById('childName').value.trim() || 'Ребёнок';
+        const parentDate = document.getElementById('parentDate').value;
+        const childDate = document.getElementById('childDate').value;
+        const parentRole = document.getElementById('parentRole').value;
+
+        if (!parentDate || !childDate) {
+            alert('Пожалуйста, введите даты рождения родителя и ребёнка!');
+            document.getElementById('loader-parent-child').style.display = 'none';
+            return;
+        }
+
+        const parentMatrix = calculateMatrixData(parentDate);
+        const childMatrix = calculateMatrixData(childDate);
+        const portraitFull = getGeneralPortrait(parentMatrix, childMatrix, parentName, childName, parentRole);
+        const teaserMatch = portraitFull.match(/(<p><strong>✨.*?<\/p>)\s*(<p><strong>⚡.*?<\/p>)/);
+        const primaryTeaser = teaserMatch ? teaserMatch[1] + teaserMatch[2] : '<p>Узнайте ключевые аспекты ваших отношений с ребёнком…</p>';
+
+        let html = `
+        <div class="comparison-matrices" style="display:flex;flex-wrap:wrap;gap:20px;justify-content:center;margin-bottom:30px;">
+            ${renderMatrixCard(parentMatrix, parentName, 'Родитель')}
+            ${renderMatrixCard(childMatrix, childName, 'Ребёнок')}
+        </div>
+
+        <!-- БЕСПЛАТНЫЙ ТЕКСТ -->
+        <div style="margin-bottom: 25px;">
+            <h3 style="font-family: 'Cormorant Garamond', serif; color: var(--gold); font-size: 1.5rem; margin-bottom: 15px;">📖 Общий портрет отношений</h3>
+            <div style="font-size: 0.95rem; color: #ccc; line-height: 1.7;">
+                ${primaryTeaser}
+            </div>
+            <p style="margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(212,175,55,0.3); font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-style: italic; color: var(--gold); text-align: center;">
+                Этот портрет – лишь первый шаг к пониманию вашей уникальной связи. Дальнейшие разделы отчёта помогут вам увидеть конкретные зоны гармонии, напряжения и роста. Используйте эти знания, чтобы сделать ваши отношения ещё более осознанными и счастливыми.
+            </p>
+        </div>
+
+        <!-- ПЛАТНЫЙ КОНТЕНТ (внутри того же div, что и замок) -->
+        <div id="parentchild-premium-container" style="position: relative;">
+            <div id="parentchild-premium-content" class="premium-blur" style="max-height: 180px; overflow: hidden; opacity: 0.4; filter: blur(4px); user-select: none; pointer-events: none;">
+                <p style="color: #ccc; font-size: 1rem;">🟢 Зоны гармонии — полный анализ</p>
+                <p style="color: #ccc; font-size: 1rem;">🔴 Зоны напряжения — детальные расшифровки</p>
+                <p style="color: #ccc; font-size: 1rem;">🔵 Зоны роста — практические стратегии</p>
+                <p style="color: #ccc; font-size: 1rem;">⚠️ Родительские ловушки — как избежать</p>
+                <p style="color: #ccc; font-size: 1rem;">📅 Возрастные рекомендации</p>
+                <p style="color: #ccc; font-size: 1rem;">⚡ Конфликтные сценарии — пошаговые решения</p>
+                <p style="color: #ccc; font-size: 1rem;">📚 Стиль обучения ребёнка</p>
+                <p style="color: #ccc; font-size: 1rem;">💛 Эмоциональный язык ребёнка</p>
+            </div>
+
+                            <!-- ПЛАТНЫЙ КОНТЕНТ (внутри того же div, что и замок) -->
+        <div id="parentchild-premium-container" style="position: relative; min-height: 320px; display: flex; align-items: center; justify-content: center; border-radius: 16px; overflow: hidden;">
+            <!-- Блюр на фоне -->
+            <div id="parentchild-premium-content" class="premium-blur" style="
+                position: absolute;
+                inset: 0;
+                opacity: 0.4;
+                filter: blur(4px);
+                user-select: none;
+                pointer-events: none;
+                z-index: 1;
+            ">
+                <p style="color: #ccc; font-size: 1rem;">🟢 Зоны гармонии — полный анализ</p>
+                <p style="color: #ccc; font-size: 1rem;">🔴 Зоны напряжения — детальные расшифровки</p>
+                <p style="color: #ccc; font-size: 1rem;">🔵 Зоны роста — практические стратегии</p>
+                <p style="color: #ccc; font-size: 1rem;">⚠️ Родительские ловушки — как избежать</p>
+                <p style="color: #ccc; font-size: 1rem;">📅 Возрастные рекомендации</p>
+                <p style="color: #ccc; font-size: 1rem;">⚡ Конфликтные сценарии — пошаговые решения</p>
+                <p style="color: #ccc; font-size: 1rem;">📚 Стиль обучения ребёнка</p>
+                <p style="color: #ccc; font-size: 1rem;">💛 Эмоциональный язык ребёнка</p>
+            </div>
+
+            <!-- Замок по центру -->
+            <div id="parentchild-lock-overlay" style="
+                position: relative;
+                z-index: 2;
+                width: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 20px;
+            ">
+                <div class="premium-lock-box">
+                    <div class="premium-lock-stars">✦ ✦ ✦</div>
+                    <div class="premium-lock-icon">🔐</div>
+                    <h3>Полный разбор связи с ребёнком</h3>
+                    <p class="premium-lock-desc">Детальный анализ взаимодействия, рекомендации, стратегия воспитания</p>
+                    <div class="premium-lock-price">590 ₽</div>
+                    <button class="btn-gold premium-lock-btn" onclick="openUnlockPaymentModal('parentchild')">🔓 Разблокировать</button>
+                    <p class="premium-lock-note">Откроется мгновенно после оплаты</p>
+                </div>
+            </div>
+        </div>
+        `;
+
+        document.getElementById('result-parent-child').innerHTML = html;
+        document.getElementById('loader-parent-child').style.display = 'none';
+        document.getElementById('result-parent-child').style.display = 'block';
+    }, 1500);
+    return;
+}
+
+    // ПРЕМИУМ-РЕЖИМ (полный контент без замка)
     const canProceed = await useCalculation();
     if (!canProceed) return;
-
-    const parentName = document.getElementById('parentName').value.trim() || 'Родитель';
-    const parentDate = document.getElementById('parentDate').value;
-    const childName = document.getElementById('childName').value.trim() || 'Ребёнок';
-    const childDate = document.getElementById('childDate').value;
-    const parentRole = document.getElementById('parentRole').value;
-
-    if (!parentDate || !childDate) {
-        alert('Пожалуйста, введите даты рождения родителя и ребёнка!');
-        return;
-    }
 
     document.getElementById('result-parent-child').style.display = 'none';
     document.getElementById('loader-parent-child').style.display = 'flex';
     startMagicAnimation('magic-numbers-parent-child');
 
     setTimeout(() => {
+        const parentName = document.getElementById('parentName').value.trim() || 'Родитель';
+        const parentDate = document.getElementById('parentDate').value;
+        const childName = document.getElementById('childName').value.trim() || 'Ребёнок';
+        const childDate = document.getElementById('childDate').value;
+        const parentRole = document.getElementById('parentRole').value;
+
+        if (!parentDate || !childDate) {
+            alert('Пожалуйста, введите даты рождения родителя и ребёнка!');
+            document.getElementById('loader-parent-child').style.display = 'none';
+            return;
+        }
+
         const parentMatrix = calculateMatrixData(parentDate);
         const childMatrix = calculateMatrixData(childDate);
 
         const indicators = getIndicatorsList(parentMatrix, childMatrix);
         const classified = classifyIndicators(indicators);
-
         const topHarmony = getTopHarmony(classified);
         const topTension = getTopTension(classified);
         const topGrowth = getTopGrowth(classified);
-
         const childAge = calculateAge(childDate);
         const agePeriod = getAgePeriod(childAge);
         const ageRecommendations = getAgeRecommendations(agePeriod, parentMatrix, childMatrix, parentRole);
-
         const parentTraps = getParentTraps(parentMatrix, childMatrix, parentRole);
         const conflictScenarios = getConflictScenarios(parentMatrix, childMatrix, parentRole);
         const learningStyle = getLearningStyle(childMatrix, parentMatrix);
         const emotionalLanguage = getEmotionalLanguage(childMatrix, parentMatrix);
 
+        const portraitFull = getGeneralPortrait(parentMatrix, childMatrix, parentName, childName, parentRole);
+
         let html = `
-<div class="comparison-matrices" style="display:flex;flex-wrap:wrap;gap:20px;justify-content:center;margin-bottom:30px;">
-    ${renderMatrixCard(parentMatrix, parentName, 'Родитель')}
-    ${renderMatrixCard(childMatrix, childName, 'Ребёнок')}
-</div>
-<div class="report-block">
-    <h3>📖 Общий портрет отношений</h3>
-    <p>${getGeneralPortrait(parentMatrix, childMatrix, parentName, childName, parentRole)}</p>
-</div>
-<div class="report-block">
-    <h3>🟢 Зоны гармонии (Топ-3)</h3>
-    ${topHarmony.map(z => formatHarmonyZone(z, parentMatrix, childMatrix)).join('')}
-</div>
-<div class="report-block">
-    <h3>🔴 Зоны напряжения (Топ-3)</h3>
-    ${topTension.map(z => formatTensionZone(z, parentMatrix, childMatrix)).join('')}
-</div>
-<div class="report-block">
-    <h3>🔵 Зоны роста (Топ-3)</h3>
-    ${topGrowth.map(z => formatGrowthZone(z, parentMatrix, childMatrix)).join('')}
-</div>
-<div class="report-block">
-    <h3>⚠️ Родительские ловушки</h3>
-    ${parentTraps.map(trap => `<div style="margin-bottom:15px;"><strong>${trap.title}</strong><br>${trap.text}</div>`).join('')}
-</div>
-<div class="report-block">
-    <h3>📅 Возрастные рекомендации (${agePeriod.name})</h3>
-    ${ageRecommendations}
-</div>
-<div class="report-block">
-    <h3>⚡ Конфликтные сценарии</h3>
-    ${conflictScenarios.map(sc => `<div style="margin-bottom:15px;"><strong>${sc.title}</strong><br>${sc.text}</div>`).join('')}
-</div>
-<div class="report-block">
-    <h3>📚 Стиль обучения ребёнка</h3>
-    ${learningStyle}
-</div>
-<div class="report-block">
-    <h3>💛 Эмоциональный язык ребёнка</h3>
-    ${emotionalLanguage}
-</div>
-<button id="download-parentchild-pdf" class="btn-gold" onclick="downloadSectionPDF('parentchild')" style="margin-top:20px;width:100%;">
-    <i class="fa-solid fa-file-pdf"></i> Скачать отчёт (PDF)
-</button>
+        <div class="comparison-matrices" style="display:flex;flex-wrap:wrap;gap:20px;justify-content:center;margin-bottom:30px;">
+            ${renderMatrixCard(parentMatrix, parentName, 'Родитель')}
+            ${renderMatrixCard(childMatrix, childName, 'Ребёнок')}
+        </div>
+
+        <div class="elegant-report">
+            <details open>
+                <summary>📖 Общий портрет отношений</summary>
+                <div class="report-content">${portraitFull}</div>
+            </details>
+            <details>
+                <summary>🟢 Зоны гармонии</summary>
+                <div class="report-content">${topHarmony.map(z => formatHarmonyZone(z, parentMatrix, childMatrix)).join('')}</div>
+            </details>
+            <details>
+                <summary>🔴 Зоны напряжения</summary>
+                <div class="report-content">${topTension.map(z => formatTensionZone(z, parentMatrix, childMatrix)).join('')}</div>
+            </details>
+            <details>
+               <details>
+    <summary>🔵 Зоны роста</summary>
+    <div class="report-content">
+        ${topGrowth.length > 0
+            ? topGrowth.map(z => formatTensionZone(z, parentMatrix, childMatrix)).join('')
+            : (() => {
+                const p = parentMatrix.c;
+                const c = childMatrix.c;
+                const parentTemp = parentMatrix.temp;
+                const childTemp = childMatrix.temp;
+                const parentGoal = parentMatrix.goal;
+                const childGoal = childMatrix.goal;
+
+                // Варианты текста в зависимости от контекста
+                if (p[1] >= 4 && c[1] <= 2) {
+                    return `<p>Ваша связь похожа на союз дуба и ивы. Дуб — сильный, несгибаемый, уверенный в себе. Ива — гибкая, чуткая, умеющая гнуться под ветром, но не ломаться. Это не противостояние, а идеальный баланс: дуб защищает иву от ураганов, а ива учит дуб не быть слишком жёстким, когда буря проходит. Зона роста здесь не в том, чтобы ива стала дубом или наоборот, а в том, чтобы дуб иногда позволял себе быть уязвимым, а ива — брала на себя ответственность и говорила твёрдое «нет». Попробуйте в течение недели каждый день давать ребёнку право на последнее слово в одном решении. А вы — один раз в день просто соглашайтесь, не поправляя.</p>`;
+                } else if (c[1] >= 4 && p[1] <= 2) {
+                    return `<p>Здесь роли поменялись: ребёнок — маленький лев, а вы — мудрая сова. Лев громко заявляет о себе, требует, настаивает, иногда рычит. Сова наблюдает, анализирует, предпочитает спокойствие и дипломатию. Лев может разбудить сову среди ночи и потребовать внимания, сова же учит льва, что иногда нужно просто помолчать и послушать тишину. Зона роста — не в том, чтобы подавить льва или превратить сову в тигра. Помогите льву понять, что уважение приходит не через громкость, а через поступки. А вы, как сова, учитесь иногда расправлять крылья и действовать смелее, глядя на львёнка.</p>`;
+                } else if (parentTemp >= 5 && childTemp <= 2) {
+                    return `<p>Ваш темперамент — как вечный ураган, а ребёнок — спокойное море. Ураган может закружить, напугать, но морю всё равно: оно принимает и бурю, и штиль. Когда ураган стихает, море остаётся, гладкое и глубокое. Ребёнок не реагирует на эмоциональные всплески не потому, что ему всё равно, а потому что он знает: это пройдёт. Зона роста — не пытаться расшевелить море до такой же интенсивности. Вместо этого — ценить его спокойствие. А ребёнку можно показывать, что иногда и море может разыграться, когда есть повод для радости или защиты.</p>`;
+                } else if (childTemp >= 5 && parentTemp <=2) {
+                    return `<p>Ребёнок — горячий факел, а вы — свеча, горящая ровно и тихо. Факел может вспыхивать, разбрасывать искры, быстро сгорать, но свеча горит долго, не теряя своей сути. Вы можете бояться, что факел спалит важные вещи, но он же и освещает путь. Зона роста — не гасить факел, а показать, как можно гореть долго, сохраняя тепло, а не обжигая. Учите ребёнка паузам, медленному дыханию, наблюдению. А вам иногда можно взять от факела немного огня, чтобы разжечь собственный интерес к жизни.</p>`;
+                } else if (parentGoal >= 5 && childGoal <= 2) {
+                    return `<p>Вы знаете точный маршрут, у вас всегда есть карта и компас. Ребёнок же плывёт по течению, разглядывая облака и собирая цветы на берегу. Вы торопитесь, он задерживается. Вы строите планы, он спонтанен. Это не конфликт, а разный темп. Зона роста — не заставить ребёнка стать планировщиком-стратегом, а иногда самому сойти с маршрута и просто погулять. И наоборот: мягко приглашать ребёнка в мир целей через игру, интерес, а не через жёсткие дедлайны. Один день на неделе пусть будет «днём без планов» для вас обоих.</p>`;
+                } else if (childGoal >= 5 && parentGoal <= 2) {
+                    return `<p>Ребёнок уже знает, кем будет через 10 лет, а вы до сих пор не уверены, что приготовить на ужин. Его решимость может восхищать и немного пугать. Он идёт к цели, даже если это цель «построить ракету из стульев». Вы же чаще предпочитаете плыть по течению. Зона роста — не стать таким же целеустремлённым, как ребёнок, а просто поддерживать его амбиции, помогая расставлять приоритеты и не сгорать. А вам — позволить себе загораться его идеями и иногда идти у него на поводу. Это вдохновляет обоих.</p>`;
+                } else {
+                    return `<p>Зоны роста могут быть не в больших различиях, а в мелких, почти незаметных деталях, которые делают вашу связь особенной. Это может быть разница в том, как вы смеётесь над одной шуткой — громко или тихо. Или в том, кто первым подходит мириться после ссоры. Или в том, как по-разному вы пьёте чай: один — обжигаясь, другой — терпеливо ожидая, когда остынет. Рост здесь происходит не через изменение друг друга, а через наблюдение, принятие и нежность к этим мелочам. Ваша пара уже гармонична, и маленькие различия — просто повод узнать друг друга ещё глубже. Попробуйте в течение недели каждый вечер записывать одну деталь, которую вы заметили в поведении друг друга, и делиться ею за ужином.</p>`;
+                }
+            })()
+        }
+    </div>
+</details>
+            <details>
+                <summary>⚠️ Родительские ловушки</summary>
+                <div class="report-content">${parentTraps.map(trap => `<div style="margin-bottom:10px;"><strong>${trap.title}</strong><br>${trap.text}</div>`).join('')}</div>
+            </details>
+            <details>
+                <summary>📅 Возрастные рекомендации (${agePeriod.name})</summary>
+                <div class="report-content">${ageRecommendations}</div>
+            </details>
+            <details>
+                <summary>⚡ Конфликтные сценарии</summary>
+                <div class="report-content">${conflictScenarios.map(sc => `<div style="margin-bottom:10px;"><strong>${sc.title}</strong><br>${sc.text}</div>`).join('')}</div>
+            </details>
+            <details>
+                <summary>📚 Стиль обучения ребёнка</summary>
+                <div class="report-content">${learningStyle}</div>
+            </details>
+            <details>
+                <summary>💛 Эмоциональный язык ребёнка</summary>
+                <div class="report-content">${emotionalLanguage}</div>
+            </details>
+        </div>
+
+        <button id="download-parentchild-pdf" class="btn-gold" onclick="downloadSectionPDF('parentchild')" style="margin-top:20px;width:100%;">
+            <i class="fa-solid fa-file-pdf"></i> Скачать отчёт (PDF)
+        </button>
         `;
 
         document.getElementById('result-parent-child').innerHTML = html;

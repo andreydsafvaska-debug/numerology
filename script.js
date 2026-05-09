@@ -1,14 +1,4 @@
-// Временный отладчик для поиска вызова toLowerCase на undefined
-(function() {
-    const original = String.prototype.toLowerCase;
-    String.prototype.toLowerCase = function() {
-        if (this === undefined || this === null) {
-            console.trace('ОШИБКА: toLowerCase вызван на undefined/null');
-            return '';
-        }
-        return original.call(this);
-    };
-})();
+
 
 // ВАШ НОМЕР WHATSAPP
 const myPhone = "79956506287";
@@ -16,7 +6,7 @@ const myPhone = "79956506287";
 
 
 // ⚡ ТЕСТОВЫЙ РЕЖИМ (true = всё бесплатно, false = платно)
-const TEST_MODE = true;
+const TEST_MODE = true ;
 // ==========================================================
 //  ПРОВЕРКА ЦЕЛОСТНОСТИ ДАННЫХ (защита от пропажи файлов)
 // ==========================================================
@@ -86,7 +76,7 @@ function resetPdfButton(btnId) {
 // ==========================================================
 let premiumAccess = false;
 let currentToken = localStorage.getItem('accessToken') || '';
-const SERVER_URL = 'https://numerology-pdf-server.onrender.com'; // ← ЗАМЕНИТЕ НА ВАШ РЕАЛЬНЫЙ URL СЕРВЕРА
+const SERVER_URL = 'https://numerology-pdf-server.onrender.com';  // ← ЗАМЕНИТЕ НА ВАШ РЕАЛЬНЫЙ URL СЕРВЕРА
 // При загрузке проверяем сохранённый токен и показываем счётчик
 (async function showCounterIfPaid() {
     const token = localStorage.getItem('accessToken');
@@ -332,37 +322,43 @@ function openOfferText() {
    НАВИГАЦИЯ МЕЖДУ СЕКЦИЯМИ
    ============================================ */
 function showSection(id) {
-    // Сначала плавно скрываем все секции
+    // Плавно скрываем все секции
     document.querySelectorAll('section').forEach(section => {
         section.style.opacity = '0';
         section.style.transition = 'opacity 0.3s ease';
     });
 
-    // Через короткую задержку переключаем видимость
     setTimeout(() => {
         document.querySelectorAll('section').forEach(section => {
             section.classList.remove('active');
             section.style.display = 'none';
         });
+
         const activeSection = document.getElementById(id);
         if (activeSection) {
             activeSection.classList.add('active');
             activeSection.style.display = 'block';
-            // Принудительно вызываем перерисовку, затем делаем видимым
-            activeSection.offsetHeight; // reflow
+          void  activeSection.offsetHeight; // reflow
             activeSection.style.opacity = '1';
+            // Прокручиваем в начало и сбрасываем скролл самой секции (если есть)
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            activeSection.scrollTop = 0;
         }
+
+        // Показываем или скрываем отзывы в зависимости от активной секции
+        const testimonials = document.getElementById('testimonials');
+        if (testimonials) {
+            testimonials.style.display = (id === 'home') ? 'block' : 'none';
+        }
+
         // Обновляем кнопки меню
         document.querySelectorAll('.nav-links button').forEach(btn => btn.classList.remove('active'));
         const activeBtn = document.getElementById('btn-' + id);
         if (activeBtn) activeBtn.classList.add('active');
-        const section = document.getElementById(id);
-if (section) {
-    const top = section.getBoundingClientRect().top + window.pageYOffset - 100;
-    window.scrollTo({ top: top, behavior: 'smooth' });
-}
+
+        // Если нужно, обновляем премиум-интерфейс
+        if (premiumAccess) updateUIForPremium();
     }, 300);
-    if (premiumAccess) updateUIForPremium();
 }
 
 /* ============================================
@@ -617,7 +613,11 @@ function calculateCompat() {
    РАСЧЁТ МАТРИЦЫ (ГЛАВНАЯ ФУНКЦИЯ)
    ============================================ */
 function calculateMatrix() {
-    const inp = document.getElementById('birthDateMatrix').value;
+    
+ const auditHome = document.getElementById('audit-block');
+if (auditHome) auditHome.style.display = 'none';
+    
+     const inp = document.getElementById('birthDateMatrix').value;
     const userName = document.getElementById('userName').value.trim();
     
     if(!inp) return alert("Введите дату рождения!");
@@ -1141,8 +1141,46 @@ html += `<details class="decode-card">
     </div>
 </details>`;
 // ===== КОНЕЦ БЛОКА ПРОГНОЗА =====
+
+       // === БЛОК "ЛИЧНЫЙ ГОД" (точный, с учётом дня рождения) ===
+{
+    const birthDate = new Date(inp + 'T00:00:00');
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    let referenceYear = currentYear;
+    const thisYearBirthday = new Date(currentYear, birthDate.getMonth(), birthDate.getDate());
+    if (today < thisYearBirthday) {
+        referenceYear = currentYear - 1;
+    }
+    const personalYearNum = calcPersonalYear(inp, referenceYear);
+    const info = personalYearInfo[personalYearNum] || { title: "Год", desc: "Уникальный год вашей жизни." };
+    html += `
+        <details class="decode-card">
+            <summary class="decode-header" style="cursor:pointer; list-style:none;">
+                <span class="decode-title">🎯 ВАШ ЛИЧНЫЙ ГОД · ${referenceYear}–${referenceYear+1}</span>
+                <span style="float:right;">▼</span>
+            </summary>
+            <div class="decode-text" style="text-align:center;">
+                <div style="font-family:'Cormorant Garamond',serif; font-size:5rem; color:var(--gold); line-height:1;">${personalYearNum}</div>
+                <div style="font-size:1.5rem; color:var(--purple-light); margin-bottom:15px;">${info.title}</div>
+                <p style="text-align:center;">${info.desc}</p>
+            </div>
+        </details>
+    `;
+}
         
         document.getElementById('decoding-content').innerHTML = html;
+        
+        // Проверка премиум-доступа для главной
+const decodingBlock = document.getElementById('decoding-content');
+const mainLockOverlay = document.getElementById('main-lock-overlay');
+if (premiumAccess) {
+    if (mainLockOverlay) mainLockOverlay.style.display = 'none';
+    if (decodingBlock) decodingBlock.classList.remove('premium-blur');
+} else {
+    if (mainLockOverlay) mainLockOverlay.style.display = 'flex';
+    if (decodingBlock) decodingBlock.classList.add('premium-blur');
+}
         // Показываем кнопку PDF, если есть премиум-доступ
         if (premiumAccess) {
         const pdfBtn = document.getElementById('download-pdf-btn');
@@ -1155,29 +1193,13 @@ html += `<details class="decode-card">
         document.getElementById('matrix-stats').style.display = 'flex';
         setTimeout(() => document.getElementById('matrix-stats').style.opacity = '1', 100);
         document.getElementById('decoding-block').style.display = 'block';
-        
+        window.revealNewElements(document.getElementById('matrix-result'));
         // Дополнительные фишки (луна, радар, счастливые числа, матрица судьбы, годовой график)
         calculateMoonPhase(inp, userName);
-        drawRadarChart(data);
+        drawBarChart(data);
         calculateLuckyItems(data, nameNum, userName);
         calculateYearChart(inp);
-        
-        const shareBtnHtml = `
-<div style="display:flex; justify-content:center; gap:10px; margin-top:20px;">
-    <button onclick="shareWithImage()" class="btn-gold" style="font-size:0.9rem; padding:8px 16px;">
-        <i class="fa-solid fa-share-nodes"></i> Поделиться результатом
-    </button>
-</div>`;
-      // ===================================
-                     
-        let shareContainer = document.getElementById('share-btn-container');
-        if (!shareContainer) {
-            shareContainer = document.createElement('div');
-            shareContainer.id = 'share-btn-container';
-            document.getElementById('decoding-block').appendChild(shareContainer);
-        }
-        shareContainer.innerHTML = shareBtnHtml;
-        
+                      
         stopMagicAnimation('magic-numbers');
     }, 1500);
 }
@@ -1242,25 +1264,20 @@ function calculateMoonPhase(dateString, userName) {
     setTimeout(() => document.getElementById('moon-block').style.opacity = '1', 100);
 }
 
-function drawRadarChart(data) {
-    const svg = document.getElementById('radar-svg');
-    if (!svg) return;
-
-    svg.setAttribute("viewBox", "0 0 400 400");
-    const centerX = 200;
-    const centerY = 200;
-    const maxRadius = 150;
+function drawBarChart(data) {
+    const container = document.getElementById('bar-chart');
+    if (!container) return;
 
     const explanations = {
-        1: { title: "Характер", text: "Сила воли, стержень, способность отстаивать свои границы и лидерство." },
-        2: { title: "Энергия", text: "Ваш жизненный ресурс, способность действовать, общаться и влиять на других." },
-        3: { title: "Интерес", text: "Тяга к знаниям, творчеству, технике. Способность быстро обучаться." },
-        4: { title: "Здоровье", text: "Физическая выносливость, красота тела и природная сила." },
-        5: { title: "Логика", text: "Интуиция, аналитика, умение строить планы и видеть причинно-следственные связи." },
-        6: { title: "Труд", text: "Мастерство, умение работать руками, заземленность и практичность." },
-        7: { title: "Удача", text: "Покровительство Высших сил, везение и интуитивное понимание пути." },
-        8: { title: "Долг", text: "Чувство ответственности, забота о близких, терпимость и доброта." },
-        9: { title: "Память", text: "Мудрость, интеллект, способность запоминать и предвидеть будущее." }
+        1: { title: "Характер", text: "Сила воли, стержень." },
+        2: { title: "Энергия", text: "Жизненный ресурс." },
+        3: { title: "Интерес", text: "Тяга к знаниям." },
+        4: { title: "Здоровье", text: "Физическая выносливость." },
+        5: { title: "Логика", text: "Интуиция и анализ." },
+        6: { title: "Труд", text: "Мастерство и практичность." },
+        7: { title: "Удача", text: "Везение и поддержка." },
+        8: { title: "Долг", text: "Ответственность." },
+        9: { title: "Память", text: "Мудрость и интеллект." }
     };
 
     const params = [
@@ -1275,130 +1292,88 @@ function drawRadarChart(data) {
         { name: 'Память', key: 9, max: 4 }
     ];
 
-    const numParams = params.length;
-    const angleStep = (2 * Math.PI) / numParams;
+    const chartHeight = 260; // высота в пикселях
 
-    svg.innerHTML = '';
+    let html = '';
+    params.forEach(p => {
+        const value = data.c[p.key] || 0;
+        const heightPx = Math.max(4, (value / p.max) * chartHeight); // минимум 4px
 
-    // Сетка (5 уровней)
-    const levels = 5;
-    for (let level = 1; level <= levels; level++) {
-        const r = (maxRadius / levels) * level;
-        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        circle.setAttribute('cx', centerX); circle.setAttribute('cy', centerY);
-        circle.setAttribute('r', r); circle.setAttribute('class', 'radar-grid');
-        svg.appendChild(circle);
-    }
+        html += `
+        <div style="display:flex; flex-direction:column; align-items:center; flex:1; cursor:pointer;" data-key="${p.key}" data-value="${value}">
+            <div style="width:100%; height:${heightPx}px; background: linear-gradient(to top, #7E69AB, #D4AF37); border-radius:6px 6px 0 0; transition: background 0.3s;"></div>
+            <div style="font-size:0.75rem; color:#D4AF37; margin-top:4px; font-weight:bold;">${value}</div>
+            <div style="font-size:0.65rem; color:#aaa; margin-top:6px; text-align:center;">${p.name}</div>
+        </div>`;
+    });
 
-    // Оси
-    for (let i = 0; i < numParams; i++) {
-        const angle = i * angleStep - Math.PI / 2;
-        const x = centerX + maxRadius * Math.cos(angle);
-        const y = centerY + maxRadius * Math.sin(angle);
-        const axis = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        axis.setAttribute('x1', centerX); axis.setAttribute('y1', centerY);
-        axis.setAttribute('x2', x); axis.setAttribute('y2', y);
-        axis.setAttribute('class', 'radar-axis');
-        svg.appendChild(axis);
+    container.innerHTML = html;
 
-        const labelRadius = maxRadius + 30;
-        const labelX = centerX + labelRadius * Math.cos(angle);
-        const labelY = centerY + labelRadius * Math.sin(angle);
-        const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        label.setAttribute('x', labelX); label.setAttribute('y', labelY);
-        label.setAttribute('class', 'radar-label');
-        label.textContent = params[i].name;
-        svg.appendChild(label);
-    }
+    // клик
+    document.querySelectorAll('#bar-chart > div[data-key]').forEach(el => {
+        el.addEventListener('click', () => {
+            const key = parseInt(el.dataset.key);
+            const val = el.dataset.value;
+            document.getElementById('bar-tooltip').style.display = 'block';
+            document.getElementById('bar-tooltip-title').innerHTML = `${explanations[key].title}: <span style="color:#fff">${val}</span>`;
+            document.getElementById('bar-tooltip-desc').innerHTML = `${explanations[key].text} <br><small>(Чем больше цифра, тем сильнее качество)</small>`;
+        });
+    });
 
-    // Фигура
-    let areaPath = '';
-    const points = [];
-
-    for (let i = 0; i < numParams; i++) {
-        const angle = i * angleStep - Math.PI / 2;
-        let val = data.c[params[i].key];
-        let normVal = Math.min(val, params[i].max);
-        if (normVal === 0) normVal = 0.1;
-
-        const valueRatio = normVal / params[i].max;
-        const r = valueRatio * maxRadius;
-
-        const x = centerX + r * Math.cos(angle);
-        const y = centerY + r * Math.sin(angle);
-
-        points.push({ x, y, val, key: params[i].key });
-        areaPath += (i === 0 ? 'M' : 'L') + `${x},${y}`;
-    }
-    areaPath += 'Z';
-
-    const area = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    area.setAttribute('d', areaPath);
-    area.setAttribute('class', 'radar-area');
-    svg.appendChild(area);
-
-    // Точки с кликом
-    for (let i = 0; i < points.length; i++) {
-        const p = points[i];
-
-        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-        g.style.cursor = "pointer";
-
-        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        circle.setAttribute('cx', p.x); circle.setAttribute('cy', p.y);
-        circle.setAttribute('r', '10');
-        circle.setAttribute('class', 'radar-point-circle');
-
-        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        text.setAttribute('x', p.x); text.setAttribute('y', p.y + 4);
-        text.setAttribute('class', 'radar-point-value');
-        text.textContent = p.val;
-
-        g.onclick = function() {
-            document.querySelectorAll('.radar-point-circle').forEach(c => {
-                c.setAttribute('stroke', '#D4AF37');
-                c.setAttribute('stroke-width', '3');
-            });
-            circle.setAttribute('stroke', '#fff');
-            circle.setAttribute('stroke-width', '5');
-
-            const tooltip = document.getElementById('radar-tooltip');
-            const tTitle = document.getElementById('radar-tooltip-title');
-            const tDesc = document.getElementById('radar-tooltip-desc');
-            const info = explanations[p.key];
-
-            tTitle.innerHTML = `${info.title}: <span style="color:#fff">${p.val}</span>`;
-            tDesc.innerHTML = `${info.text} <br><br><em>(Чем больше цифра, тем сильнее качество).</em>`;
-
-            tooltip.style.display = 'block';
-        };
-
-        g.appendChild(circle);
-        g.appendChild(text);
-        svg.appendChild(g);
-    }
-
-    document.getElementById('radar-container').style.display = 'block';
-    setTimeout(() => document.getElementById('radar-container').style.opacity = '1', 200);
+    document.getElementById('viz-container').style.display = 'block';
+    setTimeout(() => document.getElementById('viz-container').style.opacity = '1', 200);
 }
+
 /* ============================================
    СЧАСТЛИВЫЕ ЧИСЛА
    ============================================ */
 function calculateLuckyItems(data, nameNum, userName) {
+    // Счастливое число = (Число Имени + Число Пути) % 9, но не ноль
     const luckyNumber = ((nameNum + data.lp) % 9) || 9;
+
+    // Определяем стихию, планету, камень, цвет, день по числу жизненного пути
+    const lifePath = data.lp;
     
+    const elements = {
+        1: 'Огонь 🔥', 2: 'Вода 💧', 3: 'Воздух 🌬️', 4: 'Земля 🌍',
+        5: 'Эфир ✨', 6: 'Огонь 🔥', 7: 'Вода 💧', 8: 'Земля 🌍', 9: 'Воздух 🌬️'
+    };
+    
+    const planets = {
+        1: 'Солнце ☀️', 2: 'Луна 🌙', 3: 'Юпитер ⚡', 4: 'Рагу ☄️',
+        5: 'Меркурий 🧿', 6: 'Венера 💖', 7: 'Кету 🌑', 8: 'Сатурн 🪐', 9: 'Марс 🔴'
+    };
+    
+    const stones = {
+        1: 'Рубин', 2: 'Лунный камень', 3: 'Жёлтый сапфир', 4: 'Гранатовый кварц',
+        5: 'Изумруд', 6: 'Алмаз', 7: 'Кошачий глаз', 8: 'Синий сапфир', 9: 'Коралл'
+    };
+    
+    const colors = {
+        1: 'Золотой', 2: 'Серебряный', 3: 'Жёлтый', 4: 'Красный',
+        5: 'Зелёный', 6: 'Розовый', 7: 'Голубой', 8: 'Синий', 9: 'Оранжевый'
+    };
+    
+    const days = {
+        1: 'Воскресенье', 2: 'Понедельник', 3: 'Четверг', 4: 'Суббота',
+        5: 'Среда', 6: 'Пятница', 7: 'Вторник', 8: 'Суббота', 9: 'Вторник'
+    };
+
+    // Подставляем значения
     document.getElementById('lucky-number').textContent = luckyNumber;
-    document.getElementById('lucky-day').textContent = "Среда";
-    document.getElementById('lucky-color').textContent = "Золотой";
-    document.getElementById('lucky-stone').textContent = "Гранат";
-    document.getElementById('lucky-element').textContent = "Огонь 🔥";
-    document.getElementById('lucky-planet').textContent = "Солнце ☀️";
-    
-   const safeUserName = escapeHTML(userName);
-document.getElementById('lucky-description').innerHTML =
-    `<strong>${safeUserName}</strong>, ваше счастливое число — <strong>${luckyNumber}</strong>. 
-    Используйте его при выборе дат и решений.`;
-    
+    document.getElementById('lucky-day').textContent = days[lifePath] || 'Среда';
+    document.getElementById('lucky-color').textContent = colors[lifePath] || 'Золотой';
+    document.getElementById('lucky-stone').textContent = stones[lifePath] || 'Гранат';
+    document.getElementById('lucky-element').textContent = elements[lifePath] || 'Огонь 🔥';
+    document.getElementById('lucky-planet').textContent = planets[lifePath] || 'Солнце ☀️';
+
+    // Описание остаётся, но можно дополнить
+    const safeUserName = escapeHTML(userName);
+    document.getElementById('lucky-description').innerHTML =
+        `<strong>${safeUserName}</strong>, ваше счастливое число — <strong>${luckyNumber}</strong>. 
+        Используйте его при выборе дат и решений.`;
+
+    // Показываем блок
     document.getElementById('lucky-block').style.display = 'block';
     setTimeout(() => document.getElementById('lucky-block').style.opacity = '1', 300);
 }
@@ -1505,6 +1480,9 @@ function buildFinancialProfile(dateString, name) {
 
     const lp = calculateLifePathAdvanced(dateString);
     const matrix = calculateMatrixData(dateString);
+    // Отрисовка таблицы Пифагора
+const matrixHTML = renderMatrixHTML(matrix, 'Денежная матрица', name);
+document.getElementById('money-matrix-container').innerHTML = matrixHTML;
     const nameNum = calculateNameNumber(name);
     const karma = calculateMoneyKarma(dateString);
     const gender = detectGenderAdvanced(name);
@@ -1657,969 +1635,11 @@ function generateFinancialNarrative(profile, name) {
     `;
 }
 
-/* ============================================
-   ИНДЕКС СПОНСОР / СОДЕРЖАНКА
-   ============================================ */
-function calculateSponsorIndex(dateString, name) {
 
-    const lifePath = calculateLifePath(dateString);
-    const birthDay = parseInt(dateString.split('-')[2], 10);
-    const nameNum = calculateNameNumber(name);
 
-    const sponsorNumbers = {
-        1: 85,
-        8: 90,
-        4: 70,
-        22: 80,
-        3: 45,
-        5: 50,
-        7: 40,
-        9: 35,
-        2: 30,
-        11: 35,
-        6: 25,
-        33: 30
-    };
 
-    let sponsorIndex = sponsorNumbers[lifePath.master] || sponsorNumbers[lifePath.base] || 50;
 
-    if ([1, 10, 19, 28].includes(birthDay)) sponsorIndex += 10;
-    if ([8, 17, 26].includes(birthDay)) sponsorIndex += 15;
-    if ([6, 15, 24].includes(birthDay)) sponsorIndex -= 10;
 
-    if ([1, 8].includes(nameNum)) sponsorIndex += 5;
-    if ([6, 2].includes(nameNum)) sponsorIndex -= 5;
-
-    sponsorIndex = Math.max(5, Math.min(95, sponsorIndex));
-
-    return {
-        index: sponsorIndex,
-        lifePath: lifePath,
-        birthDay: birthDay,
-        nameNum: nameNum
-    };
-}
-
-/* ==========================================================
-   ФИНАНСОВАЯ АРХЕТИПИКА
-   ========================================================== */
-
-function calculateLifePathAdvanced(dateString) {
-    const digits = dateString.replace(/-/g, '').split('').map(Number);
-    let sum = digits.reduce((a, b) => a + b, 0);
-
-    if (sum === 11 || sum === 22 || sum === 33) {
-        return { master: sum, base: sum === 11 ? 2 : (sum === 22 ? 4 : 6) };
-    }
-
-    while (sum > 9) {
-        sum = sum.toString().split('').map(Number).reduce((a, b) => a + b, 0);
-        if (sum === 11 || sum === 22 || sum === 33) {
-            return { master: sum, base: sum === 11 ? 2 : (sum === 22 ? 4 : 6) };
-        }
-    }
-
-    return { master: null, base: sum };
-}
-
-/* ==========================================================
-   ГЛУБОКИЙ РАСЧЁТ ФИНАНСОВОГО ВЕКТОРА
-   ========================================================== */
-
-function calculateFinancialVector(dateString, name) {
-
-    const lp = calculateLifePathAdvanced(dateString);
-    const matrix = calculateMatrixData(dateString);
-    const nameNum = calculateNameNumber(name);
-    const birthDay = parseInt(dateString.split('-')[2]);
-
-    let score = 50;
-
-    /* --- ЧЖП --- */
-    const lpValue = lp.master || lp.base;
-
-    if ([1,8].includes(lpValue)) score += 20;
-    if ([4,22].includes(lpValue)) score += 15;
-    if ([6].includes(lpValue)) score -= 20;
-    if ([2,11].includes(lpValue)) score -= 10;
-    if ([9].includes(lpValue)) score -= 5;
-
-    /* --- День рождения --- */
-    if ([1,10,19,28].includes(birthDay)) score += 10;
-    if ([8,17,26].includes(birthDay)) score += 15;
-    if ([6,15,24].includes(birthDay)) score -= 15;
-
-    /* --- Матрица --- */
-    score += matrix.c[1] * 5;
-    score += matrix.c[8] * 4;
-    score += matrix.c[4] * 3;
-
-    score -= matrix.c[6] * 5;
-    score -= matrix.c[2] * 3;
-
-    /* --- Имя --- */
-    if ([1,8].includes(nameNum)) score += 5;
-    if ([6,2].includes(nameNum)) score -= 5;
-
-    score = Math.max(5, Math.min(95, score));
-
-    return {
-        index: score,
-        lifePath: lp,
-        matrix: matrix,
-        nameNum: nameNum,
-        birthDay: birthDay
-    };
-}
-
-/* ==========================================================
-   ИНДИВИДУАЛЬНЫЙ АНАЛИЗ
-   ========================================================== */
-
-function calculateSponsorSingle() {
-
-    const name = document.getElementById('sponsorName').value.trim();
-    const date = document.getElementById('sponsorDate').value;
-
-    if (!name || !date) {
-        alert("Введите имя и дату рождения");
-        return;
-    }
-
-    const profile = buildFinancialProfile(date, name);
-    const sponsorPercent = profile.index;
-    const keeperPercent = 100 - sponsorPercent;
-
-    document.getElementById('sponsor-fill-single').style.width = sponsorPercent + '%';
-    document.getElementById('sponsor-indicator').style.left = sponsorPercent + '%';
-    document.getElementById('sponsor-percent-single').textContent =
-        sponsorPercent + "% Спонсор / " + keeperPercent + "% Принимающий";
-
-    document.getElementById('sponsor-type-single').textContent =
-        sponsorPercent >= 60 ? "Финансово доминирующий тип"
-        : sponsorPercent <= 40 ? "Принимающий тип"
-        : "Сбалансированный тип";
-
-    document.getElementById('sponsor-text-single').innerHTML =
-        generateFinancialNarrative(profile, name);
-		document.getElementById('sponsor-single-result').style.display = 'none';
-    document.getElementById('loader-sponsor-single').style.display = 'flex';
-    startMagicAnimation('magic-numbers-sponsor-single');
-    
-    setTimeout(() => {
-        // ... расчёты ...
-        
-        stopMagicAnimation('magic-numbers-sponsor-single');
-        document.getElementById('loader-sponsor-single').style.display = 'none';
-        document.getElementById('sponsor-single-result').style.display = 'block';
-    }, 1500);
-
-  }
-
-/* ==========================================================
-   АНАЛИЗ ПАРЫ
-   ========================================================== */
-
-function calculateSponsorCouple() {
-
-    const name1 = document.getElementById('sponsorName1').value.trim();
-    const date1 = document.getElementById('sponsorDate1').value;
-    const name2 = document.getElementById('sponsorName2').value.trim();
-    const date2 = document.getElementById('sponsorDate2').value;
-
-    if (!name1 || !name2 || !date1 || !date2) {
-        alert("Заполните все поля");
-        return;
-    }
-
-    const profile1 = buildFinancialProfile(date1, name1);
-    const profile2 = buildFinancialProfile(date2, name2);
-
-    document.getElementById('sponsor-name1-display').textContent = name1;
-    document.getElementById('sponsor-name2-display').textContent = name2;
-
-    document.getElementById('sponsor-percent1').textContent = profile1.index + "%";
-    document.getElementById('sponsor-percent2').textContent = profile2.index + "%";
-
-    const balance = 50 + (profile1.index - profile2.index) / 2;
-    document.getElementById('sponsor-balance-fill').style.width = balance + "%";
-
-    document.getElementById('sponsor-role1').textContent =
-        profile1.index > profile2.index ? "Финансовый донор" : "Принимающий";
-
-    document.getElementById('sponsor-role2').textContent =
-        profile2.index > profile1.index ? "Финансовый донор" : "Принимающий";
-
-    // ✅ СНАЧАЛА создаём переменную
-    const karmaNarrative = generateCoupleFinancialNarrative(
-        profile1,
-        profile2,
-        name1,
-        name2,
-		date1,
-        date2 
-    );
-
-    // ✅ ПОТОМ вставляем её в HTML
-    document.getElementById('sponsor-couple-text').innerHTML = karmaNarrative;
-	const resultBlock = document.getElementById('sponsor-couple-result');
-
-    document.getElementById('sponsor-couple-result').style.display = 'block';
-
-resultBlock.style.display = 'block';
-
-	document.getElementById('sponsor-couple-result').style.display = 'none';
-    document.getElementById('loader-sponsor-couple').style.display = 'flex';
-    startMagicAnimation('magic-numbers-sponsor-couple');
-    
-    setTimeout(() => {
-        // ... расчёты ...
-        
-        stopMagicAnimation('magic-numbers-sponsor-couple');
-        document.getElementById('loader-sponsor-couple').style.display = 'none';
-        document.getElementById('sponsor-couple-result').style.display = 'block';
-    }, 1500);
-
-}
-/* ==========================================================
-   ARCHETYPE LAYER PRO
-   ========================================================== */
-
-function determineFinancialArchetype(profile) {
-
-    const p = profile.index;
-    const lp = profile.lifePath.master || profile.lifePath.base;
-    const matrix = profile.matrix;
-    const karma = profile.karma;
-
-    if (p >= 80) {
-        if (lp === 8 || lp === 22) return "Донор‑Император";
-        if (matrix.c[1] >= 3) return "Донор‑Контролёр";
-        return "Донор‑Стратег";
-    }
-
-    if (p >= 65) {
-        if (matrix.c[4] >= 2) return "Донор‑Фундамент";
-        return "Донор‑Защитник";
-    }
-
-    if (p >= 45 && p <= 60) {
-        if (karma === 5) return "Баланс‑Кармический";
-        return "Баланс‑Гибкий";
-    }
-
-    if (p >= 25) {
-        if (lp === 6) return "Муза‑Венерианская";
-        if (matrix.c[2] >= 2) return "Муза‑Интуитивная";
-        return "Муза‑Вдохновительница";
-    }
-
-    return "Муза‑Кармическая";
-}
-/* ==========================================================
-   KARMA FINANCIAL COUPLE DYNAMICS PRO
-   ========================================================== */
-
-function generateCoupleFinancialNarrative(profile1, profile2, name1, name2, date1, date2) {
-	
-
-    const p1 = profile1.index;
-    const p2 = profile2.index;
-
-    const diff = Math.abs(p1 - p2);
-
-    let dominant = p1 > p2 ? name1 : name2;
-    let secondary = p1 > p2 ? name2 : name1;
-
-    let dynamic;
-    let conflict;
-    let evolution;
-    let collapse;
-
-    /* ---------- Баланс ---------- */
-    if (diff <= 10) {
-
-        dynamic = `
-        Между ${name1} и ${name2} наблюдается почти идеальное финансовое равновесие.
-        Это не классическая модель «донор — принимающий».
-        Это союз двух автономных систем.
-        `;
-
-        conflict = `
-        Главная опасность — отсутствие лидерства.
-        В сложный период может возникнуть паралич решений.
-        `;
-
-        evolution = `
-        В долгосрочной перспективе возможна смена ролей
-        в зависимости от карьерной фазы каждого.
-        `;
-
-        collapse = `
-        Разрыв возможен не из‑за денег,
-        а из‑за отсутствия эмоционального превосходства одного из партнёров.
-        `;
-
-    } 
-    /* ---------- Умеренный перевес ---------- */
-    else if (diff <= 30) {
-
-        dynamic = `
-        ${dominant} имеет более выраженный материальный вектор,
-        но ${secondary} усиливает систему через психологию и энергию.
-        Это функциональная модель.
-        `;
-
-        conflict = `
-        Внутренний риск — скрытая конкуренция.
-        ${secondary} может начать доказывать свою ценность
-        через альтернативные формы влияния.
-        `;
-
-        evolution = `
-        При правильной осознанности эта пара
-        может выйти на стабильную материальную модель
-        без жёсткого доминирования.
-        `;
-
-        collapse = `
-        Разрыв возможен, если финансовый вклад
-        станет инструментом давления.
-        `;
-
-    }
-    /* ---------- Явный дисбаланс ---------- */
-    else {
-
-        dynamic = `
-        В паре существует выраженная финансовая иерархия.
-        ${dominant} — центр материального контроля.
-        ${secondary} — зависимая или усиливающая сторона.
-        `;
-
-        conflict = `
-        Основной риск — психологическая зависимость.
-        Если ${dominant} потеряет ресурс,
-        система может разрушиться.
-        `;
-
-        evolution = `
-        Через 5–10 лет возможен переворот ролей,
-        если ${secondary} начнёт усиливать самостоятельность.
-        `;
-
-        collapse = `
-        Наиболее вероятный сценарий распада —
-        финансовый кризис или эмоциональная усталость донора.
-        `;
-		
-    }
-	 /* ✅ ВСЕ ДОПОЛНИТЕЛЬНЫЕ РАСЧЁТЫ — СЮДА */
-
-    const turning1 = calculateFinancialTurningPoint(profile1, date1);
-    const turning2 = calculateFinancialTurningPoint(profile2, date2);
-
-    const projection1 = calculateTenYearFinancialProjection(profile1);
-    const projection2 = calculateTenYearFinancialProjection(profile2);
-
-    const toxicity = calculateFinancialToxicity(profile1, profile2);
-    const roleShift = calculateRoleShiftProbability(profile1, profile2);
-
-    return `
-    <h4 style="color:var(--gold); margin-bottom:15px;">Кармическая финансовая динамика</h4>
-
-    <h4 style="color:var(--purple-light); margin-top:15px;">Структура союза</h4>
-    <p>${dynamic}</p>
-	
-<div class="role-graph">
-   <div class="role-donor" style="width:${profile1.index}%"></div>
-   <div class="role-acceptor" style="width:${profile2.index}%"></div>
-</div>
-
-    <h4 style="color:var(--purple-light); margin-top:15px;">Скрытый конфликт</h4>
-    <p>${conflict}</p>
-
-    <h4 style="color:var(--purple-light); margin-top:15px;">Эволюция союза</h4>
-    <p>${evolution}</p>
-
-    <h4 style="color:var(--purple-light); margin-top:15px;">Точка возможного распада</h4>
-    <p>${collapse}</p>
-
-    <hr style="margin:25px 0; opacity:0.2;">
-
-    <h4 style="color:var(--gold); margin-top:10px;">Финансовые переломы</h4>
-    <p><strong>${name1}</strong>: ${turning1.phase}, ориентировочно около ${turning1.turningAge} лет (цикл ${turning1.cycle})</p>
-    <p><strong>${name2}</strong>: ${turning2.phase}, ориентировочно около ${turning2.turningAge} лет (цикл ${turning2.cycle})</p>
-
-    <h4 style="color:var(--gold); margin-top:20px;">10‑летняя финансовая динамика</h4>
-    <p><strong>${name1}</strong>: ${projection1.trajectory}</p>
-    <p><strong>${name2}</strong>: ${projection2.trajectory}</p>
-    <p style="opacity:0.8;"><em>Риски:</em> ${projection1.risk} / ${projection2.risk}</p>
-
-    <hr style="margin:25px 0; opacity:0.2;">
-
-    <h4 style="color:var(--gold); margin-top:10px;">Индикатор токсичности</h4>
-    <p style="color:${toxicity.color}; font-weight:bold;">
-    ${toxicity.level}
-</p>
-    <p>${toxicity.description}</p>
-
-    <h4 style="color:var(--gold); margin-top:20px;">Вероятность смены ролей</h4>
-    <p>${roleShift}</p>
-
-    ${analyzeMoneyPsychology(profile1, profile2, name1, name2)}
-
-    ${generateHigherEvolutionScenario(profile1, profile2, name1, name2)}
-	
-	${generateArchetypalMoneyScenario(profile1, profile2, name1, name2)}
-	
-	${determineRelationshipModel(profile1, profile2, name1, name2)}
-	
-    `;
-}
-/* ==========================================================
-   FINANCIAL PSYCHO-DYNAMIC ENGINE
-   ========================================================== */
-
-function calculateChildhoodMoneyPattern(profile) {
-
-    const matrix = profile.matrix;
-    const karma = profile.karma;
-
-    let pattern;
-    let trauma;
-    let trigger;
-
-    if (matrix.c[8] === 0 && karma === 5) {
-        pattern = "Страх нестабильности";
-        trauma = "В детстве формировалась тревога из-за денег.";
-        trigger = "Партнёрская нестабильность усиливает тревогу.";
-    }
-    else if (matrix.c[6] >= 2) {
-        pattern = "Ожидание заботы";
-        trauma = "Подсознательная модель: кто-то должен обеспечить.";
-        trigger = "Отказ партнёра платить вызывает обиду.";
-    }
-    else if (matrix.c[1] >= 3) {
-        pattern = "Контроль через деньги";
-        trauma = "Финансовый контроль = безопасность.";
-        trigger = "Потеря контроля вызывает агрессию.";
-    }
-    else {
-        pattern = "Гибкая модель";
-        trauma = "Финансовых травм не выражено.";
-        trigger = "Зависит от текущей динамики.";
-    }
-
-    return {
-        pattern,
-        trauma,
-        trigger
-    };
-}
-/* ==========================================================
-   FINANCIAL TIME & TOXICITY ANALYSIS
-   ========================================================== */
-
-function calculateFinancialTurningPoint(profile, birthDate) {
-
-    const lp = profile.lifePath.master || profile.lifePath.base;
-    const karma = profile.karma;
-
-    const birthYear = parseInt(birthDate.split('-')[0]);
-    const currentYear = new Date().getFullYear();
-    const age = currentYear - birthYear;
-
-    // 9‑летний цикл
-    const cycle = (age % 9) + 1;
-
-    let turningAge;
-    let phase;
-
-    if (lp === 8 || lp === 1) {
-        turningAge = 36 + (karma || 0);
-        phase = "Материальный пик";
-    }
-    else if (lp === 6) {
-        turningAge = 33;
-        phase = "Смена роли через отношения";
-    }
-    else {
-        turningAge = 40;
-        phase = "Поздний финансовый разворот";
-    }
-
-    return {
-        currentAge: age,
-        cycle: cycle,
-        turningAge: turningAge,
-        phase: phase
-    };
-}
-
-/* ---------- 10-летняя динамика ---------- */
-
-function calculateTenYearFinancialProjection(profile) {
-
-    const p = profile.index;
-
-    let trajectory;
-    let risk;
-
-    if (p >= 70) {
-        trajectory = "Рост через усиление доминирования";
-        risk = "Выгорание или жёсткий контроль партнёра";
-    }
-    else if (p >= 45) {
-        trajectory = "Колебания и смена ролей";
-        risk = "Неопределённость позиции";
-    }
-    else {
-        trajectory = "Рост через правильный союз";
-        risk = "Финансовая зависимость";
-    }
-
-    return {
-        trajectory,
-        risk
-    };
-}
-
-/* ---------- Индикатор токсичности пары ---------- */
-
-function calculateFinancialToxicity(profile1, profile2) {
-
-    const diff = Math.abs(profile1.index - profile2.index);
-
-    if (diff > 40) {
-        return {
-            level: "Высокий риск токсичности",
-            color: "#ff4d4d",
-            description: "Сильный финансовый перекос. Возможна зависимость и подавление."
-        };
-    }
-
-    if (diff > 25) {
-        return {
-            level: "Умеренный дисбаланс",
-            color: "#ffb84d",
-            description: "Есть скрытая борьба за влияние через деньги."
-        };
-    }
-
-    return {
-        level: "Низкий риск",
-        color: "#4dff88",
-        description: "Финансовая динамика сбалансирована."
-    };
-}
-
-/* ---------- Вероятность смены ролей ---------- */
-
-function calculateRoleShiftProbability(profile1, profile2) {
-
-    const combined = profile1.index + profile2.index;
-
-    if (combined > 140) {
-        return "Вероятность смены ролей низкая — структура устойчива.";
-    }
-
-    if (combined > 100) {
-        return "Возможна смена ролей при внешнем кризисе.";
-    }
-
-    return "Высокая вероятность смены ролей в течение 5–7 лет.";
-}
-/* ==========================================================
-   DEEP PSYCHOLOGICAL MONEY COMPATIBILITY
-   ========================================================== */
-
-function analyzeMoneyPsychology(profile1, profile2, name1, name2) {
-
-    const p1 = profile1.index;
-    const p2 = profile2.index;
-
-    let language1, language2;
-    let fear1, fear2;
-    let manipulation;
-    let breakup;
-	
-
-    /* ---------- Язык любви через деньги ---------- */
-
-    language1 = p1 >= 60 ?
-         `${name1} выражает любовь через материальную поддержку.` 
-        : `${name1} выражает любовь через эмоциональное присутствие.`;
-
-    language2 = p2 >= 60 ?
-         `${name2} выражает любовь через материальную поддержку.` 
-        : `${name2} выражает любовь через эмоциональное присутствие.`;
-
-    /* ---------- Страх ---------- */
-
-    fear1 = p1 >= 60 ?
-         `${name1} боится потерять контроль.` 
-        : `${name1} боится оказаться зависимым.`;
-
-    fear2 = p2 >= 60 ?
-         `${name2} боится потерять контроль.` 
-        : `${name2} боится оказаться зависимым.`;
-
-    /* ---------- Манипуляция ---------- */
-
-    if (Math.abs(p1 - p2) > 35) {
-        manipulation = `
-        В паре возможна скрытая финансовая манипуляция.
-        Один может использовать деньги как инструмент давления.
-        `;
-    } else {
-        manipulation = `
-        Финансовая манипуляция маловероятна,
-        но возможна эмоциональная компенсация через деньги.
-        `;
-    }
-
-    /* ---------- Кто уйдёт первым ---------- */
-
-    if (p1 > p2 + 25) {
-        breakup = `${name1} уйдёт первым при финансовом истощении.`;
-    } else if (p2 > p1 + 25) {
-        breakup = `${name2} уйдёт первым при ощущении зависимости.`;
-    } else {
-        breakup = `Разрыв вероятнее по эмоциональной причине, а не финансовой.`;
-    }
-
-    return `
-    <hr style="margin:30px 0; opacity:0.2;">
-
-    <h4 style="color:var(--gold);">Психология денег в паре</h4>
-
-    <h4 style="color:var(--purple-light); margin-top:15px;">Финансовый язык любви</h4>
-    <p>${language1}</p>
-    <p>${language2}</p>
-
-    <h4 style="color:var(--purple-light); margin-top:15px;">Скрытые страхи</h4>
-    <p>${fear1}</p>
-    <p>${fear2}</p>
-
-    <h4 style="color:var(--purple-light); margin-top:15px;">Манипулятивный потенциал</h4>
-    <p>${manipulation}</p>
-
-    <h4 style="color:var(--purple-light); margin-top:15px;">Вероятный инициатор разрыва</h4>
-    <p>${breakup}</p>
-    `;
-}
-/* ==========================================================
-   HIGHER FINANCIAL EVOLUTION SCENARIO
-   ========================================================== */
-
-function generateHigherEvolutionScenario(profile1, profile2, name1, name2) {
-
-    const p1 = profile1.index;
-    const p2 = profile2.index;
-    const diff = Math.abs(p1 - p2);
-
-    let growthVector;
-    let transformation;
-    let breakthrough;
-    let danger;
-
-    if (diff <= 15) {
-
-        growthVector = `
-        Ваша пара способна выйти на новый финансовый уровень
-        через совместный проект или общее дело.
-        Вы усиливаете друг друга симметрично.
-        `;
-
-        transformation = `
-        Рост произойдёт, если вы определите
-        конкретную общую материальную цель.
-        `;
-
-        breakthrough = `
-        Возможен финансовый скачок в период,
-        когда оба одновременно входят в фазу расширения.
-        `;
-
-        danger = `
-        Опасность — расфокусировка и отсутствие лидера.
-        `;
-
-    } else if (diff <= 30) {
-
-        growthVector = `
-        Финансовый рост возможен,
-        если доминирующая сторона перестанет контролировать,
-        а принимающая — усилит самостоятельность.
-        `;
-
-        transformation = `
-        Ключ — баланс власти.
-        Нельзя расти, если один подавлен.
-        `;
-
-        breakthrough = `
-        Скачок возможен при перераспределении ролей.
-        `;
-
-        danger = `
-        Если роли зацементируются,
-        союз станет статичным и рост остановится.
-        `;
-
-    } else {
-
-        growthVector = `
-        Ваша модель требует осознанного управления.
-        Без внутренней трансформации рост невозможен.
-        `;
-
-        transformation = `
-        Доминирующий партнёр должен научиться делегировать,
-        принимающий — взять на себя часть ответственности.
-        `;
-
-        breakthrough = `
-        Переломный момент возможен
-        после кризиса или финансовой встряски.
-        `;
-
-        danger = `
-        Без изменений пара может застрять
-        в модели зависимости.
-        `;
-    }
-
-    return `
-    <hr style="margin:30px 0; opacity:0.2;">
-
-    <h4 style="color:var(--gold);">Высший сценарий эволюции союза</h4>
-
-    <h4 style="color:var(--purple-light); margin-top:15px;">Вектор роста</h4>
-    <p>${growthVector}</p>
-
-    <h4 style="color:var(--purple-light); margin-top:15px;">Необходимая трансформация</h4>
-    <p>${transformation}</p>
-
-    <h4 style="color:var(--purple-light); margin-top:15px;">Вероятность прорыва</h4>
-    <p>${breakthrough}</p>
-
-    <h4 style="color:var(--purple-light); margin-top:15px;">Главная опасность</h4>
-    <p>${danger}</p>
-    `;
-}
-/* ==========================================================
-   ARCHETYPAL COUPLE MONEY DYNAMICS
-   ========================================================== */
-
-function generateArchetypalMoneyScenario(profile1, profile2, name1, name2) {
-
-    const lp1 = profile1.lifePath.master || profile1.lifePath.base;
-    const lp2 = profile2.lifePath.master || profile2.lifePath.base;
-	
-	const matrix1 = profile1.matrix;
-    const matrix2 = profile2.matrix;
-
-    let scenario;
-
-    /* --- 2 + 6 --- */
-    if ((lp1 === 2 || lp1 === 11) && lp2 === 6) {
-
-        scenario = `
-        <h4 style="color:var(--gold);">Архетип: Спонсор‑Интуит + Венера</h4>
-
-        <p><strong>${name1}</strong> (2/11) — партнёр‑интуит.
-        Он не жёсткий лидер, но стремится быть нужным.
-        Его спонсорство не про власть — а про гармонию.</p>
-
-        <p><strong>${name2}</strong> (6) — венерианская энергия.
-        Ей важен комфорт, эстетика, качество жизни.
-        Она не «иждивенец», а усилитель ресурса.</p>
-
-        <p>Сценарий: ${name1} «несёт мамонта», чтобы ${name2} создавала
-        из него красивый интерьер жизни.
-        Это гармоничная классическая модель,
-        если оба осознают свои роли.</p>
-        `;
-    }
-	
-	/* ===== 5 + 6 ===== */
-    else if ((lp1 === 5 && lp2 === 6) || (lp2 === 5 && lp1 === 6)) {
-        scenario = `
-        <h4 style="color:var(--gold);">Архетип: Нестабильность + Запрос комфорта</h4>
-        <p>5 — хаос и перемены.</p>
-        <p>6 — стабильность и уют.</p>
-        <p>Союз возможен, но требует дисциплины.</p>
-        `;
-    }
-
-    /* --- 6 + 2 (зеркало) --- */
-    else if ((lp2 === 2 || lp2 === 11) && lp1 === 6) {
-
-        scenario = `
-        <h4 style="color:var(--gold);">Архетип: Венера + Спонсор‑Интуит</h4>
-
-        <p><strong>${name2}</strong> (2/11) — эмоциональный донор.
-        Его мотивация — сохранить гармонию.</p>
-
-        <p><strong>${name1}</strong> (6) — венерианский центр притяжения.
-        Запрос на качество жизни усиливает добытчика.</p>
-
-        <p>Сценарий идентичен: донор ради красоты и гармонии.</p>
-        `;
-    }
-	
-	 /* ===== 1 + 2 ===== */
-    else if ((lp1 === 1 && lp2 === 2) || (lp2 === 1 && lp1 === 2)) {
-        scenario = `
-        <h4 style="color:var(--gold);">Архетип: Лидер + Поддержка</h4>
-        <p>1 — прямой вектор силы.</p>
-        <p>2 — эмоциональная дипломатия.</p>
-        <p>Это модель, где лидер действует, а партнёр стабилизирует.</p>
-        `;
-    }
-	
-	/* ===== 9 + 6 ===== */
-    else if ((lp1 === 9 && lp2 === 6) || (lp2 === 9 && lp1 === 6)) {
-        scenario = `
-        <h4 style="color:var(--gold);">Архетип: Идеалист + Венера</h4>
-        <p>9 — духовная энергия.</p>
-        <p>6 — материально‑эстетическая.</p>
-        <p>Возможен конфликт между идеализмом и комфортом.</p>
-        `;
-    }
-	
-	/* ===== 4 + 6 ===== */
-    else if ((lp1 === 4 && lp2 === 6) || (lp2 === 4 && lp1 === 6)) {
-        scenario = `
-        <h4 style="color:var(--gold);">Архетип: Фундамент + Уют</h4>
-        <p>4 создаёт структуру.</p>
-        <p>6 наполняет её смыслом.</p>
-        <p>Очень устойчивая, «семейная» модель.</p>
-        `;
-    }
-	
-
-    /* --- 8 + 6 --- */
-    else if ((lp1 === 8 && lp2 === 6) || (lp2 === 8 && lp1 === 6)) {
-
-        scenario = `
-        <h4 style="color:var(--gold);">Архетип: Император + Муза</h4>
-
-        <p>8 — материальная сила.
-        6 — эстетика и комфорт.</p>
-
-        <p>Это мощный союз:
-        один строит империю,
-        второй придаёт ей смысл.</p>
-
-        <p>Опасность — контроль через деньги.
-        Потенциал — высокий финансовый скачок.</p>
-        `;
-    }
-
-    /* --- 6 + 6 --- */
-    else if (lp1 === 6 && lp2 === 6) {
-
-        scenario = `
-        <h4 style="color:var(--gold);">Архетип: Две Венеры</h4>
-
-        <p>Оба партнёра ориентированы на комфорт.
-        Вопрос: кто будет добывать ресурс?</p>
-
-        <p>Союз красивый,
-        но нестабильный без внешнего донора.</p>
-        `;
-    }
-
-    /* --- fallback --- */
-    else {
-
-        scenario = `
-        <h4 style="color:var(--gold);">Архетипическая модель</h4>
-
-        <p>Ваша комбинация чисел не создаёт классического
-        «донор — принимающий» сценария.
-        Роли будут определяться личной зрелостью,
-        а не числовым архетипом.</p>
-        `;
-    }
-
-    return `
-    <hr style="margin:30px 0; opacity:0.2;">
-    <h4 style="color:var(--purple-light);">Архетипический сценарий пары</h4>
-    ${scenario}
-    `;
-}
-
-/* ==========================================================
-   RELATIONSHIP MODEL CLASSIFICATION
-   ========================================================== */
-
-function determineRelationshipModel(profile1, profile2, name1, name2) {
-
-    const p1 = profile1.index;
-    const p2 = profile2.index;
-    const diff = Math.abs(p1 - p2);
-
-    let model;
-    let explanation;
-
-    /* ===== КЛАССИЧЕСКАЯ ===== */
-    if (diff > 25 && (p1 >= 65 || p2 >= 65) && (p1 <= 40 || p2 <= 40)) {
-
-        model = "Классическая модель";
-        explanation = `
-        Ваша пара работает по традиционной схеме:
-        один партнёр — финансовый локомотив,
-        второй — эмоциональный и эстетический центр.
-        Это устойчивая структура,
-        если роли принимаются добровольно.
-        `;
-    }
-
-    /* ===== СОВРЕМЕННАЯ ===== */
-    else if (diff <= 15) {
-
-        model = "Современная партнёрская модель";
-        explanation = `
-        Финансовые роли распределены гибко.
-        Нет жёсткого доминирования.
-        Союз строится на равенстве и взаимной поддержке.
-        `;
-    }
-
-    /* ===== ГИБРИД ===== */
-    else if (diff <= 30) {
-
-        model = "Гибридная модель";
-        explanation = `
-        Есть выраженный донор,
-        но второй партнёр сохраняет автономность.
-        Роли могут меняться со временем.
-        `;
-    }
-
-    /* ===== НЕСТАБИЛЬНАЯ ===== */
-    else {
-
-        model = "Нестабильная модель";
-        explanation = `
-        В паре присутствует сильный дисбаланс.
-        Без осознанного перераспределения ролей
-        возможны конфликты и финансовая напряжённость.
-        `;
-    }
-
-    return `
-    <hr style="margin:30px 0; opacity:0.2;">
-    <h4 style="color:var(--gold);">Тип финансовой модели союза</h4>
-    <p><strong>${model}</strong></p>
-    <p>${explanation}</p>
-	
-    `;
-}
 function applyPremiumAccess() {
 
     if (premiumAccess) {
@@ -2710,7 +1730,7 @@ function bookPersonalMentoring() {
    ГРАФИК ЛИЧНОГО ГОДА
    ============================================ */
 function calculateYearChart(dateString) {
-    const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+   const months = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
    const currentYear = new Date().getFullYear() + 1; // Всегда следующий год (в 2025 покажет 2026
     const birthDay = parseInt(dateString.split('-')[2]);
     const birthMonth = parseInt(dateString.split('-')[1]);
@@ -3181,17 +2201,16 @@ const navbar = document.getElementById('main-nav');
 window.addEventListener('scroll', function() {
     let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     
+    // Прячем/показываем меню
     if (scrollTop > lastScrollTop && scrollTop > 100) {
-        // Скроллим ВНИЗ -> Прячем
         navbar.classList.add('nav-hidden');
     } else {
-        // Скроллим ВВЕРХ -> Показываем
         navbar.classList.remove('nav-hidden');
     }
-    
     lastScrollTop = scrollTop;
-    
-    // Добавление тени для меню при скролле
+});
+
+// Отдельный обработчик для класса scrolled
 window.addEventListener('scroll', function() {
     const nav = document.getElementById('main-nav');
     if (!nav) return;
@@ -3200,7 +2219,6 @@ window.addEventListener('scroll', function() {
     } else {
         nav.classList.remove('scrolled');
     }
-});
 });
 
 
@@ -3412,6 +2430,7 @@ document.getElementById('child-pythagoras-decode').innerHTML = decodeHtml;
 
         document.getElementById('child-loader').style.display = 'none';
         document.getElementById('child-result').style.display = 'block';
+            window.revealNewElements(document.getElementById('child-result'));
 
          } catch (error) {
         console.error('Ошибка в детской матрице:', error);
@@ -3422,138 +2441,12 @@ document.getElementById('child-pythagoras-decode').innerHTML = decodeHtml;
     }, 1000);
 }
   
-/* ============================================
-   ФИНАНСОВЫЙ АРХЕТИП – ЛЕНИВАЯ ЗАГРУЗКА
-   ============================================ */
 
-function calculateMoneyMatrix() {
-    if (window._moneyLoaded) {
-        // файл уже загружен, сразу вызываем реальную функцию
-        window._realCalculateMoneyMatrix();
-    } else {
-        // загружаем модуль
-        const script = document.createElement('script');
-        script.src = 'js/money.js';
-        script.onload = function() {
-            window._realCalculateMoneyMatrix();
-        };
-        document.head.appendChild(script);
-    }
-}
 
-function calculateMoneyCompat() {
-    if (window._moneyLoaded) {
-        window._realCalculateMoneyCompat();
-    } else {
-        const script = document.createElement('script');
-        script.src = 'js/money.js';
-        script.onload = function() {
-            window._realCalculateMoneyCompat();
-        };
-        document.head.appendChild(script);
-    }
-}
 
-/* ============================================
-   РАСЧЁТ ФИНАНСОВ ПАРЫ (КОНСТРУКТОР СМЫСЛОВ)
-   ============================================ */
-function calculateMoneyCompat() {
-    const name1 = document.getElementById('moneyName1').value.trim() || "Мужчина";
-    const date1 = document.getElementById('moneyDate1').value;
-    const name2 = document.getElementById('moneyName2').value.trim() || "Женщина";
-    const date2 = document.getElementById('moneyDate2').value;
 
-    if(!date1 || !date2) return alert("Введите даты обоих партнёров!");
 
-    // Лоадер
-    document.getElementById('result-money-compat').style.display = 'none';
-    document.getElementById('loader-money-compat').style.display = 'flex';
 
-    // Показываем кнопку PDF, если есть премиум-доступ
-    if (premiumAccess) {
-    const pdfBtn = document.getElementById('download-money-pdf');
-    if (pdfBtn) pdfBtn.style.display = 'inline-block';
-}
-
-    setTimeout(() => {
-        // --- МАТЕМАТИКА ---
-        const reduce22 = (n) => {
-            let res = n;
-            while (res > 22) res = res.toString().split('').reduce((a, b) => +a + +b, 0);
-            return res;
-        };
-
-        const getMoneyCode = (dStr) => {
-            const d = new Date(dStr);
-            // Для Личных денег в паре берем: День + Месяц (Таланты + Личность)
-            // Это самая точная характеристика для "Стиля поведения в деньгах"
-            return reduce22(d.getDate() + (d.getMonth() + 1));
-        };
-
-        // 1. Код Мужчины
-        const codeMale = getMoneyCode(date1);
-
-        // 2. Код Женщины
-        const codeFemale = getMoneyCode(date2);
-
-        // 3. Код Пары
-        const codePair = reduce22(codeMale + codeFemale);
-
-        // --- ВЫВОД ЦИФР ---
-        document.getElementById('compat-val-1').innerText = codeMale;
-        document.getElementById('compat-val-2').innerText = codeFemale;
-        document.getElementById('compat-val-total').innerText = codePair;
-
-        const safeName1 = escapeHTML(name1);
-        const safeName2 = escapeHTML(name2);
-document.getElementById('money-compat-names').innerHTML = 
-    `<span style="color:#54a0ff">${safeName1}</span> + <span style="color:#ff9ff3">${safeName2}</span>`;
-        // --- СБОРКА ТЕКСТА (КОНСТРУКТОР) ---
-        
-        // Функция безопасного получения текста (если в базе пусто)
-        const getData = (num) => moneyCompatData[num] || { 
-            male: "<p>Описание мужчины готовится...</p>", 
-            female: "<p>Описание женщины готовится...</p>", 
-            pair: "<p>Описание союза готовится...</p>" 
-        };
-
-        const textMale = getData(codeMale).male;     // Берём текст "Он" для его цифры
-        const textFemale = getData(codeFemale).female; // Берём текст "Она" для её цифры
-        const textPair = getData(codePair).pair;     // Берём текст "Пара" для общей цифры
-
-        // Формируем красивый HTML
-        document.getElementById('desc-money-total').innerHTML = `
-            
-            <!-- БЛОК МУЖЧИНЫ -->
-            <div class="trait-block" style="border-left: 4px solid #54a0ff; margin-bottom: 25px;">
-                <h4 style="color:#54a0ff; margin-bottom:15px; font-size:1.2rem;">
-                    <i class="fa-solid fa-mars"></i> Его Денежный Стиль (Аркан ${codeMale})
-                </h4>
-                ${textMale}
-            </div>
-
-            <!-- БЛОК ЖЕНЩИНЫ -->
-            <div class="trait-block" style="border-left: 4px solid #ff9ff3; margin-bottom: 25px;">
-                <h4 style="color:#ff9ff3; margin-bottom:15px; font-size:1.2rem;">
-                    <i class="fa-solid fa-venus"></i> Её Денежный Стиль (Аркан ${codeFemale})
-                </h4>
-                ${textFemale}
-            </div>
-
-            <!-- БЛОК ПАРЫ -->
-            <div class="trait-block" style="border-left: 4px solid var(--gold); background: rgba(255, 215, 0, 0.08);">
-                <h4 style="color:var(--gold); margin-bottom:15px; font-size:1.3rem;">
-                    <i class="fa-solid fa-sack-dollar"></i> Ваш Совместный Поток (Аркан ${codePair})
-                </h4>
-                ${textPair}
-            </div>
-        `;
-
-        document.getElementById('loader-money-compat').style.display = 'none';
-        document.getElementById('result-money-compat').style.display = 'block';
-
-    }, 1500);
-}
 
 /* ============================================
    РОДИТЕЛЬ-РЕБЁНОК – ЛЕНИВАЯ ЗАГРУЗКА
@@ -3578,35 +2471,20 @@ function switchMoneyMode(mode) {
     const pair = document.getElementById('money-pair-block');
     const btns = document.querySelectorAll('.mode-btn');
 
-    // Функция для плавной смены
-    const fadeSwap = (hideEl, showEl) => {
-        hideEl.style.opacity = '0';
-        hideEl.style.transition = 'opacity 0.3s ease';
-        
-        setTimeout(() => {
-            hideEl.style.display = 'none';
-            
-            showEl.style.display = 'block';
-            // Небольшая задержка, чтобы браузер отрисовал блок перед анимацией
-            setTimeout(() => {
-                showEl.style.opacity = '1';
-                showEl.classList.add('fade-in'); // Добавляем CSS анимацию
-            }, 50);
-        }, 300); // Ждем пока исчезнет старый (0.3s)
-    };
-
     if (mode === 'personal') {
-        if (personal.style.display !== 'none') return; // Уже активен
-        fadeSwap(pair, personal);
+        if (personal) personal.style.display = 'block';
+        if (pair) pair.style.display = 'none';
         btns[0].classList.add('active');
         btns[1].classList.remove('active');
     } else {
-        if (pair.style.display !== 'none') return; // Уже активен
-        fadeSwap(personal, pair);
+        if (personal) personal.style.display = 'none';
+        if (pair) pair.style.display = 'block';
         btns[0].classList.remove('active');
         btns[1].classList.add('active');
     }
 }
+
+
 function toggleWidget() {
     const widget = document.getElementById('daily-widget');
     widget.classList.toggle('active'); // Эта строка будет добавлять/убирать класс active
@@ -3630,82 +2508,7 @@ function getLifePathDescription(lifePath) {
     };
     return descriptions[lifePath] || "Ваше число судьбы хранит уникальный потенциал и миссию.";
 }
-// Функция для генерации изображения и открытия модального окна шаринга
-async function shareWithImage() {
-    // Получаем данные с главной страницы
-    const userName = document.getElementById('userName')?.value || 'Гость';
-    const lifePath = document.getElementById('life-path-matrix')?.textContent || '?';
-    const luckyNumber = document.getElementById('lucky-number')?.textContent || '—';
-    const luckyElement = document.getElementById('lucky-element')?.textContent || '—';
 
-    // Находим шаблон и клонируем его
-    const template = document.getElementById('share-card-template');
-    if (!template) return;
-
-    const element = template.cloneNode(true);
-    element.style.display = 'block';
-    element.style.position = 'absolute';
-    element.style.left = '-9999px';
-    element.style.width = '600px';
-    
-    // Заполняем данные в карточке
-    element.querySelector('#share-card-name').textContent = userName;
-    element.querySelector('#share-card-lifepath').textContent = lifePath;
-    element.querySelector('#share-card-lucky').textContent = luckyNumber;
-    element.querySelector('#share-card-element').textContent = luckyElement;
-
-    document.body.appendChild(element);
-
-    // Показываем модальное окно с индикатором загрузки
-    const modal = document.getElementById('share-image-modal');
-    const container = document.getElementById('share-image-container');
-    container.innerHTML = '<p style="color:#aaa;">Генерируем изображение...</p>';
-    modal.style.display = 'flex';
-
-    try {
-        // Генерируем изображение
-        const canvas = await html2canvas(element, {
-            scale: 2,
-            backgroundColor: '#1a1a2e',
-            allowTaint: false,
-            useCORS: true
-        });
-
-        const imageData = canvas.toDataURL('image/png');
-        container.innerHTML = `<img src="${imageData}" style="width:100%; border-radius:10px;">`;
-
-        // Получаем описание числа судьбы (только для текста поста)
-        const description = getLifePathDescription(parseInt(lifePath));
-        const shareText = `✨ Мой нумерологический портрет от ASTRA! ✨\n\n${description}\n\nПрисоединяйтесь: ${window.location.href}`;
-        
-        // Вставляем текст в обычный div
-        const postDiv = document.getElementById('share-post-text');
-        if (postDiv) {
-            postDiv.textContent = shareText;
-        }
-
-        // Обновляем ссылки для соцсетей
-        document.getElementById('share-vk').href = `https://vk.com/share.php?url=${encodeURIComponent(window.location.href)}&title=${encodeURIComponent(shareText)}&image=${encodeURIComponent(imageData)}`;
-        document.getElementById('share-tg').href = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(shareText)}`;
-        document.getElementById('share-ok').href = `https://connect.ok.ru/dk?st.cmd=WidgetShare&st.shareUrl=${encodeURIComponent(window.location.href)}&st.title=${encodeURIComponent(shareText)}`;
-
-    } catch (error) {
-        console.error('Ошибка генерации:', error);
-        container.innerHTML = '<p style="color:red;">Ошибка генерации. Попробуйте ещё раз.</p>';
-    } finally {
-        // Удаляем временный элемент
-        document.body.removeChild(element);
-    }
-}
-// Функция для скачивания сгенерированной картинки
-function downloadShareImage() {
-    const img = document.querySelector('#share-image-container img');
-    if (!img) return;
-    const link = document.createElement('a');
-    link.download = 'matrix-result.png';
-    link.href = img.src;
-    link.click();
-}
 
 // Тексты для мастер-чисел
 const masterMeanings = {
@@ -4164,28 +2967,28 @@ function getBlindSpotsAndGrowthPoints(c) {
     const growthPoints = [];
 
     const blindMap = {
-        1: "Вам не хватает уверенности в себе и лидерских качеств. Учитесь брать инициативу, даже если страшно.",
-        2: "Слабая энергия общения и дипломатии. Вам сложно находить компромиссы, стоит развивать эмпатию.",
-        3: "Не хватает творческого подхода и интереса к новому. Пробуйте больше хобби, читайте, расширяйте кругозор.",
-        4: "Проблемы с дисциплиной и здоровьем. Введите режим дня, спорт, следите за питанием.",
-        5: "Слабая логика и аналитика. Развивайте критическое мышление, решайте головоломки.",
-        6: "Трудности с физическим трудом и заботой о теле. Начните с малого: утренняя зарядка, помощь по дому.",
-        7: "Не хватает удачи и интуиции. Работайте над позитивным мышлением, медитируйте.",
-        8: "Слабая ответственность и терпимость. Учитесь держать слово, помогать близким.",
-        9: "Проблемы с памятью и интеллектом. Тренируйте память, учите стихи, решайте кроссворды."
-    };
+        1: "<strong>Ноль единиц делает сложнее уверенно заявлять о себе и отстаивать свои решения.</strong> Человек может долго сомневаться, зависеть от чужого мнения и уступать даже там, где важно обозначить границы. В отношениях это проявляется как терпение лишнего, в карьере — как недооценка себя, а в финансах — как передача контроля другим. Частая ловушка — ждать одобрения и копить тихое раздражение, которое потом бьёт по самочувствию и мотивации. Полезно тренировать навык выбора в мелочах, учиться говорить нет, вести дневник решений и замечать свои реальные желания.",
+2: "<strong>Ноль двоек часто указывает на дефицит энергии и трудность сохранять устойчивый внутренний ресурс.</strong> Такой человек быстро устаёт, остро реагирует на атмосферу вокруг и может выгорать даже от обычной нагрузки. В отношениях он нередко тянет на себе эмоции партнёра, в работе работает рывками, в финансах теряет деньги из-за усталости и непродуманных решений, а здоровье страдает от сбитого режима. Ловушка — жить на силе воли, кофеине и чувстве долга, игнорируя сигналы тела. Баланс возвращают сон, питание, вода, мягкая физическая активность, энергетические границы и разумное распределение дел.",
+3: "<strong>Ноль троек ослабляет любознательность, лёгкость самовыражения и привычку учиться через интерес.</strong> Человеку бывает трудно формулировать мысли, пробовать новое и искать нестандартные решения, поэтому жизнь может становиться слишком однообразной. В отношениях это даёт бедный диалог, в карьере — тормозит развитие навыков, в финансах — ограничивает варианты роста, а на уровне здоровья усиливает ментальную вялость и скуку. Типичная ошибка — говорить себе, что и так достаточно, и избегать всего непонятного. Помогают чтение по 15 минут в день, новые хобби, общение с любопытными людьми и привычка задавать хотя бы один вопрос в любой новой ситуации.",
+4: "<strong>Ноль четвёрок показывает, что тема тела, режима и запаса прочности требует особого внимания.</strong> Это не приговор здоровью, а знак, что ресурс не любит перегруза и плохо переносит жизнь без системы. В отношениях человек может забывать о бытовой устойчивости, в карьере перерабатывать, в финансах тратить на последствия запущенности, а тело отвечает усталостью, простудами или нервным истощением. Ловушка — терпеть до последнего и считать заботу о себе второстепенной. Полезно выстроить сон, питание, профилактические обследования, ежедневное движение и спокойный ритм без героизма.",
+5: "<strong>Ноль пятёрок усложняет доступ к логике, причинно-следственным связям и тихой внутренней интуиции.</strong> Решения могут приниматься то слишком эмоционально, то слишком хаотично, без опоры на факты и внутреннее чутьё. В отношениях это даёт идеализацию или подозрительность, в карьере — ошибки выбора, в финансах — импульсивные траты, а в здоровье — тревогу из-за непонимания сигналов тела. Частая ловушка — путать сильную эмоцию с истиной и игнорировать проверку реальностью. Полезно брать паузу перед важными шагами, выписывать плюсы и минусы, проверять данные и развивать интуицию через тишину, медитацию и наблюдение.",
+6: "<strong>Ноль шестёрок часто говорит о слабой связи с дисциплиной, рутиной и умением доводить бытовые дела до результата.</strong> Человек может вдохновляться идеей, но быстро терять интерес, когда начинается регулярная работа. В отношениях это проявляется как невыполненные обещания, в карьере — как трудность с системностью, в финансах — как хаос в повседневных платежах, а в здоровье — как нерегулярный режим и отсутствие полезных привычек. Ловушка — ждать вдохновения вместо процесса и избегать всего скучного. Баланс дают чек-листы, короткие повторяющиеся ритуалы, ручной труд, работа по таймеру и правило сначала завершить, потом переключаться.",
+7: "<strong>Ноль семёрок создаёт ощущение, что опоры свыше нет и всего приходится добиваться только через напряжение.</strong> Человеку трудно доверять жизни, рисковать и видеть удачные совпадения, поэтому он часто выбирает слишком безопасный, но тяжёлый путь. В отношениях это рождает недоверие, в карьере — отказ от возможностей, в финансах — страх роста, а в здоровье — хроническое напряжение и ожидание худшего. Типичная ловушка — цинизм и убеждение, что чудес не бывает, значит можно не замечать шанс. Полезно вести дневник удачных событий, практиковать благодарность, пробовать малые риски и учиться видеть не только угрозы, но и поддержку.",
+8: "<strong>Ноль восьмёрок ослабляет чувство долга, ответственность перед договорённостями и устойчивость в обязательствах.</strong> Человеку бывает сложно соблюдать режим, подчиняться правилам и нести последствия своих решений без внутреннего сопротивления. В отношениях это даёт непоследовательность, в карьере — проблемы с дедлайнами и иерархией, в финансах — забытые платежи и долги, а на здоровье влияет хаотичный образ жизни. Ловушка — обещать из лучших чувств, а потом избегать ответственности и винить обстоятельства. Полезно всё фиксировать письменно, дробить обязательства на простые шаги, держать календарь и тренировать надёжность в одном выбранном деле ежедневно.",
+9: "<strong>Ноль девяток может давать слабую опору на память, аналитику и умение извлекать урок из опыта.</strong> Человеку труднее удерживать большие объёмы информации, видеть дальнюю перспективу и быстро собирать целостную картину. В отношениях это выражается в повторении старых сценариев, в карьере — в медленном накоплении экспертности, в финансах — в плохом анализе своих ошибок, а здоровье страдает, если забываются режим и рекомендации. Ловушка — надеяться на импровизацию там, где нужна система. Помогают заметки, повторение материала, еженедельная рефлексия, планирование на месяц вперёд и привычка спрашивать себя, какой вывод я сделал из этой ситуации."
+};
 
     const growthMap = {
-        1: "У вас сильная воля и лидерство. Берите ответственность, ведите за собой.",
-        2: "Хорошая энергетика, вы душа компании. Используйте это для нетворкинга.",
-        3: "Творческий потенциал. Займитесь искусством, блогингом, креативными проектами.",
-        4: "Отличное здоровье и выносливость. Занимайтесь спортом, закаляйтесь.",
-        5: "Логика и планирование – ваше оружие. Ставьте цели и добивайтесь.",
-        6: "Золотые руки. Работайте руками, ремесло, кулинария – ваше.",
-        7: "Везение и интуиция. Доверяйте знакам, рискуйте.",
-        8: "Ответственность и забота. Станьте опорой для близких.",
-        9: "Феноменальная память. Учитесь легко, осваивайте языки."
-    };
+       1: "<strong>Избыток единиц даёт сильную волю, яркое чувство себя и стремление управлять происходящим.</strong> Такой человек умеет начинать, брать ответственность и продавливать решения, но легко скатывается в жёсткость и борьбу за правоту. В отношениях это может выглядеть как давление, в карьере — как лидерство на грани конфликта, в финансах — как смелые заработки и такие же риски, а здоровье страдает от постоянного внутреннего напряжения. Ловушка — путать силу с контролем и не слышать чужие границы. Баланс дают эмпатия, делегирование, практика диалога вместо приказа и регулярные паузы, чтобы снижать градус напряжения.",
+2: "<strong>Избыток двоек усиливает энергетику, чувствительность и способность мощно влиять на атмосферу вокруг.</strong> Человек часто харизматичен, быстро считывает людей и может быть источником поддержки, но также легко перегружается чужими эмоциями. В отношениях появляется слияние и спасательство, в карьере — работа рывками с риском выгорания, в финансах — траты по настроению, а здоровье реагирует нервным перенапряжением и скачками ресурса. Ловушка — жить чужими состояниями и забывать о своих границах. Помогают спорт, заземляющие практики, режим отдыха, ограничение стимуляторов и правило сначала восстановиться, потом помогать другим.",
+3: "<strong>Избыток троек даёт яркий ум, любознательность, общительность и множество идей сразу.</strong> Такой человек быстро загорается, легко учится и умеет увлекать, но часто распыляется и начинает больше, чем завершает. В отношениях ему нужен живой диалог, в карьере он силён в креативе и обучении, в финансах тратится на впечатления, курсы и новинки, а здоровье может страдать от информационной перегрузки. Ловушка — подменять глубину разнообразием и жить в режиме вечного старта. Баланс создают приоритеты, ограничение проектов, глубокая работа без отвлечений и правило доводить один важный навык до реального результата.",
+4: "<strong>Избыток четвёрок усиливает выносливость, практичность и способность держать форму даже в сложных условиях.</strong> Это даёт надёжность, любовь к порядку и умение строить устойчивую жизнь, но вместе с этим может рождать жёсткость и страх хаоса. В отношениях человек контролирует быт и правила, в карьере становится опорой системы, в финансах действует осторожно и стабильно, а здоровье страдает, если тело используют как машину без отдыха. Ловушка — считать гибкость слабостью и жить только через надо. Баланс дают отдых по расписанию, телесная мягкость, спонтанность в безопасных дозах и разрешение себе менять план без чувства вины.",
+5: "<strong>Избыток пятёрок даёт сильную логику, быстрый ум и почти рентгеновскую чувствительность к людям и ситуациям.</strong> Человек хорошо видит причины, риски и скрытые мотивы, но может чрезмерно анализировать и мало доверять простоте. В отношениях это превращается в проверку партнёра, в карьере — в сильную стратегию, в финансах — в умение считать и просчитывать, а здоровье страдает от перенапряжения головы и тревожного контроля. Ловушка — жить только умом и пытаться всё предусмотреть. Баланс возвращают телесные практики, ограничение анализа по времени, проверка фактов без подозрительности и привычка спрашивать не только что разумно, но и что по-настоящему чувствуется верным.",
+6: "<strong>Избыток шестёрок усиливает трудолюбие, практичность и способность тащить на себе большие объёмы реальных дел.</strong> Такой человек незаменим, умеет строить, чинить, организовывать и создавать материальный результат, но нередко связывает ценность с полезностью. В отношениях он любит через заботу и контроль, в карьере становится рабочим локомотивом, в финансах тяготеет к надёжности, а здоровье отвечает зажимами и усталостью от постоянного должен. Ловушка — жить как спасатель и не уметь отдыхать без чувства вины. Баланс дают делегирование, творческие занятия без пользы, разгрузка графика и разрешение получать любовь не только за труд.",
+7: "<strong>Избыток семёрок усиливает удачливость, интуицию, магнетизм и ощущение особой связи с потоком жизни.</strong> Человек нередко оказывается в нужное время в нужном месте, чувствует знаки и легко вдохновляется большими смыслами, но может начать считать себя исключением из правил. В отношениях это даёт притягательность и загадочность, в карьере — смелые скачки, в финансах — опору на удачные ходы, а здоровье может страдать, если реальность подменяется ожиданием чуда. Ловушка — пассивность под маской доверия жизни и азарт. Баланс держат смирение, дисциплина, проверка идей практикой и благодарность без ухода от ответственности.",
+8: "<strong>Избыток восьмёрок даёт мощное чувство долга, управленческую силу и высокую внутреннюю требовательность.</strong> Такой человек умеет организовывать людей, держать слово и нести ответственность там, где другие отступают, но легко превращается в контролёра. В отношениях он занимает родительскую позицию, в карьере тянется к власти и структуре, в финансах способен навести порядок, а здоровье страдает от хронического напряжения и невозможности расслабиться. Ловушка — брать на себя слишком много и считать, что без него всё рухнет. Баланс создают разделение ответственности, мягкие границы, отдых без пользы и навык просить помощь, не переживая, что это слабость.",
+9: "<strong>Избыток девяток усиливает память, интеллект, способность видеть систему и быстро накапливать знания.</strong> Такой человек часто мыслит глубоко, замечает закономерности и рано становится экспертом, но может жить в голове и отрываться от реальности чувств. В отношениях он начинает учить и исправлять, в карьере силён в аналитике и стратегии, в финансах умеет планировать, а здоровье реагирует бессонницей, головным напряжением и перегрузкой нервной системы. Ловушка — превращать ум в меру собственной ценности и бояться простых ошибок. Баланс дают телесность, живое общение без превосходства, обучение через практику и привычка объяснять сложное простыми словами."
+};
 
     for (let i = 1; i <= 9; i++) {
         if (c[i] === 0 && blindMap[i]) {
@@ -4764,9 +3567,55 @@ function applyPaywallToDecoding() {
 // НЕЗАВИСИМОЕ ОКНО ОПЛАТЫ (ГЛАВНАЯ СТРАНИЦА)
 // ==========================================================
 
-let unlockPaymentLink = 'https://zoyanum.getplatinum.ru/payment/bdsSxOn'; // ← ЗАМЕНИТЕ НА СВОЮ ССЫЛКУ
+// ==========================================================
+// НОВАЯ СИСТЕМА ОПЛАТЫ: КОНФИГУРАЦИЯ РАСЧЁТОВ
+// ==========================================================
+const calculationConfig = {
+    matrix: {
+        name: 'Матрица личности',
+        price: '1 290 ₽',
+        link: 'https://zoyanum.getplatinum.ru/payment/bdsSxOn'
+    },
+    compat: {
+        name: 'Совместимость',
+        price: '990 ₽',
+        link: 'https://zoyanum.getplatinum.ru/payment/BbkbDC4'
+    },
+    money: {
+        name: 'Финансовый архетип (личный)',
+        price: '890 ₽',
+        link: 'https://zoyanum.getplatinum.ru/payment/OSlURed'
+    },
+    'money-pair': {
+        name: 'Финансовый архетип (парный)',
+        price: '990 ₽',
+        link: 'https://zoyanum.getplatinum.ru/payment/bqNotL9'
+    },
+    parentchild: {
+        name: 'Родитель-ребёнок',
+        price: '590 ₽',
+        link: 'https://zoyanum.getplatinum.ru/payment/TOOoCcB'
+    },
+    all: {
+        name: 'Пакет «Все расчёты»',
+        price: '2 990 ₽',
+        link: 'https://zoyanum.getplatinum.ru/payment/SeaXipu'
+    }
+};
 
-function openUnlockPaymentModal() {
+let currentCalculationType = 'matrix'; // по умолчанию
+
+function openUnlockPaymentModal(type = 'matrix') {
+    currentCalculationType = type;
+    const config = calculationConfig[type];
+    
+    // Обновляем заголовок и цену в модалке
+    document.getElementById('unlock-payment-modal').querySelector('.payment-title').textContent = '🔓 ' + config.name;
+    document.getElementById('unlock-payment-modal').querySelector('.payment-title').nextElementSibling.textContent = 
+        'Детальные расшифровки, синтезы, прогнозы и PDF-отчёт';
+    document.getElementById('unlock-payment-modal').querySelector('div[style*="font-size: 2.5rem"]').textContent = config.price;
+    
+    // Показываем модалку
     document.getElementById('unlock-payment-modal').style.display = 'flex';
 }
 
@@ -4774,9 +3623,8 @@ function closeUnlockPaymentModal() {
     document.getElementById('unlock-payment-modal').style.display = 'none';
 }
 
-// Обработчик кнопки оплаты в новом окне
-document.addEventListener('DOMContentLoaded', 
-function() {
+// Обработчик кнопки оплаты в модалке разблокировки
+document.addEventListener('DOMContentLoaded', function() {
     const payBtn = document.getElementById('unlock-final-pay-btn');
     if (payBtn) {
         payBtn.addEventListener('click', function() {
@@ -4792,12 +3640,13 @@ function() {
                 return;
             }
             
-            window.open(unlockPaymentLink, '_blank');
+            const config = calculationConfig[currentCalculationType];
+            window.open(config.link, '_blank');
             closeUnlockPaymentModal();
             
             // Показываем окно с инструкцией отправить чек
             const telegramUsername = "zoya_viik";
-            const text = `Здравствуйте, Зоя! Я оплатил(а) доступ «Полный разбор личности» (499 ₽). Мой Email: ${email}. Отправляю чек.`;
+            const text = `Здравствуйте, Зоя! Я оплатил(а) доступ «${config.name}» (${config.price}). Мой Email: ${email}. Отправляю чек.`;
             const tgUrl = `https://t.me/${telegramUsername}?text=${encodeURIComponent(text)}`;
             
             if (confirm('Спасибо! После оплаты нажмите ОК, чтобы отправить чек в Telegram.')) {
@@ -4953,115 +3802,338 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Функция для скачивания PDF из разделов (Совместимость, Финансы, Родитель-ребёнок)
+// ==========================================================
+// УНИВЕРСАЛЬНАЯ ГЕНЕРАЦИЯ PDF ДЛЯ ВСЕХ РАЗДЕЛОВ
+// Работает через /generate-pdf-from-html, раскрывая контент
+// ==========================================================
 async function downloadSectionPDF(section) {
     if (!premiumAccess) {
         openUnlockPaymentModal();
         return;
     }
 
-    // Определяем, какую кнопку анимировать
-    let btnId = '';
-    if (section === 'compat') btnId = 'download-compat-pdf';
-    else if (section === 'money') btnId = 'download-money-pdf';
-    else if (section === 'parentchild') btnId = 'download-parentchild-pdf';
+    let btn;
 
-    const btn = btnId ? document.getElementById(btnId) : null;
-    const originalHTML = btn ? btn.innerHTML : '';
-    if (btn) {
-        btn.disabled = true;
-        btn.classList.add('pdf-loading');
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Генерация PDF...';
-    }
+    // ---------- СОВМЕСТИМОСТЬ (НОВЫЙ МЕТОД) ----------
+    if (section === 'compat') {
+        const n1 = document.getElementById('nameP1')?.value?.trim() || 'Партнёр 1';
+        const n2 = document.getElementById('nameP2')?.value?.trim() || 'Партнёр 2';
+        const d1 = document.getElementById('dateP1')?.value || '';
+        const d2 = document.getElementById('dateP2')?.value || '';
 
-    let html = '';
-    let filename = 'report.pdf';
+        const matrix1HTML = document.querySelector('#matrices-compare-container .compat-matrix-single:first-child')?.innerHTML || '';
+        const matrix2HTML = document.querySelector('#matrices-compare-container .compat-matrix-single:last-child')?.innerHTML || '';
 
-    const getText = (id) => document.getElementById(id)?.value?.trim() || '';
+        const compatNumber = document.getElementById('compat-number')?.textContent?.trim() || '';
+        const freeTextRaw = document.getElementById('compat-free-text')?.innerHTML || '';
+        const premiumDiv = document.getElementById('compat-premium-content');
+        const premiumHTMLRaw = (premiumDiv && !premiumDiv.classList.contains('premium-blur')) ? premiumDiv.innerHTML : '';
 
-    try {
-        // Твоя существующая логика сборки html для каждого раздела
-        if (section === 'compat') {
-            const name1 = getText('nameP1') || 'Партнёр 1';
-            const name2 = getText('nameP2') || 'Партнёр 2';
-            const date1 = getText('dateP1');
-            const date2 = getText('dateP2');
-            const matrices = document.getElementById('matrices-compare-container')?.innerHTML || '';
-            const compatNumber = document.getElementById('compat-number')?.textContent?.trim() || '';
-            const compatText = document.getElementById('compat-text')?.innerHTML || '';
-
-            html = `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>Совместимость ${name1} и ${name2}</title>
-<style>body{background:#1a1a2e;color:#eee;font-family:'Cormorant Garamond',serif;padding:40px;} h1,h2{color:#D4AF37;} .matrix-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;} .matrix-cell{background:#1e1e3a;border:1px solid #D4AF37;border-radius:8px;padding:8px;text-align:center;}</style>
-</head><body>
-<h1>Совместимость партнёров</h1>
-<h2>${name1} и ${name2}</h2>
-<p>Даты рождения: ${date1} и ${date2}</p>
-<div>${matrices}</div>
-<h2>Энергия союза: ${compatNumber}</h2>
-<div>${compatText}</div>
-<p style="margin-top:40px;text-align:center;color:#aaa;">© Astra Numerology</p>
-</body></html>`;
-            filename = `Совместимость_${name1}_${name2}.pdf`;
-
-        } else if (section === 'money') {
-            let content = document.getElementById('result-money')?.innerHTML || '';
-            if (!content || document.getElementById('result-money')?.style.display === 'none') {
-                content = document.getElementById('result-money-compat')?.innerHTML || '';
-            }
-            html = `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>Финансовый архетип</title>
-<style>body{background:#1a1a2e;color:#eee;font-family:'Cormorant Garamond',serif;padding:40px;} h1,h2{color:#D4AF37;} .matrix-card{background:rgba(0,0,0,0.2);padding:15px;border-radius:10px;margin:15px 0;}</style>
-</head><body>
-<h1>💰 Денежный код</h1>
-${content}
-<p style="margin-top:40px;text-align:center;color:#aaa;">© Astra Numerology</p>
-</body></html>`;
-            filename = `Финансовый_архетип.pdf`;
-
-        } else if (section === 'parentchild') {
-            const parentName = getText('parentName') || 'Родитель';
-            const childName = getText('childName') || 'Ребёнок';
-            const content = document.getElementById('result-parent-child')?.innerHTML || '';
-            html = `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>Родитель и ребёнок</title>
-<style>body{background:#1a1a2e;color:#eee;font-family:'Cormorant Garamond',serif;padding:40px;} h1,h2{color:#D4AF37;}</style>
-</head><body>
-<h1>👨‍👧 Родитель и ребёнок</h1>
-<h2>${parentName} и ${childName}</h2>
-${content}
-<p style="margin-top:40px;text-align:center;color:#aaa;">© Astra Numerology</p>
-</body></html>`;
-            filename = `Родитель_ребёнок_${childName}.pdf`;
+        // Раскрываем все details в freeText и premiumHTML
+        const tempDiv = document.createElement('div');
+        let freeText = freeTextRaw, premiumHTML = premiumHTMLRaw;
+        if (freeTextRaw) {
+            tempDiv.innerHTML = freeTextRaw;
+            tempDiv.querySelectorAll('details:not([open])').forEach(d => d.setAttribute('open', ''));
+            freeText = tempDiv.innerHTML;
+            tempDiv.innerHTML = '';
+        }
+        if (premiumHTMLRaw) {
+            tempDiv.innerHTML = premiumHTMLRaw;
+            tempDiv.querySelectorAll('details:not([open])').forEach(d => d.setAttribute('open', ''));
+            premiumHTML = tempDiv.innerHTML;
         }
 
-        if (!html) return;
+        const payload = {
+            userName: n1 + ' & ' + n2,
+            partner1: { name: n1, date: d1 },
+            partner2: { name: n2, date: d2 },
+            compatNumber,
+            freeText,
+            premiumHTML,
+            matrices: { matrix1: matrix1HTML, matrix2: matrix2HTML }
+        };
 
-        const response = await fetch(`${SERVER_URL}/generate-pdf-from-html`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ html })
-        });
-
-        if (!response.ok) throw new Error('Ошибка сервера');
-
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename.replace(/\s+/g, '_') + '.pdf';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-
-    } catch (err) {
-        console.error('Ошибка генерации PDF:', err);
-        alert('Не удалось создать PDF. Попробуйте позже.');
-    } finally {
+        btn = document.getElementById('download-compat-pdf');
         if (btn) {
-            btn.disabled = false;
-            btn.classList.remove('pdf-loading');
-            btn.innerHTML = originalHTML;
+            btn.disabled = true;
+            btn.classList.add('pdf-loading');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Генерация PDF...';
+        }
+
+        try {
+            const resp = await fetch(`${SERVER_URL}/generate-compat-pdf`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!resp.ok) throw new Error('Ошибка сервера');
+            const blob = await resp.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Совместимость_${n1}_${n2}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error(err);
+            alert('Не удалось создать PDF');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.classList.remove('pdf-loading');
+                btn.innerHTML = '<i class="fa-solid fa-file-pdf"></i> Скачать расчёт (PDF)';
+            }
+        }
+        return;
+    }
+
+     // ---------- ОСТАЛЬНЫЕ РАЗДЕЛЫ ----------
+    let containerId, filename = 'report.pdf';
+
+    switch (section) {
+        case 'money': {
+            const mName = document.getElementById('moneyName')?.value?.trim() || 'Пользователь';
+            const mDate = document.getElementById('moneyDate')?.value || '';
+            const matrixHTML = document.getElementById('money-matrix-container')?.innerHTML || '';
+            const mirrorText = document.getElementById('money-mirror-text')?.textContent || '';
+            const premiumMoneyDiv = document.getElementById('premium-money-content');
+            let premiumMoneyHTML = '';
+            if (premiumMoneyDiv && !premiumMoneyDiv.classList.contains('premium-blur')) {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = premiumMoneyDiv.innerHTML;
+                tempDiv.querySelectorAll('details:not([open])').forEach(d => d.setAttribute('open', ''));
+                premiumMoneyHTML = tempDiv.innerHTML;
+            }
+
+            const payload = {
+                userName: mName,
+                date: mDate,
+                matrixHTML,
+                mirrorText,
+                premiumHTML: premiumMoneyHTML
+            };
+
+            btn = document.getElementById('download-money-pdf');
+            if (btn) {
+                btn.disabled = true;
+                btn.classList.add('pdf-loading');
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Генерация PDF...';
+            }
+
+            try {
+                const resp = await fetch(`${SERVER_URL}/generate-money-pdf`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!resp.ok) throw new Error('Ошибка сервера');
+                const blob = await resp.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Денежный_код_${mName.replace(/\s+/g, '_')}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            } catch (err) {
+                console.error(err);
+                alert('Не удалось создать PDF');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.classList.remove('pdf-loading');
+                    btn.innerHTML = '<i class="fa-solid fa-file-pdf"></i> Скачать расчёт (PDF)';
+                }
+            }
+            return;
+        }
+
+        case 'money-pair': {
+            const mpName1 = document.getElementById('moneyName1')?.value?.trim() || 'Партнёр 1';
+            const mpDate1 = document.getElementById('moneyDate1')?.value || '';
+            const mpName2 = document.getElementById('moneyName2')?.value?.trim() || 'Партнёр 2';
+            const mpDate2 = document.getElementById('moneyDate2')?.value || '';
+            const matricesDiv = document.getElementById('pair-matrices-container');
+            const matricesHTML = matricesDiv ? matricesDiv.innerHTML : '';
+            const freeDiv = document.getElementById('pair-blocks-container');
+            let freeHTML = freeDiv ? freeDiv.innerHTML : '';
+            if (freeHTML) {
+                const tmp = document.createElement('div');
+                tmp.innerHTML = freeHTML;
+                tmp.querySelectorAll('details:not([open])').forEach(d => d.setAttribute('open', ''));
+                freeHTML = tmp.innerHTML;
+            }
+            const premiumPairDiv = document.getElementById('pair-premium-content');
+            let premiumPairHTML = '';
+            if (premiumPairDiv && !premiumPairDiv.classList.contains('premium-blur')) {
+                const tmp = document.createElement('div');
+                tmp.innerHTML = premiumPairDiv.innerHTML;
+                tmp.querySelectorAll('details:not([open])').forEach(d => d.setAttribute('open', ''));
+                premiumPairHTML = tmp.innerHTML;
+            }
+
+            const payload = {
+                userName: `${mpName1} & ${mpName2}`,
+                partner1: { name: mpName1, date: mpDate1 },
+                partner2: { name: mpName2, date: mpDate2 },
+                matricesHTML,
+                freeHTML,
+                premiumHTML: premiumPairHTML
+            };
+
+            btn = document.getElementById('download-money-pair-pdf');
+            if (btn) {
+                btn.disabled = true;
+                btn.classList.add('pdf-loading');
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Генерация PDF...';
+            }
+
+            try {
+                const resp = await fetch(`${SERVER_URL}/generate-money-pair-pdf`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!resp.ok) throw new Error('Ошибка сервера');
+                const blob = await resp.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Денежный_код_пары_${mpName1}_${mpName2}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            } catch (err) {
+                console.error(err);
+                alert('Не удалось создать PDF');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.classList.remove('pdf-loading');
+                    btn.innerHTML = '<i class="fa-solid fa-file-pdf"></i> Скачать расчёт (PDF)';
+                }
+            }
+            return;
+        }
+
+        case 'parentchild': {
+            const parentName = document.getElementById('parentName')?.value?.trim() || 'Родитель';
+            const childName = document.getElementById('childName')?.value?.trim() || 'Ребёнок';
+            const parentDate = document.getElementById('parentDate')?.value || '';
+            const childDate = document.getElementById('childDate')?.value || '';
+            const resultContainer = document.getElementById('result-parent-child');
+            let resultHTML = resultContainer ? resultContainer.innerHTML : '';
+            if (resultHTML) {
+                const tmp = document.createElement('div');
+                tmp.innerHTML = resultHTML;
+                tmp.querySelectorAll('details:not([open])').forEach(d => d.setAttribute('open', ''));
+                resultHTML = tmp.innerHTML;
+            }
+
+            const payload = {
+                parent: { name: parentName, date: parentDate },
+                child: { name: childName, date: childDate },
+                resultHTML
+            };
+
+            btn = document.getElementById('download-parentchild-pdf');
+            if (btn) {
+                btn.disabled = true;
+                btn.classList.add('pdf-loading');
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Генерация PDF...';
+            }
+
+            try {
+                const resp = await fetch(`${SERVER_URL}/generate-parentchild-pdf`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!resp.ok) throw new Error('Ошибка сервера');
+                const blob = await resp.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Родитель_ребёнок_${parentName}_${childName}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            } catch (err) {
+                console.error(err);
+                alert('Не удалось создать PDF');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.classList.remove('pdf-loading');
+                    btn.innerHTML = '<i class="fa-solid fa-file-pdf"></i> Скачать расчёт (PDF)';
+                }
+            }
+            return;
+        }
+
+        case 'child-matrix': {
+            const cName = document.getElementById('childNameInput')?.value?.trim() || 'Ребёнок';
+            const cDate = document.getElementById('childDateInput')?.value || '';
+            const childResultDiv = document.getElementById('child-result');
+            let childResultHTML = childResultDiv ? childResultDiv.innerHTML : '';
+            if (childResultHTML) {
+                const tmp = document.createElement('div');
+                tmp.innerHTML = childResultHTML;
+                tmp.querySelectorAll('details:not([open])').forEach(d => d.setAttribute('open', ''));
+                childResultHTML = tmp.innerHTML;
+            }
+
+            const payload = {
+                childName: cName,
+                childDate: cDate,
+                resultHTML: childResultHTML
+            };
+
+            btn = document.getElementById('download-child-pdf');
+            if (btn) {
+                btn.disabled = true;
+                btn.classList.add('pdf-loading');
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Генерация PDF...';
+            }
+
+            try {
+                const resp = await fetch(`${SERVER_URL}/generate-child-pdf`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!resp.ok) throw new Error('Ошибка сервера');
+                const blob = await resp.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Детская_матрица_${cName.replace(/\s+/g, '_')}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            } catch (err) {
+                console.error(err);
+                alert('Не удалось создать PDF');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.classList.remove('pdf-loading');
+                    btn.innerHTML = '<i class="fa-solid fa-file-pdf"></i> Скачать расчёт (PDF)';
+                }
+            }
+            return;
+        }
+
+        default: {
+            alert('Неизвестный раздел');
+            return;
         }
     }
 }
@@ -5162,3 +4234,159 @@ document.addEventListener('DOMContentLoaded', function() {
         closeBtn.addEventListener('click', closeMobileMenu);
     }
 });
+<<<<<<< Updated upstream
+=======
+
+// ==========================================
+// ОПИСАНИЯ ЛИЧНОГО ГОДА (1-9)
+// ==========================================
+const personalYearInfo = {
+    1: {
+title: "Год Начинаний",
+desc: "Это время нового цикла, когда на первый план выходят инициатива, самостоятельность, смелые решения и желание двигаться вперёд. Год 1 часто приносит ощущение внутреннего толчка: хочется обновить жизнь, поставить новые цели, сменить курс или начать то, что давно откладывалось. В карьере и финансах это хороший период для запуска проектов, поиска новой работы, развития личного бренда, перехода на более самостоятельную позицию и принятия лидерских решений. Деньги в этом году чаще приходят через активность, смелость и готовность брать ответственность на себя. В отношениях и личной жизни важна честность с собой: тебе может захотеться больше свободы, ясности и настоящих чувств. Если союз крепкий, он обновится; если отношения давно изжили себя, год может подтолкнуть к решительным выводам. Сейчас полезно проявлять инициативу, учиться говорить о своих желаниях прямо и не ждать, что кто-то выберет за тебя. Стоит делать ставку на действие, личную смелость, новые знакомства, обучение и всё, что усиливает твою независимость. Избегать лучше спешки без плана, эгоцентричности, давления на других и страха начать с нуля. Главный урок года — поверить в себя и понять, что новый этап начинается тогда, когда ты сам решаешь сделать первый шаг."
+},
+2: {
+title: "Год Отношений",
+desc: "Это более мягкий, тонкий и чувствительный период, в котором главную роль играют партнёрство, сотрудничество, эмоции, терпение и умение выстраивать гармонию. Внешне год может казаться не таким стремительным, как предыдущий, но именно сейчас закладываются важные связи, договорённости и внутренний баланс. В карьере и финансах лучше всего работают дипломатия, аккуратное продвижение, совместные проекты, переговоры и внимательность к деталям. Это не всегда год резких карьерных рывков, но очень хороший период для укрепления репутации, создания полезных союзов и подготовки почвы для будущего роста. В финансовых вопросах полезны умеренность, планирование и отказ от импульсивных решений. В личной жизни год 2 особенно значим: он усиливает потребность в близости, поддержке, душевном контакте и искренности. Отношения могут стать глубже, если в них есть уважение и готовность слышать друг друга. Одиноким людям год нередко приносит важные знакомства, но торопить события не стоит. Делать стоит ставку на терпение, доверие, совместные решения, внутреннюю работу и эмоциональную зрелость. Избегать лучше обидчивости, пассивности, зависимости от чужого мнения, скрытого недовольства и затяжных сомнений. Главный урок года — сила не всегда в напоре; иногда самый большой результат приходит через чуткость, выдержку и умение строить отношения бережно."
+},
+3: {
+title: "Год Самовыражения",
+desc: "Год 3 приносит лёгкость, движение, вдохновение, общение и желание проявить себя ярче. Это время творчества, новых идей, публичности, знакомств и расширения круга общения. Внутри появляется потребность говорить, писать, делиться мыслями, создавать, пробовать новое и быть заметнее. В карьере и финансах особенно благоприятны сферы, связанные с коммуникацией, обучением, маркетингом, творчеством, продажами, выступлениями и социальными контактами. Удача часто приходит через людей, идеи, харизму и умение быть в потоке. При этом важно не распыляться: возможностей будет много, но результат даст только то, во что ты действительно вкладываешься. В личной жизни год оживляет романтическую сферу, делает тебя более привлекательным, открытым и эмоционально выразительным. Это прекрасное время для флирта, новых знакомств, обновления отношений, совместных поездок и радости. Стоит делать больше того, что вдохновляет, развивать речь, творчество, уверенность в себе, выходить в люди и позволять себе удовольствие от жизни. Избегать лучше поверхностности, хаоса, обещаний без действий, лишней драматизации и ухода от ответственности под видом лёгкости. Главный урок года — твой голос, талант и настроение действительно влияют на реальность, если ты не боишься проявляться искренне."
+},
+4: {
+title: "Год Фундамента",
+desc: "Это год дисциплины, структуры, ответственности и реальных результатов, которые строятся шаг за шагом. Энергия года 4 не про быстрые чудеса, а про надёжность, порядок, системность и создание прочной базы на будущее. Может казаться, что всё требует больше усилий, чем обычно, но именно сейчас закладывается то, на чём потом будет держаться твоя стабильность. В карьере и финансах это серьёзный рабочий период: хорошо заниматься долгосрочными проектами, наводить порядок в документах и бюджете, развивать профессиональные навыки, укреплять позиции, погашать долги и выстраивать устойчивый режим. Деньги приходят через труд, дисциплину, практичность и продуманные решения. В отношениях год проверяет чувства делом: становится видно, где есть надёжность, а где только слова. Это хорошее время для укрепления союза, обсуждения совместного быта, планов, обязанностей и общего будущего. Делать стоит всё, что связано с организацией, режимом, терпением, здоровыми привычками, обучением и практическими шагами. Избегать лучше упрямства, перегрузки, жёсткого контроля, пессимизма и ощущения, что раз всё идёт медленно, значит ничего не происходит. Главный урок года — большой успех строится не на вдохновении одного дня, а на системе, выдержке и способности доводить начатое до конца."
+},
+5: {
+title: "Год Перемен",
+desc: "Год 5 приносит движение, обновление, свободу, неожиданные повороты и жажду новых впечатлений. Это период, когда жизнь может ускориться: меняются обстоятельства, планы, окружение, интересы, а иногда и место жительства или работа. Главная энергия года — перемены, гибкость и готовность выйти за рамки привычного. В карьере и финансах это хорошее время для экспериментов, расширения деятельности, смены формата работы, изучения новых направлений, поездок, активных продаж и всего, что связано с динамикой и адаптацией. Но с деньгами важно быть особенно внимательным: из-за импульсивности и желания жить ярко легко потратить больше, чем нужно. В отношениях и личной жизни год может быть очень насыщенным: он усиливает тягу к свободе, ярким эмоциям, знакомствам и новому опыту. Для кого-то это время романтики и приключений, а для кого-то — проверки отношений на зрелость и доверие. Стоит делать ставку на гибкость, мобильность, открытость к новому, расширение кругозора и смелость пробовать. Избегать лучше хаотичности, авантюр без расчёта, необдуманных решений, измен ради эмоций и привычки убегать от обязательств. Главный урок года — свобода приносит радость только тогда, когда ты умеешь управлять ею осознанно, а не теряешь себя в потоке событий."
+},
+6: {
+title: "Год Любви и Ответственности",
+desc: "Это тёплый, глубокий и значимый период, в котором на первый план выходят семья, дом, любовь, забота, обязательства и внутреннее чувство гармонии. Год 6 часто делает важными темы отношений, брака, детей, родных, красоты пространства и эмоциональной устойчивости. Возникает желание навести порядок не только снаружи, но и в душе. В карьере и финансах год благоприятен для работы, связанной с помощью людям, сервисом, обучением, творчеством, дизайном, психологией, медициной, заботой и управлением процессами. Финансовая стабильность приходит через надёжность, репутацию, ответственность и способность доводить дела до хорошего результата. В личной жизни это один из самых сильных годов для любви: отношения могут перейти на новый уровень, стать серьёзнее, теплее и честнее. Одиноким людям он часто приносит перспективные знакомства, а тем, кто уже в паре, — важные решения о будущем. Делать стоит всё, что укрепляет дом, связи, душевное равновесие, здоровье, красоту и честный диалог. Избегать лучше гиперопеки, желания всех спасти, контроля из любви, самоотречения и накопления усталости. Главный урок года — настоящая забота начинается не с жертвы, а с баланса между любовью к другим и уважением к себе."
+},
+7: {
+title: "Год Поиска Себя",
+desc: "Год 7 — это время внутренней глубины, переоценки, анализа, духовного роста и замедления ради понимания сути. Внешне он может идти не так активно, как хотелось бы, но его сила в другом: он помогает услышать себя, увидеть скрытые причины происходящего и очистить жизнь от лишнего. Часто в этом году хочется уединения, тишины, чтения, обучения, исследований, работы с психологией или духовными практиками. В карьере и финансах это период не столько внешней экспансии, сколько интеллектуальной и стратегической работы. Хорошо учиться, углублять экспертность, заниматься аналитикой, исследованием, совершенствовать мастерство и не принимать поспешных решений только ради видимости движения. Финансы требуют осторожности, расчёта и отказа от сомнительных схем. В отношениях и личной жизни год может сделать тебя более избирательным и закрытым: поверхностные связи утомляют, а вот глубокие разговоры и честность становятся особенно ценными. Это время понять, кто действительно тебе близок, а где связь держалась на привычке. Делать стоит ставку на саморазвитие, наблюдательность, терапию, обучение, отдых, восстановление и тишину. Избегать лучше изоляции из-за обид, чрезмерной подозрительности, холодности, ухода в мысли без действий и желания всё объяснить логикой, игнорируя чувства. Главный урок года — ответы приходят тогда, когда ты перестаёшь убегать от себя и находишь смелость посмотреть вглубь."
+},
+8: {
+title: "Год Силы и Достижений",
+desc: "Это один из самых мощных годов цикла, связанный с результатами, властью, амбициями, деньгами, статусом и умением управлять ресурсами. Всё, что ты делал раньше, начинает приносить плоды, и жизнь словно спрашивает: готов ли ты взять больше ответственности за свой успех? Год 8 усиливает тему карьеры, влияния, больших целей, деловой хватки и материальных результатов. В работе это отличное время для продвижения, бизнеса, переговоров, масштабирования, важных решений, роста дохода и укрепления авторитета. Но деньги в этом году любят честность, расчёт и зрелое отношение: если действовать импульсивно или из жадности, можно быстро столкнуться с обратной стороной этой энергии. В отношениях и личной жизни важно не ставить достижения выше чувств. Партнёр может нуждаться не только в твоей надёжности, но и в живом эмоциональном присутствии. Этот год учит балансу между успехом и сердцем. Делать стоит то, что усиливает твою профессиональную позицию, финансовую грамотность, уверенность, стратегическое мышление и личную дисциплину. Избегать лучше авторитарности, трудоголизма, конфликтов из-за контроля, материального снобизма и попыток мерить ценность людей только пользой. Главный урок года — настоящая сила не в том, чтобы всё подчинить, а в том, чтобы мудро управлять возможностями и не терять человечность."
+},
+9: {
+title: "Год Завершения",
+desc: "Год 9 завершает цикл и приносит темы освобождения, подведения итогов, прощания с прошлым, эмоционального очищения и подготовки к новому этапу. Всё, что больше не соответствует твоему развитию, в этом году может уходить: старые отношения, привычки, проекты, убеждения, роли и даже цели, которые когда-то были важны, но теперь стали тесны. Это не всегда самый простой период, зато очень мудрый и освобождающий. В карьере и финансах год хорошо подходит для завершения дел, закрытия долгов, анализа результатов, расставания с бесперспективными направлениями и подготовки пространства для нового цикла. Не всегда стоит форсировать крупные старты — лучше сначала завершить незавершённое. В личной жизни год может принести глубокие осознания: где есть любовь, а где только привязанность; что действительно ценно, а что держалось из страха перемен. Иногда отношения обновляются, а иногда естественно завершаются. Делать стоит всё, что помогает отпустить, простить, очистить пространство, подвести итоги, заняться благотворительностью, творчеством, душевным исцелением и внутренним обновлением. Избегать лучше цепляния за прошлое, драматизации, сопротивления очевидным окончаниям и попыток воскресить то, что уже исчерпало себя. Главный урок года — завершение не является потерей, если оно освобождает место для более живого, честного и твоего будущего."
+}
+};
+
+function calcPersonalYear(birthDateStr, targetYear) {
+    const parts = birthDateStr.split('-');
+    const day = parseInt(parts[2]);
+    const month = parseInt(parts[1]);
+    let sum = day + month + targetYear;
+    while (sum > 9) {
+        sum = sum.toString().split('').reduce((a, b) => +a + +b, 0);
+    }
+    return sum;
+}
+
+(function() {
+  // Создаём элементы-ауры
+  const topShroud = document.createElement('div');
+  topShroud.className = 'scroll-shroud scroll-shroud--top';
+  const bottomShroud = document.createElement('div');
+  bottomShroud.className = 'scroll-shroud scroll-shroud--bottom';
+  
+  document.body.prepend(topShroud);
+  document.body.appendChild(bottomShroud);
+
+  window.addEventListener('scroll', () => {
+    const scrolled = window.scrollY;
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    const threshold = 50; // расстояние от края, когда аура полностью видна
+
+    // Верхняя аура
+    topShroud.style.opacity = Math.min(scrolled / threshold, 1);
+
+    // Нижняя аура
+    const distToBottom = maxScroll - scrolled;
+    bottomShroud.style.opacity = Math.min(distToBottom / threshold, 1);
+  });
+})();
+
+// ==========================================================
+// ПЛАВНОЕ ПОЯВЛЕНИЕ БЛОКОВ ПРИ СКРОЛЛЕ (АВТОМАТИЧЕСКОЕ)
+// ==========================================================
+(function initScrollReveal() {
+    // Какие селекторы будут анимироваться (можно редактировать)
+    const targets = [
+        '.glass-card',
+        '.tariff-card',
+        '.service-card',
+        '.decode-card',
+        '.matrix-row-item',
+        '.benefit-card-old',
+        '.author-card',
+        '.hero-block',
+        '.section-title',
+        '.section-subtitle',
+        '.timeline-node',
+        '.course-feature',
+        '.partner-card',
+        '.pc-card',
+        '.child-calc-card',
+        '.quick-compat-card',
+        '.numbers-trio .number-card',
+        '.module-item',
+        '.benefit-item'
+    ];
+
+    // Функция добавления класса анимации
+    function addRevealClass(elements) {
+        elements.forEach(el => {
+            // Не добавляем повторно
+            if (!el.classList.contains('reveal-on-scroll') && !el.classList.contains('reveal-fade-only')) {
+                el.classList.add('reveal-on-scroll');
+            }
+        });
+    }
+
+    // Находим все элементы по селекторам и добавляем класс
+    const allElements = [];
+    targets.forEach(selector => {
+        try {
+            const nodes = document.querySelectorAll(selector);
+            addRevealClass(nodes);
+            allElements.push(...nodes);
+        } catch (e) {
+            // Игнорируем неверные селекторы
+        }
+    });
+
+    // Наблюдатель
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+                // Прекращаем наблюдение, чтобы анимация не срабатывала повторно
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -30px 0px'  // небольшой сдвиг, чтобы появление начиналось чуть раньше
+    });
+
+    // Начинаем наблюдение
+    allElements.forEach(el => observer.observe(el));
+
+    // Дополнительно можно наблюдать за динамически добавленными элементами (например, после расчёта)
+    // Для этого функцию можно вызвать повторно после вставки результатов.
+    window.revealNewElements = function(container) {
+        if (!container) return;
+        const fresh = container.querySelectorAll('.reveal-on-scroll:not(.revealed)');
+        fresh.forEach(el => observer.observe(el));
+    };
+})();
+
+>>>>>>> Stashed changes
