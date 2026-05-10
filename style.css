@@ -24,10 +24,10 @@ html {
 }
 
 body {
-    margin: 0;
+   margin: 0;
     padding: 0;
     font-family: 'Open Sans', sans-serif;
-    background: #0a0a10; /* запасной цвет */
+    background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
     background: radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a10 70%);
     color: var(--text-main);
     min-height: 100vh;
@@ -59,7 +59,7 @@ section {
 
 
 @keyframes animStar {
-    from { transform: translateY(0); }
+    from { transform: translateY(0px); }
     to { transform: translateY(-2000px); }
 }
 
@@ -137,7 +137,7 @@ nav.scrolled {
    ОСНОВНОЙ КОНТЕНТ
    ============================================ */
 main {
-    padding-top: 0;
+    padding-top: 0px;
     max-width: 1200px;
     margin: 0 auto;
     padding-bottom: 50px;
@@ -3425,7 +3425,7 @@ html::-webkit-scrollbar-thumb:hover {
 .matrix-cell {
     background: rgba(255,255,255,0.08);
     border-radius: 10px;
-    padding: 0 0;
+    padding: 0px 0px;
     text-align: center;
 }
 .cell-title {
@@ -4805,7 +4805,7 @@ details.money-details {
    ============================================ */
 .premium-service-card {
     position: relative;
-    background: linear-gradient(145deg, #1e1a2e , #2a2348 100%);
+    background: linear-gradient(145deg, #1e1a2e %, #2a2348 100%);
     border: 2px solid var(--gold);
     box-shadow: 0 0 35px rgba(212, 175, 55, 0.25), 0 15px 30px rgba(0,0,0,0.5);
     transform: scale(1.03);
@@ -5726,7 +5726,7 @@ section#home {
 
 /* Утапливание при клике */
 .btn-gold:active {
-  transform: translateY(0);
+  transform: translateY(0px);
   box-shadow: 0 5px 12px rgba(201, 169, 110, 0.4);
 }
 
@@ -6681,104 +6681,50 @@ transform: translateY(-67px);  /* ← поднимает только загол
     }
 }
 
-
-
-
 /* ============================================
-   ИСПРАВЛЕНИЕ БЕЛЫХ ПОЛОС И ФОНА (добавлено 2026)
+   МОБИЛЬНЫЕ ИСПРАВЛЕНИЯ (без вреда для десктопа)
    ============================================ */
-@media (max-width: 600px) {
-html, body {
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    min-height: 100% !important;
+@media (max-width: 768px) {
+    /* Убираем белые полосы */
+    body {
+        min-height: 100dvh !important;
+        min-height: -webkit-fill-available !important;
+        background: radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a10 70%) !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    main {
+        flex: 1 1 auto !important;
+        min-height: 0 !important; /* не мешаем скроллу */
+    }
+
+    /* Исправляем отступ калькулятора */
+    .calc-container {
+        margin-top: 30px !important;
+    }
+
+    /* Исправляем поля ввода на iOS */
+    input[type="text"],
+    input[type="date"] {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+        padding: 12px 15px !important;
+        font-size: 16px !important;
+    }
+
+    /* Исправляем навигацию на мобильных */
+    nav {
+        padding: 10px 20px !important;
+        background: rgba(15, 12, 29, 0.95) !important;
+        backdrop-filter: blur(10px) !important;
+    }
+
+    /* Исправляем отзывы и другие элементы */
+    #testimonials {
+        width: 100vw !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
 }
-
-body {
-    min-height: 100vh !important;
-    min-height: -webkit-fill-available !important;
-    min-height: 100dvh !important;
-    overflow-x: hidden !important;
-    display: flex;
-    flex-direction: column;
-    background: radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a10 70%) !important;
-}
-
-main {
-    flex: 1 1 auto !important;
-    width: 100% !important;
-    min-height: 100% !important;
-    min-height: -webkit-fill-available !important;
-    min-height: 100dvh !important;
-    padding: 0 !important;
-}
-
-section {
-    display: none !important;
-    width: 100% !important;
-    min-height: 100% !important;
-    min-height: -webkit-fill-available !important;
-    min-height: 100dvh !important;
-    margin: 0 !important;
-    padding: 20px 15px !important;
-    box-sizing: border-box !important;
-    background: transparent !important;
-}
-
-section.active {
-    display: block !important;
-}
-
-nav {
-    top: 0 !important;
-    padding: 10px 20px !important;
-    background: rgba(15, 12, 29, 0.85) !important;
-    backdrop-filter: blur(10px) !important;
-    border-radius: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    left: 0 !important;
-    transform: none !important;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.2) !important;
-}
-
-.calc-container {
-    margin-top: 30px !important;
-}
-
-footer {
-    flex-shrink: 0 !important;
-}
-
-section, footer {
-    padding-bottom: env(safe-area-inset-bottom, 20px) !important;
-}
-
-.daily-widget {
-    top: 80px !important;
-}
-
-section.active, 
-#home, #compat, #sponsor, #parent-child, #child-matrix, #services, #course {
-    background: transparent !important;
-}
-
-
-/* Исправление полей ввода на iOS */
-input[type="text"],
-input[type="date"] {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box;
-    padding: 12px 15px !important;
-    font-size: 16px !important;
-}
-}
-
-
-
-
-
-
