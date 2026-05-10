@@ -6687,6 +6687,7 @@ transform: translateY(-67px);  /* ← поднимает только загол
 /* ============================================
    ИСПРАВЛЕНИЕ БЕЛЫХ ПОЛОС И ФОНА (добавлено 2026)
    ============================================ */
+@media (max-width: 768px) {
 html, body {
     margin: 0 !important;
     padding: 0 !important;
@@ -6774,8 +6775,7 @@ input[type="date"] {
     padding: 12px 15px !important;
     font-size: 16px !important;
 }
-
-
+}
 
 
 
