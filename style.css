@@ -6682,51 +6682,11 @@ transform: translateY(-67px);  /* ← поднимает только загол
 }
 
 
-/* Полноэкранный режим для iOS Safari */
-html {
-    height: 100%;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-}
 
-body {
-    min-height: 100vh;
-    min-height: -webkit-fill-available; /* специально для iOS Safari */
-    width: 100%;
-    margin: 0;
-    padding: 0;
-}
-
-/* Фикс белых полос внизу */
-section {
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
-    padding-bottom: env(safe-area-inset-bottom, 20px);
-}
-
-/* Растягиваем все секции на полную высоту */
-section {
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
-    width: 100%;
-}
-
-/* Исправление полей ввода на iOS */
-input[type="text"],
-input[type="date"] {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box;
-    padding: 12px 15px !important;
-    font-size: 16px !important; /* чтобы не срабатывал зум при фокусе */
-}
 
 /* ============================================
-   ИСПРАВЛЕНИЕ БЕЛЫХ ПОЛОС И ФОНА (для мобильных)
+   ИСПРАВЛЕНИЕ БЕЛЫХ ПОЛОС И ФОНА (добавлено 2026)
    ============================================ */
-
-/* 1. Полноэкранный режим для всех устройств */
 html, body {
     margin: 0 !important;
     padding: 0 !important;
@@ -6745,7 +6705,6 @@ body {
     background: radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a10 70%) !important;
 }
 
-/* 2. Главный контейнер */
 main {
     flex: 1 1 auto !important;
     width: 100% !important;
@@ -6755,7 +6714,6 @@ main {
     padding: 0 !important;
 }
 
-/* 3. Все секции – занимают всю высоту, имеют фон */
 section {
     display: none !important;
     width: 100% !important;
@@ -6765,14 +6723,13 @@ section {
     margin: 0 !important;
     padding: 20px 15px !important;
     box-sizing: border-box !important;
-    background: transparent !important;   /* фон будет от body */
+    background: transparent !important;
 }
 
 section.active {
     display: block !important;
 }
 
-/* 4. Навигация – без лишних отступов и прозрачная */
 nav {
     top: 0 !important;
     padding: 10px 20px !important;
@@ -6786,28 +6743,34 @@ nav {
     border-bottom: 1px solid rgba(212, 175, 55, 0.2) !important;
 }
 
-/* 5. Убираем гигантский отступ у калькулятора */
 .calc-container {
     margin-top: 30px !important;
 }
 
-/* 6. Футер – прижат к низу */
 footer {
     flex-shrink: 0 !important;
 }
 
-/* 7. Исправление для iOS – безопасные зоны */
 section, footer {
     padding-bottom: env(safe-area-inset-bottom, 20px) !important;
 }
 
-/* 8. Дневной виджет – не лезет наверх */
 .daily-widget {
     top: 80px !important;
 }
 
-/* 9. Защита от белого фона на вкладках */
 section.active, 
 #home, #compat, #sponsor, #parent-child, #child-matrix, #services, #course {
     background: transparent !important;
 }
+
+
+
+
+
+
+
+
+
+
+
