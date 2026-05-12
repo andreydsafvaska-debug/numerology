@@ -387,7 +387,7 @@ function calculateNameNumber(name) {
         }
     }
     while (sum > 9 && sum !== 11 && sum !== 22 && sum !== 33) {
-       sum = sum.toString().split('').reduce((a, b) => Number(a) + Number(b), 0);
+        sum = sum.toString().split('').reduce((a, b) => +a + +b, 0);
     }
     return sum;
 
@@ -1857,7 +1857,7 @@ function quickCompatibility() {
     const num1 = calculateNameNumber(name1);
     const num2 = calculateNameNumber(name2);
     let result = num1 + num2;
-   while (result > 9) result = result.toString().split('').reduce((a, b) => Number(a) + Number(b), 0);
+    while (result > 9) result = result.toString().split('').reduce((a, b) => +a + +b, 0);
     
     // 2. Определяем пол
     const gender1 = detectGenderAdvanced(name1); // Используем твою умную функцию
@@ -1963,7 +1963,8 @@ function initDailyEnergy() {
     
     // Расчет числа дня
     let sum = day + month + year;
-while (sum > 9) sum = sum.toString().split('').reduce((a,b) => Number(a) + Number(b), 0);    
+    while (sum > 9) sum = sum.toString().split('').reduce((a,b) => +a + +b, 0);
+    
     document.getElementById('daily-number').textContent = sum;
     
     const descs = {
@@ -2361,9 +2362,9 @@ decodeHtml += `<div class="child-decode-block">
 
 // --- ЧИСЛО СУДЬБЫ (из внешнего файла) ---
 const lifePathData = (typeof childLifePathTexts !== 'undefined') ? childLifePathTexts[lifePath] : null;
-const lifePathDesc = (lifePathData && lifePathData.description) ?
-    lifePathData.description :
-    "<p>Уникальный путь, который раскроется с вашей поддержкой и любовью.</p>";
+const lifePathDesc = (lifePathData && lifePathData.description) 
+    ? lifePathData.description 
+    : "<p>Уникальный путь, который раскроется с вашей поддержкой и любовью.</p>";
 
 decodeHtml += `<div class="child-decode-block child-decode-highlight">
     <div class="child-decode-title"><i class="fa-solid fa-star"></i> Число судьбы ${lifePath}</div>
@@ -2469,19 +2470,6 @@ function switchMoneyMode(mode) {
     const personal = document.getElementById('money-personal-block');
     const pair = document.getElementById('money-pair-block');
     const btns = document.querySelectorAll('.mode-btn');
-
-    // Ленивая загрузка тяжёлых скриптов (при первом вызове)
-    loadScriptLazy('js/data-money-pair-core.js');
-    loadScriptLazy('js/data-money-danger.js');
-    loadScriptLazy('js/data-money-mirror.js');
-    loadScriptLazy('js/data-money-pair-mirror.js');
-    loadScriptLazy('js/data-money-path.js');
-    loadScriptLazy('js/data-money-blind-growth.js');
-    loadScriptLazy('js/data-money-synthesis-pairs.js');
-    loadScriptLazy('js/data-money-archetype.js');
-    loadScriptLazy('js/data-money-tempo.js');
-    loadScriptLazy('js/data-money-invest.js');
-    loadScriptLazy('js/data-money-affirmations.js');
 
     if (mode === 'personal') {
         if (personal) personal.style.display = 'block';
@@ -3178,8 +3166,10 @@ function getYearlyForecast(data, userName) {
     const lp = data.lp; // Число судьбы
 
     // Вычисляем число личного года (упрощённо: lp + год)
-let personalYear = lp + year.toString().split('').reduce((a,b) => Number(a) + Number(b), 0);
-while (personalYear > 9) personalYear = personalYear.toString().split('').reduce((a,b) => Number(a) + Number(b), 0);
+    let personalYear = lp + year.toString().split('').reduce((a,b) => +a + +b, 0);
+    while (personalYear > 9) personalYear = personalYear.toString().split('').reduce((a,b) => +a + +b, 0);
+    if (personalYear === 0) personalYear = 9;
+
     // Базовые тексты для каждого значения личного года
     const yearMeanings = {
         1: { title: 'Год Начинаний', advice: 'Активно начинайте новые проекты, меняйте имидж, берите инициативу.' },
@@ -4304,7 +4294,8 @@ function calcPersonalYear(birthDateStr, targetYear) {
     const month = parseInt(parts[1]);
     let sum = day + month + targetYear;
     while (sum > 9) {
-sum = sum.toString().split('').reduce((a, b) => Number(a) + Number(b), 0);    }
+        sum = sum.toString().split('').reduce((a, b) => +a + +b, 0);
+    }
     return sum;
 }
 
@@ -4408,36 +4399,25 @@ sum = sum.toString().split('').reduce((a, b) => Number(a) + Number(b), 0);    }
 })();
 
 
-// Показ уведомления о куки (только если согласие еще не дано)
+// Показ уведомления о куки с плавным исчезновением
 (function() {
     var notice = document.getElementById('cookie-notice');
     var acceptBtn = document.getElementById('accept-cookies');
     
-    // Выходим, если куки уже приняты
-    if (localStorage.getItem('cookiesAccepted') === 'true') {
-        if (notice) notice.style.display = 'none';
-        return;
-    }
-    
-    // Показываем плашку
-    if (notice) {
+    if (!localStorage.getItem('cookiesAccepted')) {
         notice.style.display = 'flex';
     }
     
-    // Обработчик клика по кнопке
-    if (acceptBtn) {
-        acceptBtn.addEventListener('click', function() {
-            if (!notice) return;
-            notice.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            notice.style.opacity = '0';
-            notice.style.transform = 'translateX(-50%) translateY(20px)';
-            
-            setTimeout(function() {
-                notice.style.display = 'none';
-                localStorage.setItem('cookiesAccepted', 'true');
-            }, 600);
-        });
-    }
+    acceptBtn.addEventListener('click', function() {
+        notice.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        notice.style.opacity = '0';
+        notice.style.transform = 'translateX(-50%) translateY(20px)';
+        
+        setTimeout(function() {
+            notice.style.display = 'none';
+            localStorage.setItem('cookiesAccepted', 'true');
+        }, 600); // время должно совпадать с transition
+    });
 })();
 
 // ==========================================================
@@ -4473,30 +4453,3 @@ sum = sum.toString().split('').reduce((a, b) => Number(a) + Number(b), 0);    }
         }
     });
 })();
-
-// Загрузка отзывов из отдельного файла
-(function() {
-    const container = document.getElementById('testimonials-container');
-    if (!container) return;
-
-    fetch('testimonials.html')
-        .then(response => response.text())
-        .then(html => {
-            container.innerHTML = html;
-        })
-        .catch(err => {
-            console.warn('Отзывы не загрузились:', err);
-        });
-})();
-
-// Ленивая загрузка «тяжёлых» скриптов по требованию
-function loadScriptLazy(selector) {
-    const scriptTag = document.querySelector(`script[data-src="${selector}"]`);
-    if (!scriptTag || scriptTag.loaded) return;
-    
-    const newScript = document.createElement('script');
-    newScript.src = selector;
-    newScript.defer = true;
-    newScript.onload = () => { scriptTag.loaded = true; };
-    document.head.appendChild(newScript);
-}
