@@ -17,22 +17,22 @@
    ОСНОВНЫЕ СТИЛИ BODY
    ============================================ */
 html {
+    height: 100%;                    /* было без высоты */
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    background: #0f0c1d;
+    background: #0a0a10;            /* цвет, который будет виден в safe-area */
 }
 
 body {
     margin: 0;
     padding: 0;
     font-family: 'Open Sans', sans-serif;
-    background: transparent;   /* <-- изменили */
+    background: transparent;
     color: var(--text-main);
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
     min-height: 100dvh;
+    min-height: -webkit-fill-available;
     overflow-x: hidden;
     max-width: 100vw;
     position: relative;
@@ -40,7 +40,6 @@ body {
     flex-direction: column;
     width: 100%;
 }
-
 /* Фоновый слой (работает на iOS) */
 .bg-layer {
     position: fixed;
@@ -48,17 +47,20 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
+    /* Растягиваем фон строго от края до края, 
+       включая «чёлки» и закругления */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) 
+             env(safe-area-inset-bottom) env(safe-area-inset-left);
     background: #0a0a10;
     background: -webkit-radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a10 70%);
     background: radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a10 70%);
     z-index: -10;
-    margin-top: 0;
-    padding-top: env(safe-area-inset-top);
+    box-sizing: content-box;        /* чтобы padding не схлопывал ширину */
 }
 
 section {
     background: transparent;
-    min-height: 100vh;
+    min-height: auto ;
 }
 /* ============================================
    ЗВЕЗДЫ И ФОН
