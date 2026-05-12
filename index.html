@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Нумерология, психология чисел, матрица судьбы, совместимость партнёров">
     <meta name="keywords" content="нумерология, матрица пифагора, совместимость, число судьбы, расчёт матрицы">
 	<!-- Open Graph теги для превью ссылки -->
@@ -31,7 +31,7 @@
 <body>
     
     <!-- Уведомление о куки -->
-<div id="cookie-notice" style="display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 350px; background: rgba(10, 12, 25, 0.9); backdrop-filter: blur(15px); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 20px; padding: 20px 25px; z-index: 9999; box-shadow: 0 8px 30px rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; color: #ddd; font-size: 0.9rem;">
+<div id="cookie-notice" style="display: none; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 700px; background: rgba(10, 12, 25, 0.9); backdrop-filter: blur(15px); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 20px; padding: 20px 25px; z-index: 9999; box-shadow: 0 8px 30px rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; color: #ddd; font-size: 0.9rem;">
     <span style="flex: 1; min-width: 200px;">🍪 Мы используем куки для сохранения вашего доступа и улучшения работы сайта. Продолжая, вы соглашаетесь.</span>
     <button id="accept-cookies" style="background: linear-gradient(135deg, #D4AF37, #b89220); border: none; color: #0f0c29; padding: 10px 24px; border-radius: 30px; font-weight: bold; cursor: pointer; white-space: nowrap; transition: all 0.3s;">Хорошо</button>
 </div>
@@ -90,7 +90,7 @@
         </div>
 		
     </nav>
-    
+    <div class="bg-layer"></div>
     <canvas id="star-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>
     
     
@@ -388,12 +388,152 @@
                     <button class="btn-gold" onclick="showSection('services')">Мои услуги</button>
                 </div>
             </div>
-               <!-- ===== ОТЗЫВЫ (БЕГУЩАЯ СТРОКА) ===== -->
+                <!-- ===== ОТЗЫВЫ (БЕГУЩАЯ СТРОКА) ===== -->
 <div id="testimonials">
-    <h2 class="testimonials-title"><span>Отзывы</span></h2>
-    <div class="marquee-wrapper" id="testimonials-container">
-        <!-- Содержимое загрузится из testimonials.html -->
+    <h2 class="testimonials-title">
+    <span>Отзывы</span>
+</h2>
+
+    <div class="marquee-wrapper">
+        <div class="marquee-track">
+            <!-- Набор карточек (дублируется для бесконечности) -->
+            <div class="testimonial-card">
+                <div class="testimonial-photo"><img src=3.png alt="Фото" loading="lazy"/></div>
+                <div class="testimonial-text">
+                    <p>«Финансовый код перевернул моё представление о деньгах. Теперь я знаю, куда двигаться.»</p>
+                    <span class="testimonial-name">Алина, 25 года</span>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="testimonial-photo"><img src=4.png alt="Фото" loading="lazy" /></div>
+                <div class="testimonial-text">
+                    <p>«Потрясающий разбор! Я узнала о себе больше, чем за 10 лет терапии. Всё точно и глубоко.»</p>
+                    <span class="testimonial-name">Светлана, 41 год</span>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+               <div class="testimonial-photo"><img src=5.png alt="Фото" loading="lazy"/></div>
+                <div class="testimonial-text">
+                    <p>«Совместимость с мужем стала для нас откровением. Перестали ссориться из-за денег!»</p>
+                    <span class="testimonial-name">Екатерина, 29 лет</span>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="testimonial-photo"><img src=1.png alt="Фото" loading="lazy"/></div>
+                <div class="testimonial-text">
+                    <p>«Очень красивый и умный сервис. Рекомендую всем, кто пока не готов к личным консультациям»</p>
+                    <span class="testimonial-name">Александра, 24</span>
+                </div>
+            </div>
+
+            <!-- Дублируем карточки для плавности -->
+            <div class="testimonial-card">
+                <div class="testimonial-photo"><img src=2.png alt="Фото" loading="lazy"/></div>
+                <div class="testimonial-text">
+                    <p>««Я думала, нумерология — это что-то из разряда "погадать на кофейной гуще". А тут прям инструкция к себе! Удивило, насколько точно описали мой характер и финансовые ямы, в которые я постоянно падаю. Теперь хоть понятно, куда грести.»</p>
+                    <span class="testimonial-name">Анна, 23 года</span>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="testimonial-photo"><img src=6.png alt="Фото" loading="lazy"/></div>
+                <div class="testimonial-text">
+                    <p>«Мы с мужем вечно ругались из-за денег. Прошли расчёт совместимости — и как будто пелена с глаз упала. Оказывается, у нас просто разные денежные архетипы, и это не повод для войны, а повод договориться. Спасибо, что вернули мир в семью!»</p>
+                    <span class="testimonial-name">Евгения, 35 лет</span>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                <div class="testimonial-photo"><img src=7.png alt="Фото" loading="lazy"/></div>
+                <div class="testimonial-text">
+                    <p>«Совместимость с мужем стала для нас откровением. Перестали ссориться из-за денег!»</p>
+                    <span class="testimonial-name">Екатерина, 30 лет</span>
+                </div>
+            </div>
+
+            <div class="testimonial-card">
+                                <div class="testimonial-photo"><img src=8.png alt="Фото" loading="lazy"/></div>
+                <div class="testimonial-text">
+                    <p>«Потрясающий разбор! Я узнала о себе больше, чем за 10 лет терапии. Всё точно и глубоко.»</p>
+                    <span class="testimonial-name">Виктория, 23 года</span>
+                </div>
+            </div>
+        </div>
     </div>
+    <div class="testimonials-divider">
+    <span>Также из личных консультаций:</span>
+</div>
+    <!-- Вторая бегущая строка (обратное направление) -->
+<div class="marquee-wrapper marquee-reverse">
+    <div class="marquee-track-reverse">
+        <!-- Карточки (можно добавить другие отзывы) -->
+        <div class="testimonial-card">
+             <div class="testimonial-photo"><img src=9.png alt="Фото" loading="lazy"/></div>
+            <div class="testimonial-text">
+                <p>«Спасибо за такой интересный опыт в нумерологии. Удивило то, что всего лишь по дате рождения можно так много рассказать о человеке. Действительно, многое попало в точку, во многом узнала себя. »</p>
+                <span class="testimonial-name">Анна, 30 года</span>
+            </div>
+        </div>
+        <div class="testimonial-card">
+             <div class="testimonial-photo"><img src=10.jpeg alt="Фото" loading="lazy"/></div>
+            <div class="testimonial-text">
+                <p>«Зоя!  просто в шоке от того, на сколько точно вы меня описали, прям в самую точку) уже несколько раз пролушала и как 2 дня в голове все прокручиваю, в одном вопросе нашла для себя ответ) спасибо вам большое 🌸»</p>
+                <span class="testimonial-name">Инна, 27 год</span>
+            </div>
+        </div>
+        <div class="testimonial-card">
+            <div class="testimonial-photo"><img src=11.jpeg alt="Фото" loading="lazy"/></div>
+            <div class="testimonial-text">
+                <p>«Императрица. Социальный статусу - в точную точку! У меня эти блага на первом месте! И без них не могу идти дальше. Как в точку вы сказали - по головам никогда не пойду, пойду по своим принципам! Право на ошибку я только учусь давать сейчас, раньше всегда по принципу
+                    «хочешь сделать хорошо, сделай сам»»</p>
+                <span class="testimonial-name">Екатерина, 29 лет</span>
+            </div>
+        </div>
+        <div class="testimonial-card">
+            <div class="testimonial-photo"><img src=12.png alt="Фото" loading="lazy"/></div>
+            <div class="testimonial-text">
+                <p>«Все послушала 3 раза! Даже тезисы выписала 😊 Я в приятном удивлении, как все совпало и подробно все по полочкам разобрано. Уверена, что к разбору вернусь еще не раз) разбор на самом деле характеризует меня на 100%
+Информация ценная и полезная, буду двигаться дальше по своему пути 😍»</p>
+                <span class="testimonial-name">Елена, 36 лет</span>
+            </div>
+        </div>
+        <!-- Дублируем карточки для плавности -->
+        <div class="testimonial-card">
+            <div class="testimonial-photo"><img src=13.png alt="Фото" loading="lazy"/></div>
+            <div class="testimonial-text">
+                <p>«Доброе утро ☀️ Это мой первый такой опыт. 
+Все что вы сказали прям в яблочко 😳 спасибо за важную информацию по поводу отношений с мужем, исходя из преобладания этой энергии, я никогда даже не думала в этом направлении, теперь намотаю на ус как говорится. Всё супер, я под впечатлением.
+Благодарю вас, очень было интересно послушать 💕»</p>
+                <span class="testimonial-name">Анна, 34 года</span>
+            </div>
+        </div>
+        <div class="testimonial-card">
+            <div class="testimonial-photo"><img src=14.png alt="Фото" loading="lazy"/></div>
+            <div class="testimonial-text">
+                <p>«Ох как мне понравилась ваша фраза в начале «ну готовьтесь»😁❤️ Благодарю вас от всего сердца ❤️ Вы прям дали мне мощнейшую мотивацию двигаться !  Вселенная услышала, и ещё раз подтвердила мне, что нужно идти!
+Благодарю вас за то, что помогаете и даете  очень нужную и важную информацию ❤️❤️❤️»</p>
+                <span class="testimonial-name">Мария, 35 год</span>
+            </div>
+        </div>
+        <div class="testimonial-card">
+            <div class="testimonial-photo"><img src=15.png alt="Фото" loading="lazy"/></div>
+            <div class="testimonial-text">
+                <p>«Зоя, вы не представляете, как я благодарна Вселенной, что  узнала о вас 💗 Мне кажется, что вокруг меня никто не понимает, что я реально на обрыве и произошло всё так резко и спонтанно, что я была к этому не готова. Насколько сильно меня успокоили ваши слова, я даже описать не могу 😔 Я так сильно благодарна вам, что познакомилась с Вами ✨»</p>
+                <span class="testimonial-name">Екатерина, 23 лет</span>
+            </div>
+        </div>
+        <div class="testimonial-card">
+           <div class="testimonial-photo"><img src=16.png alt="Фото" loading="lazy"/></div>
+            <div class="testimonial-text">
+                <p>«Очень красивый и умный сервис. Рекомендую всем, кто ищет себя.»</p>
+                <span class="testimonial-name">Анастасия, 28 лет</span>
+            </div>
+        </div>
+    </div>
+</div>
 </div>
         </section>
           
@@ -1131,11 +1271,8 @@
             <!-- Колонка 2: Поддержка -->
             <div class="footer-col">
                 <h4>Поддержка</h4>
-                <a href="https://t.me/zoya_viik" target="_blank"><i class="fa-brands fa-telegram"></i> Telegram</a>
-                <a href="zoya.instar@mail.ru"><i class="fa-solid fa-envelope"></i> Почта</a>
-                <a href="https://vk.com/zoya_vikk" target="_blank" rel="noopener">
-        <i class="fa-brands fa-vk"></i> ВКонтакте
-    </a>
+                <a href="https://t.me/zoya_viik" target="_blank"><i class="fa-brands fa-telegram"></i> @zoya_viik</a>
+                <a href="zoya.instar@mail.ru"><i class="fa-solid fa-envelope"></i> zoya.instar@mail.ru</a>
                            </div>
 
             <!-- Колонка 3: Документы (Ссылки на модалки) -->
@@ -1494,31 +1631,30 @@
 
     
 <script src="js/data-cells.js"></script>
+    <script src="js/data-money-pair-core.js" defer></script>
+<script src="js/data-money-danger.js" defer></script>
 <script src="js/data-compatibility.js"></script>
 <script src="js/child-life-path-texts.js"></script>
 <script src="js/data-deep-compat.js"></script>
+<script src="js/data-money-mirror.js" defer></script>
 <script src="js/data-child.js"></script>
 <script src="js/money.js"></script>
-<script src="js/synthesis-templates.js"></script>
+<script src="js/synthesis-templates.js"></script>      <!-- НОВЫЙ -->
 <script src="js/synthesis-data.js"></script>
 <script src="js/data-life-path-descriptions.js"></script>
 <script src="js/data-life-path.js"></script>
 <script src="js/data-parent-child.js"></script>
 <script src="js/data-row-texts.js"></script>
 <script src="js/data-synthesis-pythagoras.js"></script>
-
-<!-- Файлы денежного кода (ленивая загрузка) -->
-<script data-src="js/data-money-pair-core.js"></script>
-<script data-src="js/data-money-danger.js"></script>
-<script data-src="js/data-money-mirror.js"></script>
-<script data-src="js/data-money-pair-mirror.js"></script>
-<script data-src="js/data-money-path.js"></script>
-<script data-src="js/data-money-blind-growth.js"></script>
-<script data-src="js/data-money-synthesis-pairs.js"></script>
-<script data-src="js/data-money-archetype.js"></script>
-<script data-src="js/data-money-tempo.js"></script>
-<script data-src="js/data-money-invest.js"></script>
-<script data-src="js/data-money-affirmations.js"></script>
+<script src="js/data-money-pair-mirror.js" defer></script>
+    <!-- Файлы денежного кода Пифагора -->
+<script src="js/data-money-path.js" defer></script>
+<script src="js/data-money-blind-growth.js" defer></script>
+<script src="js/data-money-synthesis-pairs.js" defer></script>
+<script src="js/data-money-archetype.js" defer></script>
+<script src="js/data-money-tempo.js" defer></script>
+<script src="js/data-money-invest.js" defer></script>
+<script src="js/data-money-affirmations.js" defer></script>
 <script>
 
     
