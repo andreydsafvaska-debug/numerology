@@ -79,7 +79,7 @@ section {
 }
 
 .global-matrix-wrapper {
-    position: fixed;
+  position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -87,7 +87,8 @@ section {
     height: 900px;
     z-index: -1;
     pointer-events: none;
-    opacity: 0.15;
+    opacity: 0.12;  /* было 0.15 — чуть легче */
+    will-change: transform;  /* помогает GPU */
 }
 
 .matrix-svg {
@@ -102,6 +103,13 @@ section {
 @keyframes slowSpin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
+}
+
+/* На мобильных не вращаем — экономим GPU */
+@media (max-width: 768px) {
+    .matrix-svg {
+        animation: none !important;
+    }
 }
 
 /* ============================================
