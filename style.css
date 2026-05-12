@@ -328,8 +328,7 @@ li {
 input[type="text"], input[type="date"] {
     background: rgba(255,255,255,0.1);
     border: 1px solid var(--purple-deep);
-  
-    color: white;
+      color: white;
     font-family: 'Open Sans', sans-serif;
      border-radius: 8px;
     margin-bottom: 20px;
@@ -340,10 +339,12 @@ input[type="text"], input[type="date"] {
     box-sizing: border-box;
     padding: 14px 15px !important;
     font-size: 16px !important;
-    -webkit-appearance: none;
-    appearance: none;
-    min-height: 48px;
+     
     line-height: 1.2;
+     -webkit-appearance: none;   /* ← добавить */
+    appearance: none;           /* ← добавить */
+    min-height: 48px;           /* ← добавить */
+    
 }
 
 input[type="text"]:focus, input[type="date"]:focus {
@@ -6728,10 +6729,21 @@ transform: translateY(-67px);  /* ← поднимает только загол
         width: 100% !important;
         box-sizing: border-box;
         -webkit-appearance: none;
+        appearance: none;
+        line-height: 1.2;
     }
 
     input[type="date"] {
         display: flex !important;
         align-items: center !important;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    /* Убираем сдвиг иконки календаря */
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        position: relative;
+        right: 0;
+        margin-left: auto;
     }
 }
