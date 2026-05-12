@@ -5634,13 +5634,9 @@ details.money-details {
         rgba(201,168,76,0.4) 100%);
     filter: blur(10px);
     z-index: -1;
-    animation: auraPulse 3s ease-in-out infinite;
+    
 }
 
-@keyframes auraPulse {
-    0%, 100% { opacity: 0.6; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.03); }
-}
 
 /* Декоративные уголки */
 .corner-top-right {
