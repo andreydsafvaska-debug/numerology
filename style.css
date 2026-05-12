@@ -31,7 +31,6 @@ body {
     margin: 0;
     padding: 0;
     font-family: 'Open Sans', sans-serif;
-    /* Градиент с -webkit- префиксом для iOS */
     background: #0a0a10;
     background: -webkit-radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a10 70%);
     background: radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a10 70%);
@@ -45,27 +44,6 @@ body {
     display: flex;
     flex-direction: column;
     width: 100%;
-}
-
-/* ВАЖНО: Убедись, что удалил background-attachment: fixed из body выше! */
-
-/* Новый фиксированный фон для всех устройств, включая iOS */
-body::before {
-  content: '';
-  position: absolute; /* Это заменяет background-attachment: fixed */
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  /* Задаём тот же градиент, что и был у body */
-  background: #0a0a10;
-  background: -webkit-radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a10 70%);
-  background: radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a10 70%);
-  z-index: -2;  /* было -1, опустим ниже звёзд */
-
-/* Убедимся, что сам body имеет прозрачный фон, чтобы был виден псевдоэлемент */
-body {
-  background: transparent;
 }
 section {
     background: transparent;
@@ -6790,55 +6768,31 @@ transform: translateY(-67px);  /* ← поднимает только загол
 /* ============================================
    iOS: фон, высота и поля ввода
    ============================================ */
-@supports (-webkit-touch-callout: none) or (-webkit-overflow-scrolling: touch) {
-    /* Высота экрана без скачков */
+@supports (-webkit-touch-callout: none) {
+    /* 1. Фон – принудительно рисуем градиент */
     body {
+        background: #0a0a10 !important;
+        background: -webkit-radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a10 70%) !important;
+        background: radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a10 70%) !important;
         min-height: 100dvh !important;
         min-height: -webkit-fill-available !important;
-        background: transparent !important;   /* фон уже в ::before */
-        display: flex !important;
-        flex-direction: column !important;
     }
 
-    main {
-        flex: 1 1 auto !important;
-        min-height: 0 !important;
-    }
-
-    /* Отступ, чтобы контент не заезжал под меню */
-    .calc-container {
-        margin-top: 80px !important;
-    }
-
-    /* Поля ввода – единый размер */
+    /* 2. Поля ввода – возвращаем отступы и высоту */
     input[type="text"],
     input[type="date"] {
-        width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box;
         padding: 14px 15px !important;
         font-size: 16px !important;
-        min-height: 48px;                    /* для удобного касания */
+        min-height: 48px;
         line-height: 1.2;
+        width: 100% !important;
+        box-sizing: border-box;
         -webkit-appearance: none;
     }
 
-    /* Чиним дату на iOS */
+    /* 3. input[type="date"] – делаем надёжную центровку */
     input[type="date"] {
         display: flex !important;
         align-items: center !important;
-        -webkit-appearance: none !important;
-        appearance: none !important;
-    }
-
-    /* Фоновая подложка – только градиент, без фиксации */
-    html {
-        background: radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a10 70%);
-    }
-
-    /* Звёзды и матрица точно видны */
-    .star-layer,
-    .global-matrix-wrapper {
-        z-index: -1 !important;              /* выше фона */
     }
 }
