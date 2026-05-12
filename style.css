@@ -21,7 +21,7 @@ html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-	background: #0f0c1d;
+    background: #0f0c1d;
 }
 
 body {
@@ -52,7 +52,7 @@ body {
     background: -webkit-radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a10 70%);
     background: radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a10 70%);
     z-index: -10;
-	 margin-top: 0;
+    margin-top: 0;
     padding-top: env(safe-area-inset-top);
 }
 
@@ -328,16 +328,22 @@ li {
 input[type="text"], input[type="date"] {
     background: rgba(255,255,255,0.1);
     border: 1px solid var(--purple-deep);
-    padding: 15px;
+  
     color: white;
     font-family: 'Open Sans', sans-serif;
-    font-size: 1.1rem;
-    border-radius: 8px;
+     border-radius: 8px;
     margin-bottom: 20px;
     outline: none;
-    width: 100%;
+     transition: 0.3s;
+      width: 100% !important;
+    max-width: 100% !important;
     box-sizing: border-box;
-    transition: 0.3s;
+    padding: 14px 15px !important;
+    font-size: 16px !important;
+    -webkit-appearance: none;
+    appearance: none;
+    min-height: 48px;
+    line-height: 1.2;
 }
 
 input[type="text"]:focus, input[type="date"]:focus {
@@ -358,51 +364,54 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     max-width: 550px;
     padding: 25px;
 }
-/* ============================================
-   Адаптпция полей ввода
-   ============================================ */
-@media (max-width: 768px) {
-    /* Исправляем вылезание полей ввода */
-    input[type="text"],
-    input[type="date"] {
-        width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box;
-        padding: 12px 15px !important;
-        font-size: 16px !important; /* чтобы не срабатывал зум при фокусе */
-    }
 
-    /* Контейнеры полей тоже ограничиваем */
-    .input-block {
-        width: 100%;
-        max-width: 100%;
-        padding: 0;
-        margin: 0;
-        box-sizing: border-box;
-    }
-    
+/* ============================================
+   АДАПТИВНЫЕ ПОЛЯ ВВОДА (ВСЕ УСТРОЙСТВА)
+   ============================================ */
+.inputs-group {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.input-block {
+    flex: 1 1 200px;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+input[type="text"],
+input[type="date"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+    padding: 14px 15px !important;
+    font-size: 16px !important;
+    -webkit-appearance: none;
+    appearance: none;
+    min-height: 48px;
+    line-height: 1.2;
+}
+
 .child-inputs {
     width: 100%;
     box-sizing: border-box;
 }
-    
-    .inputs-group {
-        gap: 15px;
-        width: 100%;
-        box-sizing: border-box;
-        flex-wrap: wrap;
-    }
 
-    /* Стиль для подсказки формата даты */
-    .date-hint {
-        display: block;
-        font-size: 0.75rem;
-        color: #aaa;
-        margin-top: 4px;
-        margin-bottom: 8px;
-        text-align: left;
-    }
+.date-hint {
+    display: block;
+    font-size: 0.75rem;
+    color: #aaa;
+    margin-top: 4px;
+    margin-bottom: 8px;
+    text-align: left;
 }
+
 /* ============================================
    МАТРИЦА ПИФАГОРА
    ============================================ */
@@ -6704,5 +6713,25 @@ transform: translateY(-67px);  /* ← поднимает только загол
     to {
         opacity: 1;
         transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* ============================================
+   iOS: фикс полей ввода
+   ============================================ */
+@supports (-webkit-touch-callout: none) {
+    input[type="text"],
+    input[type="date"] {
+        padding: 14px 15px !important;
+        font-size: 16px !important;
+        min-height: 48px;
+        width: 100% !important;
+        box-sizing: border-box;
+        -webkit-appearance: none;
+    }
+
+    input[type="date"] {
+        display: flex !important;
+        align-items: center !important;
     }
 }
