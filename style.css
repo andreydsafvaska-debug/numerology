@@ -21,30 +21,23 @@ html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    height: 100%;
-    width: 100%;
-    margin: 0;
-    padding: 0;
 }
 
 body {
-    margin: 0;
+   margin: 0;
     padding: 0;
     font-family: 'Open Sans', sans-serif;
-    background: #0a0a10;
-    background: -webkit-radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a10 70%);
+    background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
     background: radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a10 70%);
     color: var(--text-main);
     min-height: 100vh;
-    min-height: -webkit-fill-available;
-    min-height: 100dvh;
     overflow-x: hidden;
     max-width: 100vw;
     position: relative;
     display: flex;
     flex-direction: column;
-    width: 100%;
 }
+
 section {
     background: transparent;
     min-height: 100vh;
@@ -66,7 +59,7 @@ section {
 
 
 @keyframes animStar {
-    from { transform: translateY(0); }
+    from { transform: translateY(0px); }
     to { transform: translateY(-2000px); }
 }
 
@@ -144,7 +137,7 @@ nav.scrolled {
    ОСНОВНОЙ КОНТЕНТ
    ============================================ */
 main {
-    padding-top: 0;
+    padding-top: 0px;
     max-width: 1200px;
     margin: 0 auto;
     padding-bottom: 50px;
@@ -319,9 +312,6 @@ input[type="text"], input[type="date"] {
     width: 100%;
     box-sizing: border-box;
     transition: 0.3s;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
 }
 
 input[type="text"]:focus, input[type="date"]:focus {
@@ -336,79 +326,6 @@ input[type="text"]::placeholder {
 input[type="date"]::-webkit-calendar-picker-indicator {
     filter: invert(1);
     cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-}
-
-/* ============================================
-   iOS SPECIFIC FIXES
-   ============================================ */
-@supports (-webkit-touch-callout: none) {
-    /* Предотвращаем зум при фокусе на iOS */
-    input[type="text"],
-    input[type="date"],
-    input[type="email"],
-    input[type="password"],
-    textarea,
-    select {
-        font-size: 16px !important;
-        -webkit-text-size-adjust: 100%;
-    }
-    
-    /* Фикс для input type="date" на iOS */
-    input[type="date"] {
-        position: relative;
-        -webkit-appearance: none;
-        appearance: none;
-    }
-    
-    /* Убираем стандартные стили iOS для полей */
-    input[type="text"],
-    input[type="date"] {
-        -webkit-border-radius: 0;
-        -webkit-tap-highlight-color: transparent;
-        -webkit-touch-callout: none;
-        -webkit-user-select: text;
-        user-select: text;
-    }
-    
-    /* Фикс для безопасных зон на iPhone с челкой */
-    @media only screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) {
-        /* iPhone X, XS, 11 Pro */
-        body {
-            padding-top: env(safe-area-inset-top, 0px);
-            padding-bottom: env(safe-area-inset-bottom, 0px);
-        }
-    }
-    
-    @media only screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) {
-        /* iPhone XR, 11 */
-        body {
-            padding-top: env(safe-area-inset-top, 0px);
-            padding-bottom: env(safe-area-inset-bottom, 0px);
-        }
-    }
-    
-    @media only screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) {
-        /* iPhone 12 Pro Max, 13 Pro Max */
-        body {
-            padding-top: env(safe-area-inset-top, 0px);
-            padding-bottom: env(safe-area-inset-bottom, 0px);
-        }
-    }
-}
-
-/* Предотвращаем двойной тап зум на iOS */
-* {
-    touch-action: manipulation;
-}
-
-/* Фикс для backdrop-filter на старых iOS */
-@supports not (backdrop-filter: blur(10px)) {
-    .calc-container,
-    .service-card,
-    .modal-content {
-        background: rgba(30, 30, 40, 0.95) !important;
-    }
 }
 
 .calc-compact {
@@ -3508,7 +3425,7 @@ html::-webkit-scrollbar-thumb:hover {
 .matrix-cell {
     background: rgba(255,255,255,0.08);
     border-radius: 10px;
-    padding: 0 0;
+    padding: 0px 0px;
     text-align: center;
 }
 .cell-title {
@@ -4888,7 +4805,7 @@ details.money-details {
    ============================================ */
 .premium-service-card {
     position: relative;
-    background: linear-gradient(145deg, #1e1a2e , #2a2348 100%);
+    background: linear-gradient(145deg, #1e1a2e %, #2a2348 100%);
     border: 2px solid var(--gold);
     box-shadow: 0 0 35px rgba(212, 175, 55, 0.25), 0 15px 30px rgba(0,0,0,0.5);
     transform: scale(1.03);
@@ -5809,7 +5726,7 @@ section#home {
 
 /* Утапливание при клике */
 .btn-gold:active {
-  transform: translateY(0);
+  transform: translateY(0px);
   box-shadow: 0 5px 12px rgba(201, 169, 110, 0.4);
 }
 
@@ -6761,38 +6678,5 @@ transform: translateY(-67px);  /* ← поднимает только загол
     to {
         opacity: 1;
         transform: translateX(-50%) translateY(0);
-    }
-}
-
-
-/* ============================================
-   iOS: фон, высота и поля ввода
-   ============================================ */
-@supports (-webkit-touch-callout: none) {
-    /* 1. Фон – принудительно рисуем градиент */
-    body {
-        background: #0a0a10 !important;
-        background: -webkit-radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a10 70%) !important;
-        background: radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a10 70%) !important;
-        min-height: 100dvh !important;
-        min-height: -webkit-fill-available !important;
-    }
-
-    /* 2. Поля ввода – возвращаем отступы и высоту */
-    input[type="text"],
-    input[type="date"] {
-        padding: 14px 15px !important;
-        font-size: 16px !important;
-        min-height: 48px;
-        line-height: 1.2;
-        width: 100% !important;
-        box-sizing: border-box;
-        -webkit-appearance: none;
-    }
-
-    /* 3. input[type="date"] – делаем надёжную центровку */
-    input[type="date"] {
-        display: flex !important;
-        align-items: center !important;
     }
 }
