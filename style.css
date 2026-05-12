@@ -5626,7 +5626,7 @@ details.money-details {
 .hero-image-wrapper::after {
     content: '';
     position: absolute;
-    inset: -3px;
+    inset: 10px;
     border-radius: 1rem;
     background: linear-gradient(135deg,
         rgba(201,168,76,0.4) 0%,
