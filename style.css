@@ -17,12 +17,12 @@
    ОСНОВНЫЕ СТИЛИ BODY
    ============================================ */
 html {
-    height: 100%;                    /* было без высоты */
+    height: 100%;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    background: #0a0a10;            /* цвет, который будет виден в safe-area */
+    background: #0a0a10;   /* закрасит safe-area, если где-то проступит */
 }
 
 body {
@@ -47,15 +47,16 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    /* Растягиваем фон строго от края до края, 
-       включая «чёлки» и закругления */
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) 
-             env(safe-area-inset-bottom) env(safe-area-inset-left);
+    /* Растягиваем фон под «чёлки» и Home Indicator */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
     background: #0a0a10;
     background: -webkit-radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a10 70%);
     background: radial-gradient(ellipse at 50% 0%, #1a1a2e 0%, #0a0a10 70%);
     z-index: -10;
-    box-sizing: content-box;        /* чтобы padding не схлопывал ширину */
+    box-sizing: content-box;   /* чтобы padding добавился к 100%, не схлопнув размер */
 }
 
 section {
