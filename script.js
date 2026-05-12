@@ -4150,8 +4150,8 @@ async function downloadSectionPDF(section) {
     // Автоматически определяем количество звёзд в зависимости от ширины экрана
     function getStarCount() {
         const width = window.innerWidth;
-        if (width < 480) return 80;        // маленькие телефоны
-        if (width < 768) return 120;       // планшеты
+        if (width < 480) return 35;        // маленькие телефоны
+        if (width < 768) return 90;       // планшеты
         if (width < 1024) return 200;      // ноутбуки
         return 280;                         // большие экраны
     }
